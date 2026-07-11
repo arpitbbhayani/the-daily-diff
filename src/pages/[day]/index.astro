@@ -1,0 +1,303 @@
+---
+import { getCollection, render } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+
+export async function getStaticPaths() {
+	const entries = await getCollection('articles');
+	const byDay = new Map<string, typeof entries>();
+	for (const entry of entries) {
+		const day = entry.id.split('/')[0];
+		const list = byDay.get(day) ?? [];
+		list.push(entry);
+		byDay.set(day, list);
+	}
+
+	return Promise.all(
+		[...byDay.entries()].map(async ([day, dayEntries]) => {
+			const sorted = [...dayEntries].sort((a, b) => a.id.localeCompare(b.id));
+			const articles = await Promise.all(
+				sorted.map(async (entry) => {
+					const { Content } = await render(entry);
+					return {
+						slug: entry.id.split('/')[1],
+						title: entry.data.title,
+						source: entry.data.source,
+						url: entry.data.url,
+						tags: entry.data.tags,
+						categories: entry.data.categories,
+						why_read: entry.data.why_read,
+						authors: entry.data.authors,
+						Content,
+					};
+				})
+			);
+			return { params: { day }, props: { day, articles } };
+		})
+	);
+}
+
+interface ArticleProps {
+	slug: string;
+	title: string;
+	source: string;
+	url: string;
+	tags: string[];
+	categories?: string;
+	why_read?: string;
+	authors: string[];
+	Content: any;
+}
+
+const { day, articles } = Astro.props as { day: string; articles: ArticleProps[] };
+
+const label = new Date(`${day}T00:00:00`).toLocaleDateString('en-US', {
+	weekday: 'long',
+	year: 'numeric',
+	month: 'long',
+	day: 'numeric',
+});
+---
+
+<Layout title={`Catchup — ${label}`}>
+	<section class="section">
+		<div class="container">
+			<div class="day-header">
+				<a href="/">&larr; All days</a>
+				<h1 class="title is-4">{label}</h1>
+				<button id="copy-all-btn" class="button is-primary">Copy all to Keep</button>
+			</div>
+
+			<div id="reader" data-day={day}>
+				{
+					articles.map((article) => {
+						const Article = article;
+						return (
+							<article
+								class="box article-panel"
+								data-slug={Article.slug}
+								data-url={Article.url}
+								data-title={Article.title}
+							>
+								<h2 class="title is-4">
+									<a href={Article.url} target="_blank" rel="noopener noreferrer">
+										{Article.title}
+									</a>
+								</h2>
+								<div class="article-meta">
+									{Article.source}
+									{Article.categories ? ` · ${Article.categories}` : ''}
+								</div>
+								{Article.tags.length > 0 && (
+									<div class="tags">
+										{Article.tags.map((tag) => (
+											<span class="tag">{tag}</span>
+										))}
+									</div>
+								)}
+								{Article.why_read && <div class="maxim">{Article.why_read}</div>}
+								<div class="content blog-content">
+									<Article.Content />
+								</div>
+								{Article.authors.length > 0 && (
+									<div class="article-meta">By {Article.authors.join(', ')}</div>
+								)}
+							</article>
+						);
+					})
+				}
+			</div>
+
+			<div class="buttons nav-bar">
+				<button id="prev-btn" class="button">&larr; Previous</button>
+				<span class="article-index" id="index-label">1 / {articles.length}</span>
+				<button id="next-btn" class="button">Next &rarr;</button>
+			</div>
+
+			<div class="buttons action-bar">
+				<button id="copy-url-btn" class="button">Copy URL</button>
+				<button id="read-btn" class="button">Mark Read</button>
+				<button id="obsidian-btn" class="button">Add to Obsidian</button>
+				<button id="delete-btn" class="button">Delete</button>
+			</div>
+		</div>
+	</section>
+
+	<div id="toast" class="toast"></div>
+</Layout>
+
+<style>
+	.article-panel {
+		display: none;
+	}
+
+	.article-panel.is-active {
+		display: block;
+	}
+</style>
+
+<script>
+	const reader = document.getElementById('reader') as HTMLElement;
+	const day = reader.dataset.day as string;
+	const panels = Array.from(reader.querySelectorAll<HTMLElement>('.article-panel'));
+
+	const storageKey = `catchup:${day}`;
+
+	type Flags = { read: boolean; obsidian: boolean; deleted: boolean };
+	type State = Record<string, Flags>;
+
+	function loadState(): State {
+		try {
+			return JSON.parse(localStorage.getItem(storageKey) || '{}');
+		} catch {
+			return {};
+		}
+	}
+
+	function saveState(state: State) {
+		localStorage.setItem(storageKey, JSON.stringify(state));
+	}
+
+	const state = loadState();
+
+	function getFlags(slug: string): Flags {
+		return state[slug] ?? { read: false, obsidian: false, deleted: false };
+	}
+
+	function setFlag(slug: string, key: keyof Flags, value: boolean) {
+		const flags = getFlags(slug);
+		flags[key] = value;
+		state[slug] = flags;
+		saveState(state);
+	}
+
+	function visiblePanels() {
+		return panels.filter((p) => !getFlags(p.dataset.slug as string).deleted);
+	}
+
+	function firstVisibleIndex() {
+		const idx = panels.findIndex((p) => !getFlags(p.dataset.slug as string).deleted);
+		return idx === -1 ? 0 : idx;
+	}
+
+	let currentIndex = firstVisibleIndex();
+
+	const prevBtn = document.getElementById('prev-btn') as HTMLButtonElement;
+	const nextBtn = document.getElementById('next-btn') as HTMLButtonElement;
+	const indexLabel = document.getElementById('index-label') as HTMLElement;
+	const copyUrlBtn = document.getElementById('copy-url-btn') as HTMLButtonElement;
+	const readBtn = document.getElementById('read-btn') as HTMLButtonElement;
+	const obsidianBtn = document.getElementById('obsidian-btn') as HTMLButtonElement;
+	const deleteBtn = document.getElementById('delete-btn') as HTMLButtonElement;
+	const copyAllBtn = document.getElementById('copy-all-btn') as HTMLButtonElement;
+	const toast = document.getElementById('toast') as HTMLElement;
+
+	let toastTimer: ReturnType<typeof setTimeout>;
+	function showToast(msg: string) {
+		toast.textContent = msg;
+		toast.classList.add('is-visible');
+		clearTimeout(toastTimer);
+		toastTimer = setTimeout(() => toast.classList.remove('is-visible'), 1600);
+	}
+
+	function render() {
+		const visible = visiblePanels();
+		panels.forEach((p) => p.classList.remove('is-active'));
+
+		if (visible.length === 0) {
+			indexLabel.textContent = '0 / 0';
+			prevBtn.disabled = true;
+			nextBtn.disabled = true;
+			readBtn.disabled = true;
+			obsidianBtn.disabled = true;
+			deleteBtn.disabled = true;
+			copyUrlBtn.disabled = true;
+			return;
+		}
+
+		if (getFlags(panels[currentIndex].dataset.slug as string).deleted) {
+			currentIndex = panels.indexOf(visible[0]);
+		}
+
+		const panel = panels[currentIndex];
+		panel.classList.add('is-active');
+
+		const posInVisible = visible.indexOf(panel) + 1;
+		indexLabel.textContent = `${posInVisible} / ${visible.length}`;
+
+		prevBtn.disabled = posInVisible <= 1;
+		nextBtn.disabled = posInVisible >= visible.length;
+		readBtn.disabled = false;
+		obsidianBtn.disabled = false;
+		deleteBtn.disabled = false;
+		copyUrlBtn.disabled = false;
+
+		const slug = panel.dataset.slug as string;
+		const flags = getFlags(slug);
+		readBtn.classList.toggle('is-toggled', flags.read);
+		readBtn.textContent = flags.read ? 'Read ✓' : 'Mark Read';
+		obsidianBtn.classList.toggle('is-toggled', flags.obsidian);
+		obsidianBtn.textContent = flags.obsidian ? 'In Obsidian ✓' : 'Add to Obsidian';
+	}
+
+	function goTo(step: number) {
+		const visible = visiblePanels();
+		const panel = panels[currentIndex];
+		const posInVisible = visible.indexOf(panel);
+		const nextPos = posInVisible + step;
+		if (nextPos < 0 || nextPos >= visible.length) return;
+		currentIndex = panels.indexOf(visible[nextPos]);
+		render();
+	}
+
+	prevBtn.addEventListener('click', () => goTo(-1));
+	nextBtn.addEventListener('click', () => goTo(1));
+
+	copyUrlBtn.addEventListener('click', async () => {
+		const panel = panels[currentIndex];
+		await navigator.clipboard.writeText(panel.dataset.url as string);
+		showToast('URL copied');
+	});
+
+	readBtn.addEventListener('click', () => {
+		const panel = panels[currentIndex];
+		const slug = panel.dataset.slug as string;
+		setFlag(slug, 'read', !getFlags(slug).read);
+		render();
+	});
+
+	obsidianBtn.addEventListener('click', () => {
+		const panel = panels[currentIndex];
+		const slug = panel.dataset.slug as string;
+		setFlag(slug, 'obsidian', !getFlags(slug).obsidian);
+		render();
+	});
+
+	deleteBtn.addEventListener('click', () => {
+		const panel = panels[currentIndex];
+		const priorVisible = visiblePanels();
+		const pos = priorVisible.indexOf(panel);
+		setFlag(panel.dataset.slug as string, 'deleted', true);
+		const newVisible = visiblePanels();
+		if (newVisible.length > 0) {
+			const newPos = Math.min(pos, newVisible.length - 1);
+			currentIndex = panels.indexOf(newVisible[newPos]);
+		}
+		render();
+	});
+
+	copyAllBtn.addEventListener('click', async () => {
+		const visible = visiblePanels();
+		if (visible.length === 0) {
+			showToast('Nothing to copy');
+			return;
+		}
+		const lines = [`Catchup — ${day}`, ''];
+		visible.forEach((panel, i) => {
+			lines.push(`${i + 1}. ${panel.dataset.title}`, panel.dataset.url as string, '');
+		});
+		await navigator.clipboard.writeText(lines.join('\n').trim());
+		showToast(`Copied ${visible.length} article${visible.length === 1 ? '' : 's'}`);
+	});
+
+	render();
+</script>

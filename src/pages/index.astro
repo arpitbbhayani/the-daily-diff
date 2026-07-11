@@ -1,0 +1,51 @@
+---
+import { getCollection } from 'astro:content';
+import Layout from '../layouts/Layout.astro';
+
+const entries = await getCollection('articles');
+
+const byDay = new Map<string, number>();
+for (const entry of entries) {
+	const day = entry.id.split('/')[0];
+	byDay.set(day, (byDay.get(day) ?? 0) + 1);
+}
+
+const days = [...byDay.entries()]
+	.sort(([a], [b]) => b.localeCompare(a))
+	.map(([day, count]) => ({
+		day,
+		count,
+		label: new Date(`${day}T00:00:00`).toLocaleDateString('en-US', {
+			weekday: 'long',
+			year: 'numeric',
+			month: 'long',
+			day: 'numeric',
+		}),
+	}));
+---
+
+<Layout title="Catchup">
+	<section class="section">
+		<div class="container">
+			<h1 class="title">Catchup</h1>
+			<p class="subtitle">Engineering, one day at a time.</p>
+
+			{
+				days.length === 0 ? (
+					<p>No days yet. Drop a folder into <code>src/content/articles/</code> to get started.</p>
+				) : (
+					<div class="columns is-multiline">
+						{days.map(({ day, count, label }) => (
+							<div class="column is-one-third-desktop is-half-tablet">
+								<a class="box date-card" href={`/${day}/`}>
+									<div class="date-card-title">{label}</div>
+									<div class="date-card-count">{count} article{count === 1 ? '' : 's'}</div>
+								</a>
+							</div>
+						))}
+					</div>
+				)
+			}
+		</div>
+	</section>
+</Layout>
