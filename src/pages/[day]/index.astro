@@ -210,10 +210,25 @@ const label = new Date(`${day}T00:00:00`).toLocaleDateString('en-US', {
 			</button>
 		</header>
 		<div class="drawer-actions">
-			<button id="drawer-copy-summary-btn" class="button btn-secondary">
-				<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
-				EXPORT READ LATER LIST
-			</button>
+			<div class="drawer-actions-label">EXPORT CATEGORY LISTS</div>
+			<div class="drawer-export-grid">
+				<button id="drawer-copy-unread-btn" class="button btn-secondary" title="Copy Unread list">
+					<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+					UNREAD
+				</button>
+				<button id="drawer-copy-later-btn" class="button btn-secondary" title="Copy Read Later list">
+					<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+					LATER
+				</button>
+				<button id="drawer-copy-read-btn" class="button btn-secondary" title="Copy Read list">
+					<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+					READ
+				</button>
+				<button id="drawer-copy-deleted-btn" class="button btn-secondary" title="Copy Deleted list">
+					<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+					DELETED
+				</button>
+			</div>
 			<button id="drawer-clear-storage-btn" class="button btn-danger">
 				<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
 				RESET PROGRESS
@@ -382,7 +397,10 @@ const label = new Date(`${day}T00:00:00`).toLocaleDateString('en-US', {
 	const drawerToggleBtn = document.getElementById('drawer-toggle-btn') as HTMLButtonElement;
 	const drawerCloseBtn = document.getElementById('drawer-close-btn') as HTMLButtonElement;
 	const drawerContent = document.getElementById('drawer-content') as HTMLElement;
-	const drawerCopySummaryBtn = document.getElementById('drawer-copy-summary-btn') as HTMLButtonElement;
+	const drawerCopyUnreadBtn = document.getElementById('drawer-copy-unread-btn') as HTMLButtonElement;
+	const drawerCopyLaterBtn = document.getElementById('drawer-copy-later-btn') as HTMLButtonElement;
+	const drawerCopyReadBtn = document.getElementById('drawer-copy-read-btn') as HTMLButtonElement;
+	const drawerCopyDeletedBtn = document.getElementById('drawer-copy-deleted-btn') as HTMLButtonElement;
 	const drawerClearStorageBtn = document.getElementById('drawer-clear-storage-btn') as HTMLButtonElement;
 	const drawerTabs = Array.from(drawer.querySelectorAll<HTMLElement>('.drawer-tab'));
 
@@ -706,29 +724,67 @@ const label = new Date(`${day}T00:00:00`).toLocaleDateString('en-US', {
 		});
 	});
 
-	// Copy Read Later URLs summary logic
-	drawerCopySummaryBtn.addEventListener('click', async () => {
-		const laterList = articleData.filter(art => getFlags(art.slug).readLater);
+	// Helper to copy a specific category list to clipboard
+	async function copyListToClipboard(type: 'unread' | 'later' | 'read' | 'deleted') {
+		const unread: typeof articleData = [];
+		const later: typeof articleData = [];
+		const read: typeof articleData = [];
+		const deleted: typeof articleData = [];
 
-		if (laterList.length === 0) {
-			showToast('No "Read Later" articles to copy!');
+		articleData.forEach(art => {
+			const flags = getFlags(art.slug);
+			if (flags.deleted) {
+				deleted.push(art);
+			} else if (flags.readLater) {
+				later.push(art);
+			} else if (flags.read) {
+				read.push(art);
+			} else {
+				unread.push(art);
+			}
+		});
+
+		let targetList: typeof articleData = [];
+		let label = '';
+		if (type === 'unread') {
+			targetList = unread;
+			label = 'Unread';
+		} else if (type === 'later') {
+			targetList = later;
+			label = 'Read Later';
+		} else if (type === 'read') {
+			targetList = read;
+			label = 'Read';
+		} else if (type === 'deleted') {
+			targetList = deleted;
+			label = 'Deleted';
+		}
+
+		if (targetList.length === 0) {
+			showToast(`No "${label}" articles to copy!`);
 			return;
 		}
 
 		const dayLabel = document.querySelector('.day-title')?.textContent || 'Catchup Digest';
-		const lines: string[] = [`Read Later List — ${dayLabel}`, ''];
+		const lines: string[] = [`${label} List — ${dayLabel}`, ''];
 
-		laterList.forEach((art, i) => {
+		targetList.forEach((art, i) => {
 			lines.push(`${i + 1}. ${art.title}`, `   ${art.url}`);
 		});
 
 		const success = await copyToClipboard(lines.join('\n').trim());
 		if (success) {
-			showToast(`Copied ${laterList.length} Read Later URL${laterList.length === 1 ? '' : 's'}!`);
+			showToast(`Copied ${targetList.length} ${label} URL${targetList.length === 1 ? '' : 's'}!`);
 		} else {
-			showToast('Failed to copy Read Later list');
+			showToast(`Failed to copy ${label} list`);
 		}
-	});
+	}
+
+	// Copy Category URLs logic
+	drawerCopyUnreadBtn.addEventListener('click', () => copyListToClipboard('unread'));
+	drawerCopyLaterBtn.addEventListener('click', () => copyListToClipboard('later'));
+	drawerCopyReadBtn.addEventListener('click', () => copyListToClipboard('read'));
+	drawerCopyDeletedBtn.addEventListener('click', () => copyListToClipboard('deleted'));
 
 	// Clear local storage logic
 	drawerClearStorageBtn.addEventListener('click', () => {
