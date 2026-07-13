@@ -258,19 +258,69 @@ const label = new Date(`${day}T00:00:00`).toLocaleDateString('en-US', {
 
 	const storageKey = `catchup:${day}`;
 
+	const safeStorage = {
+		getItem(key: string): string | null {
+			try {
+				return localStorage.getItem(key);
+			} catch {
+				return null;
+			}
+		},
+		setItem(key: string, value: string): void {
+			try {
+				localStorage.setItem(key, value);
+			} catch {}
+		},
+		removeItem(key: string): void {
+			try {
+				localStorage.removeItem(key);
+			} catch {}
+		}
+	};
+
+	async function copyToClipboard(text: string): Promise<boolean> {
+		if (navigator.clipboard && window.isSecureContext) {
+			try {
+				await navigator.clipboard.writeText(text);
+				return true;
+			} catch (err) {
+				console.error('Failed to copy using navigator.clipboard:', err);
+			}
+		}
+
+		// Fallback approach
+		try {
+			const textArea = document.createElement('textarea');
+			textArea.value = text;
+			textArea.style.top = '0';
+			textArea.style.left = '0';
+			textArea.style.position = 'fixed';
+			textArea.style.opacity = '0';
+			document.body.appendChild(textArea);
+			textArea.focus();
+			textArea.select();
+			const successful = document.execCommand('copy');
+			document.body.removeChild(textArea);
+			return successful;
+		} catch (err) {
+			console.error('Fallback copy failed:', err);
+			return false;
+		}
+	}
+
 	type Flags = { read: boolean; readLater: boolean; deleted: boolean };
 	type State = Record<string, Flags>;
 
 	function loadState(): State {
 		try {
-			return JSON.parse(localStorage.getItem(storageKey) || '{}');
+			return JSON.parse(safeStorage.getItem(storageKey) || '{}');
 		} catch {
 			return {};
 		}
 	}
 
 	function saveState(state: State) {
-		localStorage.setItem(storageKey, JSON.stringify(state));
+		safeStorage.setItem(storageKey, JSON.stringify(state));
 	}
 
 	let state = loadState();
@@ -304,7 +354,7 @@ const label = new Date(`${day}T00:00:00`).toLocaleDateString('en-US', {
 	const currentKey = `catchup:${day}:current`;
 
 	function getInitialIndex(): number {
-		const savedSlug = localStorage.getItem(currentKey);
+		const savedSlug = safeStorage.getItem(currentKey);
 		if (savedSlug) {
 			const idx = panels.findIndex(p => p.dataset.slug === savedSlug);
 			if (idx !== -1 && !getFlags(savedSlug).deleted) {
@@ -519,7 +569,7 @@ const label = new Date(`${day}T00:00:00`).toLocaleDateString('en-US', {
 			laterBtn.disabled = true;
 			deleteBtn.disabled = true;
 			copyUrlBtn.disabled = true;
-			localStorage.removeItem(currentKey);
+			safeStorage.removeItem(currentKey);
 			
 			// Reset progress bar
 			const progressBar = document.getElementById('progress-bar');
@@ -537,7 +587,7 @@ const label = new Date(`${day}T00:00:00`).toLocaleDateString('en-US', {
 		panel.classList.add('is-active');
 
 		const slug = panel.dataset.slug as string;
-		localStorage.setItem(currentKey, slug);
+		safeStorage.setItem(currentKey, slug);
 
 		const posInVisible = visible.indexOf(panel) + 1;
 		indexLabel.textContent = `${String(posInVisible).padStart(2, '0')} / ${String(visible.length).padStart(2, '0')}`;
@@ -595,8 +645,12 @@ const label = new Date(`${day}T00:00:00`).toLocaleDateString('en-US', {
 
 	copyUrlBtn.addEventListener('click', async () => {
 		const panel = panels[currentIndex];
-		await navigator.clipboard.writeText(panel.dataset.url as string);
-		showToast('URL copied to clipboard');
+		const success = await copyToClipboard(panel.dataset.url as string);
+		if (success) {
+			showToast('URL copied to clipboard');
+		} else {
+			showToast('Failed to copy URL');
+		}
 	});
 
 	readBtn.addEventListener('click', () => {
@@ -668,15 +722,19 @@ const label = new Date(`${day}T00:00:00`).toLocaleDateString('en-US', {
 			lines.push(`${i + 1}. ${art.title}`, `   ${art.url}`);
 		});
 
-		await navigator.clipboard.writeText(lines.join('\n').trim());
-		showToast(`Copied ${laterList.length} Read Later URL${laterList.length === 1 ? '' : 's'}!`);
+		const success = await copyToClipboard(lines.join('\n').trim());
+		if (success) {
+			showToast(`Copied ${laterList.length} Read Later URL${laterList.length === 1 ? '' : 's'}!`);
+		} else {
+			showToast('Failed to copy Read Later list');
+		}
 	});
 
 	// Clear local storage logic
 	drawerClearStorageBtn.addEventListener('click', () => {
 		if (confirm('Are you sure you want to clear your reading progress and restore all deleted articles for this day?')) {
-			localStorage.removeItem(storageKey);
-			localStorage.removeItem(currentKey);
+			safeStorage.removeItem(storageKey);
+			safeStorage.removeItem(currentKey);
 			// Reload local state
 			state = {};
 			// Reinitialize index
