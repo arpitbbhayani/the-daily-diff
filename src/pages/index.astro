@@ -1,57 +1,21 @@
 ---
 import { getCollection } from 'astro:content';
-import Layout from '../layouts/Layout.astro';
 
 const entries = await getCollection('articles');
-
-const byDay = new Map<string, number>();
-for (const entry of entries) {
-	const day = entry.id.split('/')[0];
-	byDay.set(day, (byDay.get(day) ?? 0) + 1);
-}
-
-const chronological = [...byDay.entries()].sort(([a], [b]) => a.localeCompare(b));
-
-const days = chronological
-	.map(([day, count], index) => ({
-		day,
-		count,
-		issue: index + 1,
-		label: new Date(`${day}T00:00:00`).toLocaleDateString('en-US', {
-			weekday: 'long',
-			year: 'numeric',
-			month: 'long',
-			day: 'numeric',
-		}),
-	}))
-	.reverse();
+const days = [...new Set(entries.map((entry) => entry.id.split('/')[0]))].sort();
+const latestDay = days.at(-1);
+const target = latestDay ? `/${latestDay}/` : '/archive/';
 ---
 
-<Layout title="The Daily Diff // Archive">
-	<main class="page-container">
-		<header class="archive-masthead">
-			<div class="archive-kicker">Engineering Intelligence &middot; Est. Daily</div>
-			<h1 class="archive-title">The Daily Diff</h1>
-		</header>
-		<hr class="archive-rule" />
-
-		{
-			days.length === 0 ? (
-				<div class="empty-state">
-					<h3 class="empty-state-title">No Editions Printed Yet</h3>
-					<p class="empty-state-desc">Drop a folder of markdown documents into <code>src/content/articles/</code> to print the first issue.</p>
-				</div>
-			) : (
-				<div class="archive-list">
-					{days.map(({ day, count, issue, label }) => (
-						<a class="archive-item" href={`/${day}/`}>
-							<span class="archive-item-num">No. {String(issue).padStart(3, '0')}</span>
-							<span class="archive-item-title">{label}</span>
-							<span class="archive-item-meta">{count} {count === 1 ? 'Story' : 'Stories'}</span>
-						</a>
-					))}
-				</div>
-			)
-		}
-	</main>
-</Layout>
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta http-equiv="refresh" content={`0; url=${target}`} />
+		<link rel="canonical" href={target} />
+		<title>The Daily Diff</title>
+	</head>
+	<body>
+		<p>Redirecting to the <a href={target}>latest edition</a>&hellip;</p>
+	</body>
+</html>

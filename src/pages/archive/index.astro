@@ -1,0 +1,65 @@
+---
+import { getCollection } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+import ThemeToggleButton from '../../components/ThemeToggleButton.astro';
+
+const entries = await getCollection('articles');
+
+const byDay = new Map<string, number>();
+for (const entry of entries) {
+	const day = entry.id.split('/')[0];
+	byDay.set(day, (byDay.get(day) ?? 0) + 1);
+}
+
+const chronological = [...byDay.entries()].sort(([a], [b]) => a.localeCompare(b));
+
+const days = chronological
+	.map(([day, count], index) => ({
+		day,
+		count,
+		issue: index + 1,
+		label: new Date(`${day}T00:00:00`).toLocaleDateString('en-US', {
+			weekday: 'short',
+			year: 'numeric',
+			month: 'short',
+			day: 'numeric',
+		}),
+	}))
+	.reverse();
+
+const latestDay = days[0]?.day;
+---
+
+<Layout title="The Daily Diff // Archive">
+	<nav class="edition-rail" aria-label="Edition controls">
+		<ThemeToggleButton />
+	</nav>
+
+	<main class="page-container page-container--with-rail archive-page">
+		<header class="archive-header">
+			<h1 class="archive-heading">Archive</h1>
+			<span class="archive-count">{days.length} {days.length === 1 ? 'Edition' : 'Editions'}</span>
+			{latestDay && <a class="archive-latest-link" href={`/${latestDay}/`}>Latest &rsaquo;</a>}
+		</header>
+		<hr class="archive-rule-thin" />
+
+		{
+			days.length === 0 ? (
+				<div class="empty-state">
+					<h3 class="empty-state-title">No Editions Printed Yet</h3>
+					<p class="empty-state-desc">Drop a folder of markdown documents into <code>src/content/articles/</code> to print the first issue.</p>
+				</div>
+			) : (
+				<div class="archive-list">
+					{days.map(({ day, count, issue, label }) => (
+						<a class="archive-item" href={`/${day}/`}>
+							<span class="archive-item-num">{String(issue).padStart(3, '0')}</span>
+							<span class="archive-item-title">{label}</span>
+							<span class="archive-item-meta">{count} {count === 1 ? 'Story' : 'Stories'}</span>
+						</a>
+					))}
+				</div>
+			)
+		}
+	</main>
+</Layout>
