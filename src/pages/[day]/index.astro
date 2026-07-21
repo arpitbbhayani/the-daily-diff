@@ -2,6 +2,11 @@
 import { getCollection, render } from 'astro:content';
 import Layout from '../../layouts/Layout.astro';
 
+const SOURCE_LABEL: Record<string, string> = {
+	arxiv: 'arXiv Dispatch',
+	hn: 'Hacker News Wire',
+};
+
 export async function getStaticPaths() {
 	const entries = await getCollection('articles');
 	const byDay = new Map<string, typeof entries>();
@@ -12,8 +17,21 @@ export async function getStaticPaths() {
 		byDay.set(day, list);
 	}
 
+	const chronological = [...byDay.keys()].sort((a, b) => a.localeCompare(b));
+
+	const allDays = chronological.map((day) => ({
+		day,
+		label: new Date(`${day}T00:00:00`).toLocaleDateString('en-US', {
+			weekday: 'short',
+			year: 'numeric',
+			month: 'short',
+			day: 'numeric',
+		}),
+	}));
+
 	return Promise.all(
-		[...byDay.entries()].map(async ([day, dayEntries]) => {
+		chronological.map(async (day, index) => {
+			const dayEntries = byDay.get(day)!;
 			const sorted = [...dayEntries].sort((a, b) => a.id.localeCompare(b.id));
 			const articles = await Promise.all(
 				sorted.map(async (entry) => {
@@ -23,7 +41,6 @@ export async function getStaticPaths() {
 						title: entry.data.title,
 						source: entry.data.source,
 						url: entry.data.url,
-						tags: entry.data.tags,
 						categories: entry.data.categories,
 						why_read: entry.data.why_read,
 						authors: entry.data.authors,
@@ -31,7 +48,18 @@ export async function getStaticPaths() {
 					};
 				})
 			);
-			return { params: { day }, props: { day, articles } };
+			return {
+				params: { day },
+				props: {
+					day,
+					articles,
+					issue: index + 1,
+					totalIssues: chronological.length,
+					prevDay: chronological[index - 1] ?? null,
+					nextDay: chronological[index + 1] ?? null,
+					allDays: [...allDays].reverse(),
+				},
+			};
 		})
 	);
 }
@@ -41,14 +69,21 @@ interface ArticleProps {
 	title: string;
 	source: string;
 	url: string;
-	tags: string[];
 	categories?: string;
 	why_read?: string;
 	authors: string[];
 	Content: any;
 }
 
-const { day, articles } = Astro.props as { day: string; articles: ArticleProps[] };
+const { day, articles, issue, totalIssues, prevDay, nextDay, allDays } = Astro.props as {
+	day: string;
+	articles: ArticleProps[];
+	issue: number;
+	totalIssues: number;
+	prevDay: string | null;
+	nextDay: string | null;
+	allDays: { day: string; label: string }[];
+};
 
 const label = new Date(`${day}T00:00:00`).toLocaleDateString('en-US', {
 	weekday: 'long',
@@ -56,750 +91,327 @@ const label = new Date(`${day}T00:00:00`).toLocaleDateString('en-US', {
 	month: 'long',
 	day: 'numeric',
 });
+
+function kickerFor(article: ArticleProps) {
+	if (article.categories) return article.categories.toUpperCase();
+	return (SOURCE_LABEL[article.source] ?? article.source).toUpperCase();
+}
+
+function bylineFor(article: ArticleProps) {
+	if (article.authors.length > 0) return `By ${article.authors.join(', ')}`;
+	return null;
+}
+
+function sourceLabelFor(article: ArticleProps) {
+	return SOURCE_LABEL[article.source] ?? article.source.toUpperCase();
+}
+
+const lead = articles[0];
+const rest = articles.slice(1);
 ---
 
-<Layout title={`Catchup // ${label}`}>
-	<main class="page-container reader-container">
-		<header class="day-header">
-			<div class="day-header-nav">
-				<a href="/" class="back-link">
-					<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-					[ INDEX_ ]
-				</a>
-				<button id="drawer-toggle-btn" class="button btn-outline">
-					<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
-					[ REGISTRY_INDEX ]
-				</button>
-			</div>
-			
-			<div class="day-title-wrap">
-				<div class="day-title-meta">TIMELINE // ARCHIVE_FEED</div>
-				<h1 class="day-title">{label}</h1>
-			</div>
+<Layout title={`The Daily Diff // ${label}`}>
+	<nav id="edition-rail" class="edition-rail" aria-label="Edition controls">
+		<a href="/" class="rail-btn" aria-label="Back to archive" title="Back to archive">
+			<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"></path><path d="m12 19-7-7 7-7"></path></svg>
+		</a>
 
-			<!-- Dynamic Cyber Progress Bar -->
-			<div class="progress-bar-container">
-				<div id="progress-bar" class="progress-bar"></div>
-			</div>
-		</header>
+		<div class="rail-divider"></div>
 
-		<div id="reader" class="reader-area" data-day={day}>
-			{
-				articles.map((article) => {
-					const Article = article;
-					return (
-						<article
-							class="article-panel"
-							data-slug={Article.slug}
-							data-url={Article.url}
-							data-title={Article.title}
-						>
-							<div class="article-panel-tech-bar">
-								<span class="bar-segment pulsing"></span>
-								<span class="bar-label">READER.NODE // {Article.slug.substring(0, 15).toUpperCase()}_</span>
+		<button id="prev-day-btn" class="rail-btn" disabled={!prevDay} aria-label="Previous edition" title="Previous edition">
+			<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg>
+		</button>
+
+		<div class="rail-date-picker" title="Jump to edition">
+			<svg class="rail-date-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+			<select id="edition-date-select" class="edition-date-select" aria-label="Jump to edition">
+				{allDays.map(({ day: d, label: l }) => (
+					<option value={d} selected={d === day}>{l}</option>
+				))}
+			</select>
+		</div>
+
+		<button id="next-day-btn" class="rail-btn" disabled={!nextDay} aria-label="Next edition" title="Next edition">
+			<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg>
+		</button>
+
+		<div class="rail-divider"></div>
+
+		<button id="download-jpg-btn" class="rail-btn" aria-label="Download JPG" title="Download JPG">
+			<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"></rect><circle cx="9" cy="9" r="2"></circle><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"></path></svg>
+		</button>
+
+		<button id="download-pdf-btn" class="rail-btn rail-btn-primary" aria-label="Download PDF" title="Download PDF">
+			<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M12 18v-6"></path><path d="m9 15 3 3 3-3"></path></svg>
+		</button>
+	</nav>
+
+	<main class="page-container page-container--with-rail">
+		<article id="newspaper-sheet" class="newspaper-sheet" data-day={day} data-count={articles.length}>
+			<header class="masthead">
+				<div class="masthead-eyebrow">
+					<span>Vol. I &middot; No. {String(issue).padStart(3, '0')} of {totalIssues}</span>
+					<span>{articles.length} {articles.length === 1 ? 'Story' : 'Stories'}</span>
+				</div>
+				<h1 class="masthead-name">The Daily Diff</h1>
+				<hr class="masthead-rule-thick" />
+				<div class="masthead-dateline">
+					<span class="dateline-main">{label}</span>
+					<span>arpitbhayani.me</span>
+				</div>
+			</header>
+
+			{lead && (
+				<section class="lead-story">
+					<div class="story-kicker">{kickerFor(lead)}</div>
+					<h2 class="story-headline">
+						<a href={lead.url} target="_blank" rel="noopener noreferrer">{lead.title}</a>
+					</h2>
+					<div class="story-byline">
+						{bylineFor(lead) && <>{bylineFor(lead)}<span class="story-source-sep">&middot;</span></>}
+						<a class="story-source-link" href={lead.url} target="_blank" rel="noopener noreferrer">{sourceLabelFor(lead)} &rsaquo;</a>
+					</div>
+					{lead.why_read && <p class="story-deck">{lead.why_read}</p>}
+					<div class="story-body content blog-content">
+						<lead.Content />
+					</div>
+				</section>
+			)}
+
+			{rest.length > 0 && (
+				<section class="newspaper-columns">
+					{rest.map((article) => (
+						<article class="story">
+							<div class="story-kicker">{kickerFor(article)}</div>
+							<h3 class="story-headline">
+								<a href={article.url} target="_blank" rel="noopener noreferrer">{article.title}</a>
+							</h3>
+							<div class="story-byline">
+								{bylineFor(article) && <>{bylineFor(article)}<span class="story-source-sep">&middot;</span></>}
+								<a class="story-source-link" href={article.url} target="_blank" rel="noopener noreferrer">{sourceLabelFor(article)} &rsaquo;</a>
 							</div>
-
-							<div class="article-header">
-								<h2 class="article-title">
-									<a href={Article.url} target="_blank" rel="noopener noreferrer">
-										{Article.title}
-										<svg class="external-link-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
-									</a>
-								</h2>
-								<div class="article-meta">
-									<span class="meta-item">
-										<span class="meta-label">SOURCE //</span> {Article.source}
-									</span>
-									{Article.categories && (
-										<span class="meta-item">
-											<span class="meta-label">CAT //</span> {Article.categories}
-										</span>
-									)}
-								</div>
+							{article.why_read && <p class="story-deck">{article.why_read}</p>}
+							<div class="story-body content blog-content">
+								<article.Content />
 							</div>
-							
-							<div class="article-body">
-								{Article.why_read && (
-									<div class="maxim">
-										<div class="maxim-label">
-											<span class="maxim-pulse"></span>
-											[ MISSION_BRIEFING: WHY_READ ]
-										</div>
-										<p class="maxim-text-content">{Article.why_read}</p>
-									</div>
-								)}
-
-								<div class="content blog-content">
-									<Article.Content />
-								</div>
-							</div>
-
-							{(Article.tags.length > 0 || Article.authors.length > 0) && (
-								<div class="article-footer">
-									{Article.tags.length > 0 && (
-										<div class="article-tags">
-											{Article.tags.map((tag) => (
-												<span class="tag badge">#{tag.toUpperCase()}</span>
-											))}
-										</div>
-									)}
-
-									{Article.authors.length > 0 && (
-										<div class="article-authors">
-											<span class="author-label">CONTRIBUTORS //</span> {Article.authors.join(', ')}
-										</div>
-									)}
-								</div>
-							)}
 						</article>
-					);
-				})
-			}
-		</div>
+					))}
+				</section>
+			)}
 
-		<div class="reader-controls">
-			<div class="nav-bar">
-				<button id="prev-btn" class="button btn-ghost" aria-label="Previous Article">
-					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-					<span class="btn-text">PREV</span>
-				</button>
-				<span class="article-index" id="index-label">01 / 01</span>
-				<button id="next-btn" class="button btn-ghost" aria-label="Next Article">
-					<span class="btn-text">NEXT</span>
-					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-				</button>
-			</div>
-
-			<div class="action-bar">
-				<button id="copy-url-btn" class="button btn-secondary">
-					<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
-					<span class="btn-text">COPY_URL</span>
-				</button>
-				<button id="later-btn" class="button btn-secondary">
-					<svg class="icon-unlater" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
-					<svg class="icon-later" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
-					<span class="btn-text">LATER</span>
-				</button>
-				<button id="read-btn" class="button btn-secondary">
-					<svg class="icon-unread" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle></svg>
-					<svg class="icon-read" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-					<span class="btn-text">MARK_READ</span>
-				</button>
-				<button id="delete-btn" class="button btn-danger">
-					<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
-					<span class="btn-text">DELETE</span>
-				</button>
-			</div>
-		</div>
+			<footer class="edition-colophon">
+				End of Edition &mdash; {label} &mdash; The Daily Diff
+			</footer>
+		</article>
 	</main>
 
 	<div id="toast" class="toast">
-		<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
 		<span id="toast-msg"></span>
 	</div>
-
-	<!-- Drawer Backdrop -->
-	<div id="drawer-backdrop" class="drawer-backdrop"></div>
-
-	<!-- Drawer Panel -->
-	<aside id="drawer" class="drawer">
-		<header class="drawer-header">
-			<h2 class="drawer-title">[ REGISTRY_INDEX_ ]</h2>
-			<button id="drawer-close-btn" class="button btn-ghost" aria-label="Close drawer">
-				<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-			</button>
-		</header>
-		<div class="drawer-actions">
-			<div class="drawer-actions-label">EXPORT CATEGORY LISTS</div>
-			<div class="drawer-export-grid">
-				<button id="drawer-copy-unread-btn" class="button btn-secondary" title="Copy Unread list">
-					<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
-					UNREAD
-				</button>
-				<button id="drawer-copy-later-btn" class="button btn-secondary" title="Copy Read Later list">
-					<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
-					LATER
-				</button>
-				<button id="drawer-copy-read-btn" class="button btn-secondary" title="Copy Read list">
-					<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
-					READ
-				</button>
-				<button id="drawer-copy-deleted-btn" class="button btn-secondary" title="Copy Deleted list">
-					<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
-					DELETED
-				</button>
-			</div>
-			<button id="drawer-clear-storage-btn" class="button btn-danger">
-				<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
-				RESET PROGRESS
-			</button>
-		</div>
-		<div class="drawer-tabs">
-			<div class="drawer-tab is-active" data-tab="unread">UNREAD (<span id="tab-count-unread">0</span>)</div>
-			<div class="drawer-tab" data-tab="later">LATER (<span id="tab-count-later">0</span>)</div>
-			<div class="drawer-tab" data-tab="read">READ (<span id="tab-count-read">0</span>)</div>
-			<div class="drawer-tab" data-tab="deleted">DELETED (<span id="tab-count-deleted">0</span>)</div>
-		</div>
-		<div id="drawer-content" class="drawer-content">
-			<!-- Populated dynamically via Javascript -->
-		</div>
-	</aside>
 </Layout>
 
-<style>
-	.article-panel {
-		display: none;
-		animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-	}
-
-	.article-panel.is-active {
-		display: block;
-	}
-
-	@keyframes fadeIn {
-		from { opacity: 0; transform: translateY(15px); }
-		to { opacity: 1; transform: translateY(0); }
-	}
-
-	.icon-read, .icon-later { display: none; }
-	.is-toggled .icon-unread, .is-toggled .icon-unlater { display: none; }
-	.is-toggled .icon-read, .is-toggled .icon-later { display: inline-block; }
-</style>
-
 <script>
-	const reader = document.getElementById('reader') as HTMLElement;
-	const day = reader.dataset.day as string;
-	const panels = Array.from(reader.querySelectorAll<HTMLElement>('.article-panel'));
+	const day = document.getElementById('newspaper-sheet')!.getAttribute('data-day') as string;
 
-	const storageKey = `catchup:${day}`;
-
-	const safeStorage = {
-		getItem(key: string): string | null {
-			try {
-				return localStorage.getItem(key);
-			} catch {
-				return null;
-			}
-		},
-		setItem(key: string, value: string): void {
-			try {
-				localStorage.setItem(key, value);
-			} catch {}
-		},
-		removeItem(key: string): void {
-			try {
-				localStorage.removeItem(key);
-			} catch {}
-		}
-	};
-
-	async function copyToClipboard(text: string): Promise<boolean> {
-		if (navigator.clipboard && window.isSecureContext) {
-			try {
-				await navigator.clipboard.writeText(text);
-				return true;
-			} catch (err) {
-				console.error('Failed to copy using navigator.clipboard:', err);
-			}
-		}
-
-		// Fallback approach
-		try {
-			const textArea = document.createElement('textarea');
-			textArea.value = text;
-			textArea.style.top = '0';
-			textArea.style.left = '0';
-			textArea.style.position = 'fixed';
-			textArea.style.opacity = '0';
-			document.body.appendChild(textArea);
-			textArea.focus();
-			textArea.select();
-			const successful = document.execCommand('copy');
-			document.body.removeChild(textArea);
-			return successful;
-		} catch (err) {
-			console.error('Fallback copy failed:', err);
-			return false;
-		}
-	}
-
-	type Flags = { read: boolean; readLater: boolean; deleted: boolean };
-	type State = Record<string, Flags>;
-
-	function loadState(): State {
-		try {
-			return JSON.parse(safeStorage.getItem(storageKey) || '{}');
-		} catch {
-			return {};
-		}
-	}
-
-	function saveState(state: State) {
-		safeStorage.setItem(storageKey, JSON.stringify(state));
-	}
-
-	let state = loadState();
-
-	function getFlags(slug: string): Flags {
-		// handle legacy keys or clean defaults safely
-		const s = state[slug] as any ?? {};
-		return {
-			read: !!s.read,
-			readLater: !!s.readLater || !!s.obsidian, // support reading old 'obsidian' flag as 'readLater'
-			deleted: !!s.deleted
-		};
-	}
-
-	function setFlag(slug: string, key: keyof Flags, value: boolean) {
-		const flags = getFlags(slug);
-		flags[key] = value;
-		state[slug] = flags;
-		saveState(state);
-	}
-
-	function visiblePanels() {
-		return panels.filter((p) => !getFlags(p.dataset.slug as string).deleted);
-	}
-
-	function firstVisibleIndex() {
-		const idx = panels.findIndex((p) => !getFlags(p.dataset.slug as string).deleted);
-		return idx === -1 ? 0 : idx;
-	}
-
-	const currentKey = `catchup:${day}:current`;
-
-	function getInitialIndex(): number {
-		const savedSlug = safeStorage.getItem(currentKey);
-		if (savedSlug) {
-			const idx = panels.findIndex(p => p.dataset.slug === savedSlug);
-			if (idx !== -1 && !getFlags(savedSlug).deleted) {
-				return idx;
-			}
-		}
-		return firstVisibleIndex();
-	}
-
-	let currentIndex = getInitialIndex();
-
-	const prevBtn = document.getElementById('prev-btn') as HTMLButtonElement;
-	const nextBtn = document.getElementById('next-btn') as HTMLButtonElement;
-	const indexLabel = document.getElementById('index-label') as HTMLElement;
-	const copyUrlBtn = document.getElementById('copy-url-btn') as HTMLButtonElement;
-	const laterBtn = document.getElementById('later-btn') as HTMLButtonElement;
-	const readBtn = document.getElementById('read-btn') as HTMLButtonElement;
-	const deleteBtn = document.getElementById('delete-btn') as HTMLButtonElement;
+	const prevBtn = document.getElementById('prev-day-btn') as HTMLButtonElement;
+	const nextBtn = document.getElementById('next-day-btn') as HTMLButtonElement;
+	const dateSelect = document.getElementById('edition-date-select') as HTMLSelectElement;
+	const downloadJpgBtn = document.getElementById('download-jpg-btn') as HTMLButtonElement;
+	const downloadPdfBtn = document.getElementById('download-pdf-btn') as HTMLButtonElement;
 	const toast = document.getElementById('toast') as HTMLElement;
 	const toastMsg = document.getElementById('toast-msg') as HTMLElement;
 
-	// Drawer elements
-	const drawer = document.getElementById('drawer') as HTMLElement;
-	const drawerBackdrop = document.getElementById('drawer-backdrop') as HTMLElement;
-	const drawerToggleBtn = document.getElementById('drawer-toggle-btn') as HTMLButtonElement;
-	const drawerCloseBtn = document.getElementById('drawer-close-btn') as HTMLButtonElement;
-	const drawerContent = document.getElementById('drawer-content') as HTMLElement;
-	const drawerCopyUnreadBtn = document.getElementById('drawer-copy-unread-btn') as HTMLButtonElement;
-	const drawerCopyLaterBtn = document.getElementById('drawer-copy-later-btn') as HTMLButtonElement;
-	const drawerCopyReadBtn = document.getElementById('drawer-copy-read-btn') as HTMLButtonElement;
-	const drawerCopyDeletedBtn = document.getElementById('drawer-copy-deleted-btn') as HTMLButtonElement;
-	const drawerClearStorageBtn = document.getElementById('drawer-clear-storage-btn') as HTMLButtonElement;
-	const drawerTabs = Array.from(drawer.querySelectorAll<HTMLElement>('.drawer-tab'));
-
-	const articleData = panels.map(p => ({
-		slug: p.dataset.slug as string,
-		title: p.dataset.title as string,
-		url: p.dataset.url as string
-	}));
-
-	let activeTab: 'unread' | 'later' | 'read' | 'deleted' = 'unread';
-
 	let toastTimer: ReturnType<typeof setTimeout>;
-	function showToast(msg: string) {
+	function showToast(msg: string, sticky = false) {
 		toastMsg.textContent = msg;
 		toast.classList.add('is-visible');
 		clearTimeout(toastTimer);
-		toastTimer = setTimeout(() => toast.classList.remove('is-visible'), 2000);
+		if (!sticky) {
+			toastTimer = setTimeout(() => toast.classList.remove('is-visible'), 2500);
+		}
+	}
+	function hideToast() {
+		toast.classList.remove('is-visible');
 	}
 
-	function renderDrawer() {
-		const unread: typeof articleData = [];
-		const later: typeof articleData = [];
-		const read: typeof articleData = [];
-		const deleted: typeof articleData = [];
+	dateSelect.addEventListener('change', () => {
+		window.location.href = `/${dateSelect.value}/`;
+	});
 
-		articleData.forEach(art => {
-			const flags = getFlags(art.slug);
-			if (flags.deleted) {
-				deleted.push(art);
-			} else if (flags.readLater) {
-				later.push(art);
-			} else if (flags.read) {
-				read.push(art);
-			} else {
-				unread.push(art);
+	prevBtn?.addEventListener('click', () => {
+		const el = document.querySelectorAll('#edition-date-select option');
+		const idx = Array.from(el).findIndex((o) => (o as HTMLOptionElement).value === day);
+		const target = (el[idx + 1] as HTMLOptionElement | undefined)?.value;
+		if (target) window.location.href = `/${target}/`;
+	});
+
+	nextBtn?.addEventListener('click', () => {
+		const el = document.querySelectorAll('#edition-date-select option');
+		const idx = Array.from(el).findIndex((o) => (o as HTMLOptionElement).value === day);
+		const target = (el[idx - 1] as HTMLOptionElement | undefined)?.value;
+		if (target) window.location.href = `/${target}/`;
+	});
+
+	const THEME_BG: Record<string, [number, number, number]> = {
+		dark: [0x22, 0x1f, 0x19],
+		light: [0xf8, 0xf4, 0xe8],
+	};
+
+	function currentThemeBg(): [number, number, number] {
+		const theme = document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light';
+		return THEME_BG[theme];
+	}
+
+	async function captureSheet() {
+		const html2canvas = (await import('html2canvas')).default;
+		const sheet = document.getElementById('newspaper-sheet') as HTMLElement;
+		const storyCount = Number(sheet.dataset.count ?? '0');
+		const scale = storyCount > 40 ? 1 : storyCount > 15 ? 1.25 : 1.5;
+		const [r, g, b] = currentThemeBg();
+		const bg = `rgb(${r}, ${g}, ${b})`;
+
+		sheet.classList.add('exporting');
+		try {
+			return await html2canvas(sheet, {
+				backgroundColor: bg,
+				scale,
+				useCORS: true,
+				logging: false,
+				// Fixed-position overlays (theme toggle, toast) don't belong in the
+				// printed edition and html2canvas mis-renders fixed elements anyway.
+				ignoreElements: (el) => el.id === 'theme-toggle' || el.id === 'toast' || el.id === 'edition-rail',
+			});
+		} finally {
+			sheet.classList.remove('exporting');
+		}
+	}
+
+	// Rather than slicing a PDF page at a fixed pixel height (which lands
+	// mid-line as often as not), walk backwards from the ideal break row to
+	// find a row that's almost entirely background color — a paragraph or
+	// story gap — and cut there instead.
+	function findCleanBreakRow(
+		ctx: CanvasRenderingContext2D,
+		canvasWidth: number,
+		idealRow: number,
+		earliestRow: number,
+		bg: [number, number, number]
+	): number {
+		const bandHeight = idealRow - earliestRow + 1;
+		if (bandHeight <= 1) return idealRow;
+
+		const { data } = ctx.getImageData(0, earliestRow, canvasWidth, bandHeight);
+		const [bgR, bgG, bgB] = bg;
+		const tolerance = 20;
+		const strideX = 3;
+
+		let bestOffset = bandHeight - 1;
+		let bestScore = -1;
+
+		for (let offset = bandHeight - 1; offset >= 0; offset--) {
+			const rowStart = offset * canvasWidth * 4;
+			let blank = 0;
+			let total = 0;
+			for (let x = 0; x < canvasWidth; x += strideX) {
+				const i = rowStart + x * 4;
+				total++;
+				if (
+					Math.abs(data[i] - bgR) <= tolerance &&
+					Math.abs(data[i + 1] - bgG) <= tolerance &&
+					Math.abs(data[i + 2] - bgB) <= tolerance
+				) {
+					blank++;
+				}
 			}
-		});
-
-		// Update tab counts
-		document.getElementById('tab-count-unread')!.textContent = String(unread.length);
-		document.getElementById('tab-count-later')!.textContent = String(later.length);
-		document.getElementById('tab-count-read')!.textContent = String(read.length);
-		document.getElementById('tab-count-deleted')!.textContent = String(deleted.length);
-
-		let currentList: typeof articleData = [];
-		let type: 'unread' | 'later' | 'read' | 'deleted' = activeTab;
-		
-		if (activeTab === 'unread') {
-			currentList = unread;
-		} else if (activeTab === 'later') {
-			currentList = later;
-		} else if (activeTab === 'read') {
-			currentList = read;
-		} else {
-			currentList = deleted;
-		}
-
-		let html = '';
-
-		if (currentList.length === 0) {
-			html = `<div class="empty-state" style="border: none; padding: 3rem 1.5rem;">[ NO ARTICLES LOCATED IN THIS TAB ]</div>`;
-		} else {
-			html += `<div class="drawer-group-items">`;
-			currentList.forEach(art => {
-				const visible = visiblePanels();
-				const isCurrent = visible.length > 0 && panels[currentIndex].dataset.slug === art.slug;
-				const currentClass = isCurrent ? 'is-active' : '';
-				const currentStyle = isCurrent ? 'text-decoration: underline;' : '';
-				const strikethrough = type === 'deleted' ? 'text-decoration: line-through; opacity: 0.5;' : '';
-				
-				html += `
-					<div class="drawer-item" data-item-slug="${art.slug}">
-						<div class="drawer-item-title ${currentClass}" style="${currentStyle} ${strikethrough}" data-slug="${art.slug}">
-							${art.title}
-						</div>
-						<div class="drawer-item-actions">
-							<button class="drawer-btn drawer-later-toggle ${type === 'later' ? 'is-active-later' : ''}" data-slug="${art.slug}">
-								<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
-								<span>${type === 'later' ? 'UNLATER' : 'LATER'}</span>
-							</button>
-							<button class="drawer-btn drawer-read-toggle ${type === 'read' ? 'is-active-read' : ''}" data-slug="${art.slug}">
-								<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-								<span>${type === 'read' ? 'UNREAD' : 'READ'}</span>
-							</button>
-							<button class="drawer-btn drawer-delete-toggle ${type === 'deleted' ? 'is-active-deleted' : ''}" data-slug="${art.slug}">
-								<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path></svg>
-								<span>${type === 'deleted' ? 'RESTORE' : 'DELETE'}</span>
-							</button>
-						</div>
-					</div>
-				`;
-			});
-			html += `</div>`;
-		}
-
-		drawerContent.innerHTML = html;
-
-		// Bind actions dynamically
-		const titles = Array.from(drawerContent.querySelectorAll<HTMLElement>('.drawer-item-title'));
-		titles.forEach(t => {
-			t.addEventListener('click', () => {
-				const slug = t.dataset.slug as string;
-				const flags = getFlags(slug);
-				if (flags.deleted) {
-					showToast('Restore the article to read it');
-					return;
-				}
-				const panel = panels.find(p => p.dataset.slug === slug);
-				if (panel) {
-					currentIndex = panels.indexOf(panel);
-					render();
-					closeDrawer();
-				}
-			});
-		});
-
-		const laterToggles = Array.from(drawerContent.querySelectorAll<HTMLButtonElement>('.drawer-later-toggle'));
-		laterToggles.forEach(btn => {
-			btn.addEventListener('click', () => {
-				const slug = btn.dataset.slug as string;
-				const currentVal = getFlags(slug).readLater;
-				if (!currentVal) {
-					setFlag(slug, 'read', false);
-				}
-				setFlag(slug, 'readLater', !currentVal);
-				render();
-			});
-		});
-
-		const readToggles = Array.from(drawerContent.querySelectorAll<HTMLButtonElement>('.drawer-read-toggle'));
-		readToggles.forEach(btn => {
-			btn.addEventListener('click', () => {
-				const slug = btn.dataset.slug as string;
-				const currentVal = getFlags(slug).read;
-				if (!currentVal) {
-					setFlag(slug, 'readLater', false);
-				}
-				setFlag(slug, 'read', !currentVal);
-				render();
-			});
-		});
-
-		const deleteToggles = Array.from(drawerContent.querySelectorAll<HTMLButtonElement>('.drawer-delete-toggle'));
-		deleteToggles.forEach(btn => {
-			btn.addEventListener('click', () => {
-				const slug = btn.dataset.slug as string;
-				const isCurrentlyDeleted = getFlags(slug).deleted;
-				if (!isCurrentlyDeleted) {
-					setFlag(slug, 'readLater', false);
-					setFlag(slug, 'read', false);
-				}
-				setFlag(slug, 'deleted', !isCurrentlyDeleted);
-				
-				const visible = visiblePanels();
-				if (!isCurrentlyDeleted && visible.length === 1) {
-					currentIndex = panels.indexOf(visible[0]);
-				}
-				render();
-				showToast(isCurrentlyDeleted ? 'Article restored' : 'Article deleted');
-			});
-		});
-	}
-
-	function openDrawer() {
-		drawer.classList.add('is-open');
-		drawerBackdrop.classList.add('is-open');
-		renderDrawer();
-	}
-
-	function closeDrawer() {
-		drawer.classList.remove('is-open');
-		drawerBackdrop.classList.remove('is-open');
-	}
-
-	function render() {
-		const visible = visiblePanels();
-		panels.forEach((p) => p.classList.remove('is-active'));
-
-		if (visible.length === 0) {
-			indexLabel.textContent = '00 / 00';
-			prevBtn.disabled = true;
-			nextBtn.disabled = true;
-			readBtn.disabled = true;
-			laterBtn.disabled = true;
-			deleteBtn.disabled = true;
-			copyUrlBtn.disabled = true;
-			safeStorage.removeItem(currentKey);
-			
-			// Reset progress bar
-			const progressBar = document.getElementById('progress-bar');
-			if (progressBar) progressBar.style.width = '0%';
-
-			renderDrawer();
-			return;
-		}
-
-		if (getFlags(panels[currentIndex].dataset.slug as string).deleted) {
-			currentIndex = panels.indexOf(visible[0]);
-		}
-
-		const panel = panels[currentIndex];
-		panel.classList.add('is-active');
-
-		const slug = panel.dataset.slug as string;
-		safeStorage.setItem(currentKey, slug);
-
-		const posInVisible = visible.indexOf(panel) + 1;
-		indexLabel.textContent = `${String(posInVisible).padStart(2, '0')} / ${String(visible.length).padStart(2, '0')}`;
-
-		// Update futuristic progress bar width
-		const progressBar = document.getElementById('progress-bar');
-		if (progressBar && visible.length > 0) {
-			const pct = (posInVisible / visible.length) * 100;
-			progressBar.style.width = `${pct}%`;
-		}
-
-		prevBtn.disabled = posInVisible <= 1;
-		nextBtn.disabled = posInVisible >= visible.length;
-		readBtn.disabled = false;
-		laterBtn.disabled = false;
-		deleteBtn.disabled = false;
-		copyUrlBtn.disabled = false;
-
-		const flags = getFlags(slug);
-		
-		readBtn.classList.toggle('is-toggled', flags.read);
-		readBtn.querySelector('.btn-text')!.textContent = flags.read ? 'READ ✓' : 'MARK_READ';
-
-		laterBtn.classList.toggle('is-toggled', flags.readLater);
-		laterBtn.querySelector('.btn-text')!.textContent = flags.readLater ? 'LATER ✓' : 'READ_LATER';
-		
-		// Scroll to top of reader area when changing articles
-		window.scrollTo({ top: 0, behavior: 'smooth' });
-
-		// Sync with the drawer if it's open
-		renderDrawer();
-	}
-
-	function goTo(step: number) {
-		const visible = visiblePanels();
-		const panel = panels[currentIndex];
-		const posInVisible = visible.indexOf(panel);
-		const nextPos = posInVisible + step;
-		if (nextPos < 0 || nextPos >= visible.length) return;
-		currentIndex = panels.indexOf(visible[nextPos]);
-		render();
-	}
-
-	prevBtn.addEventListener('click', () => goTo(-1));
-	nextBtn.addEventListener('click', () => goTo(1));
-
-	// Keyboard navigation
-	document.addEventListener('keydown', (e) => {
-		// Only trigger if not interacting with an input
-		if (document.activeElement?.tagName === 'INPUT' || document.activeElement?.tagName === 'TEXTAREA') return;
-		
-		if (e.key === 'ArrowLeft' && !prevBtn.disabled) goTo(-1);
-		if (e.key === 'ArrowRight' && !nextBtn.disabled) goTo(1);
-	});
-
-	copyUrlBtn.addEventListener('click', async () => {
-		const panel = panels[currentIndex];
-		const success = await copyToClipboard(panel.dataset.url as string);
-		if (success) {
-			showToast('URL copied to clipboard');
-		} else {
-			showToast('Failed to copy URL');
-		}
-	});
-
-	readBtn.addEventListener('click', () => {
-		const panel = panels[currentIndex];
-		const slug = panel.dataset.slug as string;
-		const isRead = getFlags(slug).read;
-		if (!isRead) {
-			setFlag(slug, 'readLater', false);
-		}
-		setFlag(slug, 'read', !isRead);
-		render();
-	});
-
-	laterBtn.addEventListener('click', () => {
-		const panel = panels[currentIndex];
-		const slug = panel.dataset.slug as string;
-		const isLater = getFlags(slug).readLater;
-		if (!isLater) {
-			setFlag(slug, 'read', false);
-		}
-		setFlag(slug, 'readLater', !isLater);
-		render();
-	});
-
-	deleteBtn.addEventListener('click', () => {
-		const panel = panels[currentIndex];
-		const priorVisible = visiblePanels();
-		const pos = priorVisible.indexOf(panel);
-		const slug = panel.dataset.slug as string;
-		setFlag(slug, 'readLater', false);
-		setFlag(slug, 'read', false);
-		setFlag(slug, 'deleted', true);
-		const newVisible = visiblePanels();
-		if (newVisible.length > 0) {
-			const newPos = Math.min(pos, newVisible.length - 1);
-			currentIndex = panels.indexOf(newVisible[newPos]);
-		}
-		render();
-		showToast('Article deleted');
-	});
-
-	// Drawer triggers
-	drawerToggleBtn.addEventListener('click', openDrawer);
-	drawerCloseBtn.addEventListener('click', closeDrawer);
-	drawerBackdrop.addEventListener('click', closeDrawer);
-
-	// Drawer tabs event listeners
-	drawerTabs.forEach(tab => {
-		tab.addEventListener('click', () => {
-			activeTab = tab.dataset.tab as 'unread' | 'later' | 'read' | 'deleted';
-			drawerTabs.forEach(t => t.classList.toggle('is-active', t === tab));
-			renderDrawer();
-		});
-	});
-
-	// Helper to copy a specific category list to clipboard
-	async function copyListToClipboard(type: 'unread' | 'later' | 'read' | 'deleted') {
-		const unread: typeof articleData = [];
-		const later: typeof articleData = [];
-		const read: typeof articleData = [];
-		const deleted: typeof articleData = [];
-
-		articleData.forEach(art => {
-			const flags = getFlags(art.slug);
-			if (flags.deleted) {
-				deleted.push(art);
-			} else if (flags.readLater) {
-				later.push(art);
-			} else if (flags.read) {
-				read.push(art);
-			} else {
-				unread.push(art);
+			const score = blank / total;
+			if (score > bestScore) {
+				bestScore = score;
+				bestOffset = offset;
 			}
-		});
-
-		let targetList: typeof articleData = [];
-		let label = '';
-		if (type === 'unread') {
-			targetList = unread;
-			label = 'Unread';
-		} else if (type === 'later') {
-			targetList = later;
-			label = 'Read Later';
-		} else if (type === 'read') {
-			targetList = read;
-			label = 'Read';
-		} else if (type === 'deleted') {
-			targetList = deleted;
-			label = 'Deleted';
+			if (score > 0.995) break;
 		}
 
-		if (targetList.length === 0) {
-			showToast(`No "${label}" articles to copy!`);
-			return;
-		}
-
-		const urls = targetList.map(art => art.url);
-
-		const success = await copyToClipboard(urls.join('\n'));
-		if (success) {
-			showToast(`Copied ${targetList.length} ${label} URL${targetList.length === 1 ? '' : 's'}!`);
-		} else {
-			showToast(`Failed to copy ${label} list`);
-		}
+		return earliestRow + bestOffset;
 	}
 
-	// Copy Category URLs logic
-	drawerCopyUnreadBtn.addEventListener('click', () => copyListToClipboard('unread'));
-	drawerCopyLaterBtn.addEventListener('click', () => copyListToClipboard('later'));
-	drawerCopyReadBtn.addEventListener('click', () => copyListToClipboard('read'));
-	drawerCopyDeletedBtn.addEventListener('click', () => copyListToClipboard('deleted'));
-
-	// Clear local storage logic
-	drawerClearStorageBtn.addEventListener('click', () => {
-		if (confirm('Are you sure you want to clear your reading progress and restore all deleted articles for this day?')) {
-			safeStorage.removeItem(storageKey);
-			safeStorage.removeItem(currentKey);
-			// Reload local state
-			state = {};
-			// Reinitialize index
-			currentIndex = firstVisibleIndex();
-			render();
-			showToast('Reading progress reset');
+	downloadJpgBtn.addEventListener('click', async () => {
+		downloadJpgBtn.disabled = true;
+		showToast('Printing edition to JPG…', true);
+		try {
+			const canvas = await captureSheet();
+			const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
+			const a = document.createElement('a');
+			a.href = dataUrl;
+			a.download = `catchup-${day}.jpg`;
+			a.click();
+			showToast('JPG downloaded');
+		} catch (err) {
+			console.error(err);
+			showToast('Failed to generate JPG');
+		} finally {
+			downloadJpgBtn.disabled = false;
 		}
 	});
 
-	// Listen for theme changing to dynamically adjust or refresh state/visuals if needed
-	window.addEventListener('theme-changed', () => {
-		// Just a hook for reactive styling changes
-	});
+	downloadPdfBtn.addEventListener('click', async () => {
+		downloadPdfBtn.disabled = true;
+		showToast('Printing edition to PDF…', true);
+		try {
+			const { jsPDF } = await import('jspdf');
+			const canvas = await captureSheet();
+			const ctx = canvas.getContext('2d')!;
+			const bg = currentThemeBg();
 
-	// Initialize
-	render();
+			const pageWidthMm = 210; // A4
+			const pageHeightMm = 297;
+			const marginMm = 10;
+			const contentWidthMm = pageWidthMm - marginMm * 2;
+			const contentHeightMm = pageHeightMm - marginMm * 2;
+
+			const pxPerMm = canvas.width / contentWidthMm;
+			const idealSliceHeightPx = Math.floor(contentHeightMm * pxPerMm);
+			const maxSearchPx = Math.floor(idealSliceHeightPx * 0.2);
+
+			const pdf = new jsPDF('p', 'mm', 'a4');
+			let renderedPx = 0;
+			let pageIndex = 0;
+
+			while (renderedPx < canvas.height) {
+				const remainingPx = canvas.height - renderedPx;
+				let sliceHeightPx = Math.min(idealSliceHeightPx, remainingPx);
+
+				// Only hunt for a clean break when another page follows —
+				// the final slice just ends wherever the content ends.
+				if (sliceHeightPx === idealSliceHeightPx && remainingPx > idealSliceHeightPx) {
+					const idealBreakRow = renderedPx + idealSliceHeightPx;
+					const earliestRow = renderedPx + (idealSliceHeightPx - maxSearchPx);
+					const breakRow = findCleanBreakRow(ctx, canvas.width, idealBreakRow, earliestRow, bg);
+					sliceHeightPx = breakRow - renderedPx;
+				}
+
+				const pageCanvas = document.createElement('canvas');
+				pageCanvas.width = canvas.width;
+				pageCanvas.height = sliceHeightPx;
+				const pageCtx = pageCanvas.getContext('2d')!;
+				pageCtx.drawImage(canvas, 0, renderedPx, canvas.width, sliceHeightPx, 0, 0, canvas.width, sliceHeightPx);
+
+				const imgData = pageCanvas.toDataURL('image/jpeg', 0.92);
+				const sliceHeightMm = sliceHeightPx / pxPerMm;
+
+				if (pageIndex > 0) pdf.addPage();
+				pdf.addImage(imgData, 'JPEG', marginMm, marginMm, contentWidthMm, sliceHeightMm);
+
+				renderedPx += sliceHeightPx;
+				pageIndex++;
+			}
+
+			pdf.save(`catchup-${day}.pdf`);
+			showToast('PDF downloaded');
+		} catch (err) {
+			console.error(err);
+			showToast('Failed to generate PDF');
+		} finally {
+			downloadPdfBtn.disabled = false;
+		}
+	});
 </script>
