@@ -5,6 +5,6 @@ import sitemap from '@astrojs/sitemap';
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://thedailydiff.arpitbhayani.me',
+  site: 'https://the-daily-diff.arpitbhayani.me',
   integrations: [sitemap()]
 });
