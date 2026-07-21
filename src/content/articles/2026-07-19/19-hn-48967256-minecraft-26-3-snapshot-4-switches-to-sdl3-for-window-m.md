@@ -1,8 +1,13 @@
 ---
-title: Minecraft 26.3 Snapshot 4 switches to SDL3 for window management
-source: hn
-url: https://www.minecraft.net/en-us/article/minecraft-26-3-snapshot-4
+authors:
+- Java Team
+comments: https://news.ycombinator.com/item?id=48967256
 date: '2026-07-19'
+hn_id: '48967256'
+image: 19-hn-48967256-infographic.png
+interest_score: 7
+section: engineering
+source: hn
 tags:
 - catchup
 - game-features
@@ -11,16 +16,15 @@ tags:
 - sdl3-integration
 - ui-improvements
 - window-management
-section: engineering
-interest_score: 7
-hn_id: '48967256'
-comments: https://news.ycombinator.com/item?id=48967256
+title: Minecraft 26.3 Snapshot 4 switches to SDL3 for window management
+url: https://www.minecraft.net/en-us/article/minecraft-26-3-snapshot-4
 why_read: This update details the significant switch from GLFW to SDL3 for window
   management in Minecraft Java. Readers will also discover new gameplay features,
   UI tweaks, and technical changes.
-authors:
-- Java Team
 ---
+
+
+![](19-hn-48967256-infographic.png)
 
 Minecraft: Java Edition has undertaken a substantial architectural change, migrating its core window management, input, and platform integration from GLFW to SDL3. This is not a trivial upgrade for a game with its scale and history.
 

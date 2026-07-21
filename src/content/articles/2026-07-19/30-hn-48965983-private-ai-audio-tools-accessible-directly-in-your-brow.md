@@ -1,8 +1,13 @@
 ---
-title: Private AI Audio Tools Accessible Directly in Your Browser
-source: hn
-url: https://offlinetts.com/
+authors:
+- twainyoung
+comments: https://news.ycombinator.com/item?id=48965983
 date: '2026-07-19'
+hn_id: '48965983'
+image: 30-hn-48965983-infographic.png
+interest_score: 7
+section: ai
+source: hn
 tags:
 - audio-tools
 - browser-based
@@ -14,17 +19,16 @@ tags:
 - speech-to-text
 - subtitle-generation
 - text-to-speech
-section: ai
-interest_score: 7
-hn_id: '48965983'
-comments: https://news.ycombinator.com/item?id=48965983
+title: Private AI Audio Tools Accessible Directly in Your Browser
+url: https://offlinetts.com/
 why_read: This description showcases a free and private suite of AI audio tools that
   run entirely in your browser. Readers will understand its capabilities for text-to-speech,
   speech-to-text, subtitle generation, and converting documents into audio, all while
   keeping data local.
-authors:
-- twainyoung
 ---
+
+
+![](30-hn-48965983-infographic.png)
 
 Client-side AI is rapidly evolving, and OfflineTTS showcases a fantastic example: a free, browser-based tool providing text-to-speech (TTS), speech-to-text (STT), and subtitle generation, all running entirely locally. This means zero data leaves your device, ensuring complete privacy.
 

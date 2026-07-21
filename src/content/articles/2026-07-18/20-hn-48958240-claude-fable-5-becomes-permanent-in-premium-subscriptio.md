@@ -1,8 +1,13 @@
 ---
-title: Claude Fable 5 becomes permanent in premium subscription plans
-source: hn
-url: https://simonwillison.net/2026/Jul/18/claude-make-fable-5-permanent/
+authors:
+- Simon Willison
+comments: https://news.ycombinator.com/item?id=48958240
 date: '2026-07-18'
+hn_id: '48958240'
+image: 20-hn-48958240-infographic.png
+interest_score: 7
+section: ai
+source: hn
 tags:
 - ai-competition
 - anthropic
@@ -11,16 +16,15 @@ tags:
 - hn
 - llm-pricing
 - subscription-models
-section: ai
-interest_score: 7
-hn_id: '48958240'
-comments: https://news.ycombinator.com/item?id=48958240
+title: Claude Fable 5 becomes permanent in premium subscription plans
+url: https://simonwillison.net/2026/Jul/18/claude-make-fable-5-permanent/
 why_read: Read this to understand why Anthropic decided to make Claude Fable 5 a permanent
   feature of its premium subscription plans. It highlights the impact of market competition
   on LLM pricing and access strategies.
-authors:
-- Simon Willison
 ---
+
+
+![](20-hn-48958240-infographic.png)
 
 Anthropic has made a significant reversal, permanently including Claude Fable 5 in its premium subscription plans after initially planning to restrict it to API access. This move highlights the fierce competition in the LLM space.
 

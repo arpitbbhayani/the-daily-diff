@@ -1,8 +1,14 @@
 ---
-title: Paramount-Warner Bros Merger Delayed by Antitrust Lawsuit
-source: hn
-url: https://textcaster.app
+authors:
+- Dave Winer
+- Frank
+comments: https://news.ycombinator.com/item?id=48967220
 date: '2026-07-19'
+hn_id: '48967220'
+image: 27-hn-48967220-infographic.png
+interest_score: 7
+section: systems
+source: hn
 tags:
 - antitrust
 - catchup
@@ -11,17 +17,15 @@ tags:
 - merger
 - rss
 - trademark-law
-section: systems
-interest_score: 7
-hn_id: '48967220'
-comments: https://news.ycombinator.com/item?id=48967220
+title: Paramount-Warner Bros Merger Delayed by Antitrust Lawsuit
+url: https://textcaster.app
 why_read: Readers will learn about a significant corporate merger facing antitrust
   challenges and a notable trademark dispute. Additionally, it offers practical advice
   on leveraging RSS feeds for easy content crossposting to microblogging platforms.
-authors:
-- Dave Winer
-- Frank
 ---
+
+
+![](27-hn-48967220-infographic.png)
 
 Imagine a social network where the underlying protocol is simply RSS. That is precisely what Textcaster aims to deliver, demonstrating a remarkably clever approach to building distributed communication.
 

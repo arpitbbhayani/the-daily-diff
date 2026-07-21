@@ -1,8 +1,13 @@
 ---
-title: An Intel Itanium emulator successfully boots Windows operating systems
-source: hn
-url: https://raymii.org/s/blog/Intel_Itanium_IA-64-Emulator_that_boots_Windows.html
+authors:
+- Remy van Elst
+comments: https://news.ycombinator.com/item?id=48971566
 date: '2026-07-19'
+hn_id: '48971566'
+image: 24-hn-48971566-infographic.png
+interest_score: 7
+section: systems
+source: hn
 tags:
 - catchup
 - cpu-emulation
@@ -11,17 +16,16 @@ tags:
 - ia-64
 - itanium
 - windows-boot
-section: systems
-interest_score: 7
-hn_id: '48971566'
-comments: https://news.ycombinator.com/item?id=48971566
+title: An Intel Itanium emulator successfully boots Windows operating systems
+url: https://raymii.org/s/blog/Intel_Itanium_IA-64-Emulator_that_boots_Windows.html
 why_read: This article details a significant breakthrough in CPU emulation, showcasing
   an Intel Itanium (IA-64) emulator that successfully boots Windows Server 2003 and
   Windows XP 64-bit. Readers will learn about the current progress in emulating non-x86
   architectures and the challenges involved.
-authors:
-- Remy van Elst
 ---
+
+
+![](24-hn-48971566-infographic.png)
 
 A new emulator can now boot Windows on an Intel Itanium (IA-64) machine, a remarkable feat of systems engineering given the architecture's complexity and historical obscurity. This is not just a throwback; it is a deep dive into emulation mechanics.
 

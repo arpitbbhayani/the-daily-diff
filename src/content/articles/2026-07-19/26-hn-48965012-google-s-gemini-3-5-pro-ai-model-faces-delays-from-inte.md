@@ -1,8 +1,14 @@
 ---
-title: Google's Gemini 3.5 Pro AI model faces delays from internal struggles
-source: hn
-url: https://www.latimes.com/business/story/2026-07-17/inside-googles-gemini-delay-coding-stumbles-clashing-teams-frustrated-engineers
+authors:
+- Julia Love
+- Davey Alba
+comments: https://news.ycombinator.com/item?id=48965012
 date: '2026-07-19'
+hn_id: '48965012'
+image: 26-hn-48965012-infographic.png
+interest_score: 7
+section: ai
+source: hn
 tags:
 - ai-model-development
 - catchup
@@ -11,18 +17,16 @@ tags:
 - hn
 - market-competition
 - team-dynamics
-section: ai
-interest_score: 7
-hn_id: '48965012'
-comments: https://news.ycombinator.com/item?id=48965012
+title: Google's Gemini 3.5 Pro AI model faces delays from internal struggles
+url: https://www.latimes.com/business/story/2026-07-17/inside-googles-gemini-delay-coding-stumbles-clashing-teams-frustrated-engineers
 why_read: This article reveals the internal challenges at Google, including coding
   stumbles and team conflicts, that are delaying the release of its powerful Gemini
   3.5 Pro AI model. Readers will understand the complexities and market pressures
   affecting large-scale AI development.
-authors:
-- Julia Love
-- Davey Alba
 ---
+
+
+![](26-hn-48965012-infographic.png)
 
 Google is reportedly facing significant delays with Gemini 3.5 Pro, and the reasons highlight real-world struggles in large-scale AI development. Apparently, coding capabilities are a major hurdle, with internal teams clashing and engineers expressing frustration.
 

@@ -1,8 +1,13 @@
 ---
-title: Setting up a self-hosted dynamic DNS with Knot DNS on macOS
-source: hn
-url: https://akr.am/blog/posts/self-hosted-dynamic-dns
+authors:
+- Brajeshwar
+comments: https://news.ycombinator.com/item?id=48970374
 date: '2026-07-19'
+hn_id: '48970374'
+image: 28-hn-48970374-infographic.png
+interest_score: 7
+section: systems
+source: hn
 tags:
 - catchup
 - ddns
@@ -13,16 +18,15 @@ tags:
 - macos-integration
 - nsupdate
 - tsig-key
-section: systems
-interest_score: 7
-hn_id: '48970374'
-comments: https://news.ycombinator.com/item?id=48970374
+title: Setting up a self-hosted dynamic DNS with Knot DNS on macOS
+url: https://akr.am/blog/posts/self-hosted-dynamic-dns
 why_read: This guide provides clear instructions on how to set up a self-hosted dynamic
   DNS service using Knot DNS. Readers will learn to configure the server, generate
   TSIG keys, and integrate it with macOS for automatic IP updates.
-authors:
-- Brajeshwar
 ---
+
+
+![](28-hn-48970374-infographic.png)
 
 Managing dynamic IP addresses for self-hosted services can be a pain, but a recent guide offers a robust solution: setting up your own dynamic DNS (DDNS) with Knot DNS. This is a genuinely practical guide for taking control of your network infrastructure.
 

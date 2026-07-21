@@ -1,8 +1,13 @@
 ---
-title: AI's role is to offload execution, enabling human collaboration
-source: hn
-url: https://danielmiessler.com/blog/recreating-the-bell-labs-cafeteria
+authors:
+- Daniel Miessler
+comments: https://news.ycombinator.com/item?id=48954326
 date: '2026-07-18'
+hn_id: '48954326'
+image: 17-hn-48954326-infographic.png
+interest_score: 7
+section: engineering
+source: hn
 tags:
 - ai
 - bell-labs
@@ -12,17 +17,16 @@ tags:
 - hn
 - human-collaboration
 - ideas
-section: engineering
-interest_score: 7
-hn_id: '48954326'
-comments: https://news.ycombinator.com/item?id=48954326
+title: AI's role is to offload execution, enabling human collaboration
+url: https://danielmiessler.com/blog/recreating-the-bell-labs-cafeteria
 why_read: This piece argues that AI should handle execution tasks, allowing humans
   to re-focus on creative collaboration and serendipitous idea generation. Readers
   will learn how to leverage AI to foster environments that promote deep human interaction
   and innovation, reminiscent of the Bell Labs cafeteria.
-authors:
-- Daniel Miessler
 ---
+
+
+![](17-hn-48954326-infographic.png)
 
 Imagine a world where AI handles all the execution, freeing engineers to just 'riff' and innovate. This is the vision, drawing inspiration from the legendary Bell Labs cafeteria, where casual interdisciplinary conversations sparked groundbreaking ideas.
 

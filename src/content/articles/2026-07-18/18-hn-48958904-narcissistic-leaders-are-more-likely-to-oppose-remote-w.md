@@ -1,8 +1,13 @@
 ---
-title: Narcissistic leaders are more likely to oppose remote work
-source: hn
-url: https://www.cbc.ca/news/business/study-remote-work-narcissism-9.7275176
+authors:
+- Sarah Petz
+comments: https://news.ycombinator.com/item?id=48958904
 date: '2026-07-18'
+hn_id: '48958904'
+image: 18-hn-48958904-infographic.png
+interest_score: 7
+section: career
+source: hn
 tags:
 - catchup
 - hn
@@ -10,16 +15,15 @@ tags:
 - narcissism
 - remote-work
 - return-to-office
-section: career
-interest_score: 7
-hn_id: '48958904'
-comments: https://news.ycombinator.com/item?id=48958904
+title: Narcissistic leaders are more likely to oppose remote work
+url: https://www.cbc.ca/news/business/study-remote-work-narcissism-9.7275176
 why_read: This article presents new research suggesting a link between narcissistic
   leadership and opposition to remote work. Readers will learn how leaders' desire
   for power and status can influence return-to-office mandates.
-authors:
-- Sarah Petz
 ---
+
+
+![](18-hn-48958904-infographic.png)
 
 Are your leaders pushing for return-to-office? New research from Wharton suggests a surprising correlation: leaders with narcissistic traits are significantly more likely to oppose remote work.
 

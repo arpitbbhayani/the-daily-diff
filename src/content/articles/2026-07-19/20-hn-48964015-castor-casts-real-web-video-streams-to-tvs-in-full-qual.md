@@ -1,8 +1,13 @@
 ---
-title: Castor casts real web video streams to TVs in full quality
-source: hn
-url: https://github.com/stupside/castor
+authors:
+- xonery
+comments: https://news.ycombinator.com/item?id=48964015
 date: '2026-07-19'
+hn_id: '48964015'
+image: 20-hn-48964015-infographic.png
+interest_score: 7
+section: engineering
+source: hn
 tags:
 - castor
 - catchup
@@ -12,16 +17,15 @@ tags:
 - subtitles
 - transcoding
 - web-video-casting
-section: engineering
-interest_score: 7
-hn_id: '48964015'
-comments: https://news.ycombinator.com/item?id=48964015
+title: Castor casts real web video streams to TVs in full quality
+url: https://github.com/stupside/castor
 why_read: This text introduces Castor, a tool designed to cast full-quality, real-time
   web video streams directly to your TV. Readers will understand how it overcomes
   common issues with screen mirroring and arbitrary web video casting.
-authors:
-- xonery
 ---
+
+
+![](20-hn-48964015-infographic.png)
 
 Streaming arbitrary web video to a TV often involves clunky screen mirroring or limited native support. The open-source Castor project offers an ingenious solution by leveraging headless Chrome and the DevTools Protocol to extract, transcode, and cast real video streams.
 

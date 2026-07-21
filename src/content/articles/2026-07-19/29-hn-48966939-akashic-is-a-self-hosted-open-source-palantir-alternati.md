@@ -1,8 +1,13 @@
 ---
-title: Akashic is a self-hosted open-source Palantir alternative
-source: hn
-url: https://github.com/CaviraOSS/Akashic
+authors:
+- nullure
+comments: https://news.ycombinator.com/item?id=48966939
 date: '2026-07-19'
+hn_id: '48966939'
+image: 29-hn-48966939-infographic.png
+interest_score: 7
+section: systems
+source: hn
 tags:
 - catchup
 - data-exploration
@@ -13,17 +18,16 @@ tags:
 - palantir-alternative
 - privacy-first
 - self-hosted
-section: systems
-interest_score: 7
-hn_id: '48966939'
-comments: https://news.ycombinator.com/item?id=48966939
+title: Akashic is a self-hosted open-source Palantir alternative
+url: https://github.com/CaviraOSS/Akashic
 why_read: This describes Akashic, an open-source, self-hosted platform offering a
   privacy-first alternative to Palantir for connecting and analyzing complex geospatial
   intelligence. Readers will understand its unique features for exploring diverse
   public data sources on an interactive map.
-authors:
-- nullure
 ---
+
+
+![](29-hn-48966939-infographic.png)
 
 This new open-source project, Akashic, aims to be a self-hosted alternative to Palantir, tackling the significant challenge of integrating and correlating diverse public data sources. It brings together everything from satellite imagery and weather data to public radio and infrastructure information onto a single interactive map.
 

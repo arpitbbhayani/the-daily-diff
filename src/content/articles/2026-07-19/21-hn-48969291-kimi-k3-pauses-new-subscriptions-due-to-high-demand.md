@@ -1,8 +1,13 @@
 ---
-title: Kimi K3 Pauses New Subscriptions Due to High Demand
-source: hn
-url: https://twitter.com/kimi_moonshot/status/2078855608565207130
+authors:
+- Kimi.ai
+comments: https://news.ycombinator.com/item?id=48969291
 date: '2026-07-19'
+hn_id: '48969291'
+image: 21-hn-48969291-infographic.png
+interest_score: 7
+section: ai
+source: hn
 tags:
 - catchup
 - compute-capacity
@@ -11,16 +16,15 @@ tags:
 - kimi-k3
 - membership-plans
 - subscription-pausing
-section: ai
-interest_score: 7
-hn_id: '48969291'
-comments: https://news.ycombinator.com/item?id=48969291
+title: Kimi K3 Pauses New Subscriptions Due to High Demand
+url: https://twitter.com/kimi_moonshot/status/2078855608565207130
 why_read: This announcement informs users about Kimi K3's temporary pause on new subscriptions
   due to overwhelming demand. It outlines future plans to split membership tiers to
   better manage compute resources and improve user experience.
-authors:
-- Kimi.ai
 ---
+
+
+![](21-hn-48969291-infographic.png)
 
 The compute crunch for AI models is very real. Moonshot AI has had to temporarily suspend new subscriptions for its Kimi K3 model because demand outstripped their current GPU capacity.
 

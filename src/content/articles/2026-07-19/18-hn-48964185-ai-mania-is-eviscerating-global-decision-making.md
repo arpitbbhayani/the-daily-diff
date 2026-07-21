@@ -1,25 +1,29 @@
 ---
-title: AI Mania Is Eviscerating Global Decision-Making
-source: hn
-url: https://ludic.mataroa.blog/blog/ai-mania-is-eviscerating-global-decision-making/#fnref:3
+authors:
+- subset
+comments: https://news.ycombinator.com/item?id=48964185
 date: '2026-07-19'
+hn_id: '48964185'
+image: 18-hn-48964185-infographic.png
+interest_score: 7
+section: career
+source: hn
 tags:
 - ai-mania
 - catchup
 - failed-ai-investments
 - hn
 - organizational-decision-making
-section: career
-interest_score: 7
-hn_id: '48964185'
-comments: https://news.ycombinator.com/item?id=48964185
+title: AI Mania Is Eviscerating Global Decision-Making
+url: https://ludic.mataroa.blog/blog/ai-mania-is-eviscerating-global-decision-making/#fnref:3
 why_read: This essay exposes how 'AI mania' is distorting global decision-making and
   leading to widespread organizational 'psychosis'. Readers will understand the author's
   perspective on why current AI investments are failing and how fear impacts rational
   discourse in many institutions.
-authors:
-- subset
 ---
+
+
+![](18-hn-48964185-infographic.png)
 
 The current "AI mania" is not just about innovation; it is also "eviscerating global decision-making," leading to irrational investments and "mass psychosis" in many organizations. This critical perspective challenges the unbridled enthusiasm often seen in the industry.
 
