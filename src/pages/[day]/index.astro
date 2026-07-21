@@ -32,7 +32,9 @@ export async function getStaticPaths() {
 	return Promise.all(
 		chronological.map(async (day, index) => {
 			const dayEntries = byDay.get(day)!;
-			const sorted = [...dayEntries].sort((a, b) => a.id.localeCompare(b.id));
+			const sorted = [...dayEntries].sort(
+				(a, b) => (b.data.interest_score ?? 0) - (a.data.interest_score ?? 0)
+			);
 			const articles = await Promise.all(
 				sorted.map(async (entry) => {
 					const { Content } = await render(entry);
@@ -41,9 +43,9 @@ export async function getStaticPaths() {
 						title: entry.data.title,
 						source: entry.data.source,
 						url: entry.data.url,
-						categories: entry.data.categories,
 						why_read: entry.data.why_read,
 						authors: entry.data.authors,
+						image: entry.data.image,
 						Content,
 					};
 				})
@@ -69,9 +71,9 @@ interface ArticleProps {
 	title: string;
 	source: string;
 	url: string;
-	categories?: string;
 	why_read?: string;
 	authors: string[];
+	image?: string;
 	Content: any;
 }
 
@@ -92,13 +94,10 @@ const label = new Date(`${day}T00:00:00`).toLocaleDateString('en-US', {
 	day: 'numeric',
 });
 
-function kickerFor(article: ArticleProps) {
-	if (article.categories) return article.categories.toUpperCase();
-	return (SOURCE_LABEL[article.source] ?? article.source).toUpperCase();
-}
-
 function bylineFor(article: ArticleProps) {
-	if (article.authors.length > 0) return `By ${article.authors.join(', ')}`;
+	if (article.authors.length > 0) {
+		return `By ${article.authors[0]}${article.authors.length > 1 ? ' et al.' : ''}`;
+	}
 	return null;
 }
 
@@ -150,28 +149,36 @@ const rest = articles.slice(1);
 		<article id="newspaper-sheet" class="newspaper-sheet" data-day={day} data-count={articles.length}>
 			<header class="masthead">
 				<div class="masthead-eyebrow">
-					<span>Vol. I &middot; No. {String(issue).padStart(3, '0')} of {totalIssues}</span>
+					<span>{String(issue).padStart(3, '0')}</span>
+					<span class="masthead-eyebrow-center">{label}</span>
 					<span>{articles.length} {articles.length === 1 ? 'Story' : 'Stories'}</span>
 				</div>
 				<h1 class="masthead-name">The Daily Diff</h1>
+				<p class="masthead-tagline">Engineering, Distilled for Engineers</p>
 				<hr class="masthead-rule-thick" />
-				<div class="masthead-dateline">
-					<span class="dateline-main">{label}</span>
-					<span>arpitbhayani.me</span>
-				</div>
 			</header>
 
 			{lead && (
 				<section class="lead-story">
-					<div class="story-kicker">{kickerFor(lead)}</div>
-					<h2 class="story-headline">
-						<a href={lead.url} target="_blank" rel="noopener noreferrer">{lead.title}</a>
-					</h2>
 					<div class="story-byline">
 						{bylineFor(lead) && <>{bylineFor(lead)}<span class="story-source-sep">&middot;</span></>}
 						<a class="story-source-link" href={lead.url} target="_blank" rel="noopener noreferrer">{sourceLabelFor(lead)} &rsaquo;</a>
+						{(lead.why_read || lead.authors.length > 0) && (
+							<span class="why-info" tabindex="0">
+								<svg class="why-info-icon" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+								<span class="why-tooltip">
+									{lead.why_read && <><strong>Why read:</strong> {lead.why_read}</>}
+									{lead.why_read && lead.authors.length > 0 && <br />}
+									{lead.authors.length > 0 && (
+										<><strong>Authors:</strong> {lead.authors.join(', ')}</>
+									)}
+								</span>
+							</span>
+						)}
 					</div>
-					{lead.why_read && <p class="story-deck">{lead.why_read}</p>}
+					<h2 class="story-headline">
+						<a href={lead.url} target="_blank" rel="noopener noreferrer">{lead.title}</a>
+					</h2>
 					<div class="story-body content blog-content">
 						<lead.Content />
 					</div>
@@ -182,15 +189,25 @@ const rest = articles.slice(1);
 				<section class="newspaper-columns">
 					{rest.map((article) => (
 						<article class="story">
-							<div class="story-kicker">{kickerFor(article)}</div>
-							<h3 class="story-headline">
-								<a href={article.url} target="_blank" rel="noopener noreferrer">{article.title}</a>
-							</h3>
 							<div class="story-byline">
 								{bylineFor(article) && <>{bylineFor(article)}<span class="story-source-sep">&middot;</span></>}
 								<a class="story-source-link" href={article.url} target="_blank" rel="noopener noreferrer">{sourceLabelFor(article)} &rsaquo;</a>
+								{(article.why_read || article.authors.length > 0) && (
+									<span class="why-info" tabindex="0">
+										<svg class="why-info-icon" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+										<span class="why-tooltip">
+											{article.why_read && <><strong>Why read:</strong> {article.why_read}</>}
+											{article.why_read && article.authors.length > 0 && <br />}
+											{article.authors.length > 0 && (
+												<><strong>Authors:</strong> {article.authors.join(', ')}</>
+											)}
+										</span>
+									</span>
+								)}
 							</div>
-							{article.why_read && <p class="story-deck">{article.why_read}</p>}
+							<h3 class="story-headline">
+								<a href={article.url} target="_blank" rel="noopener noreferrer">{article.title}</a>
+							</h3>
 							<div class="story-body content blog-content">
 								<article.Content />
 							</div>
@@ -200,13 +217,18 @@ const rest = articles.slice(1);
 			)}
 
 			<footer class="edition-colophon">
-				End of Edition &mdash; {label} &mdash; The Daily Diff
+				End of Edition &mdash; {label} &mdash; The Daily Diff &mdash; Curated by arpitbhayani.me
 			</footer>
 		</article>
 	</main>
 
 	<div id="toast" class="toast">
 		<span id="toast-msg"></span>
+	</div>
+
+	<div id="image-modal" class="image-modal" aria-hidden="true">
+		<button id="image-modal-close" class="image-modal-close" aria-label="Close image preview">&times;</button>
+		<img id="image-modal-img" class="image-modal-img" src="" alt="" />
 	</div>
 </Layout>
 
@@ -233,6 +255,38 @@ const rest = articles.slice(1);
 	function hideToast() {
 		toast.classList.remove('is-visible');
 	}
+
+	const imageModal = document.getElementById('image-modal') as HTMLElement;
+	const imageModalImg = document.getElementById('image-modal-img') as HTMLImageElement;
+	const imageModalClose = document.getElementById('image-modal-close') as HTMLButtonElement;
+
+	function openImageModal(src: string, alt: string) {
+		imageModalImg.src = src;
+		imageModalImg.alt = alt;
+		imageModal.classList.add('is-open');
+		imageModal.setAttribute('aria-hidden', 'false');
+		document.body.classList.add('modal-open');
+	}
+
+	function closeImageModal() {
+		imageModal.classList.remove('is-open');
+		imageModal.setAttribute('aria-hidden', 'true');
+		document.body.classList.remove('modal-open');
+		imageModalImg.src = '';
+	}
+
+	document.querySelectorAll<HTMLImageElement>('.story-body img').forEach((img) => {
+		img.classList.add('is-zoomable');
+		img.addEventListener('click', () => openImageModal(img.currentSrc || img.src, img.alt));
+	});
+
+	imageModalClose.addEventListener('click', closeImageModal);
+	imageModal.addEventListener('click', (e) => {
+		if (e.target === imageModal) closeImageModal();
+	});
+	document.addEventListener('keydown', (e) => {
+		if (e.key === 'Escape' && imageModal.classList.contains('is-open')) closeImageModal();
+	});
 
 	dateSelect.addEventListener('change', () => {
 		window.location.href = `/${dateSelect.value}/`;

@@ -13,6 +13,8 @@ const articles = defineCollection({
     categories: z.string().optional(),
     why_read: z.string().optional(),
     authors: z.array(z.string()).default([]),
+    interest_score: z.number().optional(),
+    image: z.string().optional(),
   }),
 });
 
