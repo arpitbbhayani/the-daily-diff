@@ -48,7 +48,7 @@ export async function GET(context: APIContext) {
   return rss({
     title: 'The Daily Diff',
     description: 'The Daily Diff is a daily digest of curated arXiv papers and Hacker News threads for engineers — signal, not noise.',
-    site: context.site || 'https://thedailydiff.arpitbhayani.me',
+    site: context.site || 'https://tdd.arpitbhayani.me',
     items,
   });
 }
