@@ -1,22 +1,65 @@
 ---
-import { getCollection } from 'astro:content';
+import { getCollection, render } from 'astro:content';
+import EditionPage from '../components/EditionPage.astro';
 
 const entries = await getCollection('articles');
-const days = [...new Set(entries.map((entry) => entry.id.split('/')[0]))].sort();
-const latestDay = days.at(-1);
-const target = latestDay ? `/${latestDay}/` : '/archive/';
+const byDay = new Map<string, typeof entries>();
+for (const entry of entries) {
+	const day = entry.id.split('/')[0];
+	const list = byDay.get(day) ?? [];
+	list.push(entry);
+	byDay.set(day, list);
+}
+
+const chronological = [...byDay.keys()].sort((a, b) => a.localeCompare(b));
+
+if (chronological.length === 0) {
+	return Astro.redirect('/archive/');
+}
+
+const latestDay = chronological.at(-1)!;
+const latestIndex = chronological.length - 1;
+
+const allDays = chronological.map((day) => ({
+	day,
+	label: new Date(`${day}T00:00:00`).toLocaleDateString('en-US', {
+		weekday: 'short',
+		year: 'numeric',
+		month: 'short',
+		day: 'numeric',
+	}),
+}));
+
+const dayEntries = byDay.get(latestDay)!;
+const sorted = [...dayEntries].sort(
+	(a, b) => (b.data.interest_score ?? 0) - (a.data.interest_score ?? 0)
+);
+
+const articles = await Promise.all(
+	sorted.map(async (entry) => {
+		const { Content } = await render(entry);
+		return {
+			slug: entry.id.split('/')[1],
+			title: entry.data.title,
+			source: entry.data.source,
+			url: entry.data.url,
+			why_read: entry.data.why_read,
+			authors: entry.data.authors,
+			image: entry.data.image,
+			Content,
+		};
+	})
+);
+
+const props = {
+	day: latestDay,
+	articles,
+	issue: latestIndex + 1,
+	totalIssues: chronological.length,
+	prevDay: chronological[latestIndex - 1] ?? null,
+	nextDay: null,
+	allDays: [...allDays].reverse(),
+};
 ---
 
-<!doctype html>
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<meta http-equiv="refresh" content={`0; url=${target}`} />
-		<link rel="canonical" href={target} />
-		<meta name="robots" content="noindex,follow" />
-		<title>The Daily Diff</title>
-	</head>
-	<body>
-		<p>Redirecting to the <a href={target}>latest edition</a>&hellip;</p>
-	</body>
-</html>
+<EditionPage {...props} />

@@ -1,0 +1,234 @@
+---
+import Layout from '../layouts/Layout.astro';
+import ThemeToggleButton from './ThemeToggleButton.astro';
+
+const SOURCE_LABEL: Record<string, string> = {
+	arxiv: 'arXiv',
+	hn: 'HN',
+};
+
+interface ArticleProps {
+	slug: string;
+	title: string;
+	source: string;
+	url: string;
+	why_read?: string;
+	authors: string[];
+	image?: string;
+	Content: any;
+}
+
+interface Props {
+	day: string;
+	articles: ArticleProps[];
+	issue: number;
+	totalIssues: number;
+	prevDay: string | null;
+	nextDay: string | null;
+	allDays: { day: string; label: string }[];
+}
+
+const { day, articles, issue, totalIssues, prevDay, nextDay, allDays } = Astro.props;
+
+const label = new Date(`${day}T00:00:00`).toLocaleDateString('en-US', {
+	weekday: 'long',
+	year: 'numeric',
+	month: 'long',
+	day: 'numeric',
+});
+
+function bylineFor(article: ArticleProps) {
+	if (article.authors.length > 0) {
+		return `By ${article.authors[0]}${article.authors.length > 1 ? ' et al.' : ''}`;
+	}
+	return null;
+}
+
+function sourceLabelFor(article: ArticleProps) {
+	return SOURCE_LABEL[article.source] ?? article.source.toUpperCase();
+}
+
+const lead = articles[0];
+const rest = articles.slice(1);
+
+const pageTitle = `${label} — The Daily Diff`;
+const pageDescription = `${articles.length} curated engineering ${articles.length === 1 ? 'read' : 'reads'} from arXiv and Hacker News for ${label}, including "${lead.title}".`;
+---
+
+<Layout title={pageTitle} description={pageDescription}>
+	<nav id="edition-rail" class="edition-rail" aria-label="Edition controls">
+		<ThemeToggleButton />
+
+		<div class="rail-divider"></div>
+
+		<a href="/archive/" class="rail-btn" aria-label="Back to archive" data-tooltip="Back to archive">
+			<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"></path><path d="m12 19-7-7 7-7"></path></svg>
+		</a>
+
+		<div class="rail-divider"></div>
+
+		<button id="prev-day-btn" class="rail-btn" disabled={!prevDay} aria-label="Previous edition" data-tooltip="Previous edition">
+			<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg>
+		</button>
+
+		<div class="rail-date-picker" data-tooltip="Jump to edition">
+			<svg class="rail-date-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+			<select id="edition-date-select" class="edition-date-select" aria-label="Jump to edition">
+				{allDays.map(({ day: d, label: l }) => (
+					<option value={d} selected={d === day}>{l}</option>
+				))}
+			</select>
+		</div>
+
+		<button id="next-day-btn" class="rail-btn" disabled={!nextDay} aria-label="Next edition" data-tooltip="Next edition">
+			<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg>
+		</button>
+
+	</nav>
+
+	<main class="page-container page-container--with-rail">
+		<article id="newspaper-sheet" class="newspaper-sheet" data-day={day} data-count={articles.length}>
+			<header class="masthead">
+				<div class="masthead-eyebrow">
+					<span>
+						<a href="/archive/" class="masthead-archive-link" aria-label="Back to archive" title="Back to archive">
+							<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"></path><path d="m12 19-7-7 7-7"></path></svg>
+						</a>
+						{String(issue).padStart(3, '0')}
+					</span>
+					<span class="masthead-eyebrow-center">{label}</span>
+					<span>{articles.length} {articles.length === 1 ? 'Story' : 'Stories'}</span>
+				</div>
+				<h1 class="masthead-name">The Daily Diff</h1>
+				<p class="masthead-tagline">Signal, Not Noise; Papers and Threads Worth Your Time</p>
+				<hr class="masthead-rule-thick" />
+			</header>
+
+			{lead && (
+				<section class="lead-story">
+					<div class="story-byline">
+						{bylineFor(lead) && <>{bylineFor(lead)}<span class="story-source-sep">&middot;</span></>}
+						<a class="story-source-link" href={lead.url} target="_blank" rel="noopener noreferrer">{sourceLabelFor(lead)} &rsaquo;</a>
+						{(lead.why_read || lead.authors.length > 0) && (
+							<span class="why-info" tabindex="0">
+								<svg class="why-info-icon" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+								<span class="why-tooltip">
+									{lead.why_read && <><strong>Why read:</strong> {lead.why_read}</>}
+									{lead.why_read && lead.authors.length > 0 && <br />}
+									{lead.authors.length > 0 && (
+										<><strong>Authors:</strong> {lead.authors.join(', ')}</>
+									)}
+								</span>
+							</span>
+						)}
+					</div>
+					<h2 class="story-headline">
+						<a href={lead.url} target="_blank" rel="noopener noreferrer">{lead.title}</a>
+					</h2>
+					<div class="story-body content blog-content">
+						<lead.Content />
+					</div>
+				</section>
+			)}
+
+			{rest.length > 0 && (
+				<section class="newspaper-columns">
+					{rest.map((article) => (
+						<article class="story">
+							<div class="story-byline">
+								{bylineFor(article) && <>{bylineFor(article)}<span class="story-source-sep">&middot;</span></>}
+								<a class="story-source-link" href={article.url} target="_blank" rel="noopener noreferrer">{sourceLabelFor(article)} &rsaquo;</a>
+								{(article.why_read || article.authors.length > 0) && (
+									<span class="why-info" tabindex="0">
+										<svg class="why-info-icon" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+										<span class="why-tooltip">
+											{article.why_read && <><strong>Why read:</strong> {article.why_read}</>}
+											{article.why_read && article.authors.length > 0 && <br />}
+											{article.authors.length > 0 && (
+												<><strong>Authors:</strong> {article.authors.join(', ')}</>
+											)}
+										</span>
+									</span>
+								)}
+							</div>
+							<h3 class="story-headline">
+								<a href={article.url} target="_blank" rel="noopener noreferrer">{article.title}</a>
+							</h3>
+							<div class="story-body content blog-content">
+								<article.Content />
+							</div>
+						</article>
+					))}
+				</section>
+			)}
+
+			<footer class="edition-colophon">
+				End of Edition &mdash; {label} &mdash; The Daily Diff &mdash; Curated by <a href="https://arpitbhayani.me/" target="_blank" rel="noopener noreferrer">Arpit Bhayani</a>
+			</footer>
+		</article>
+	</main>
+
+	<div id="image-modal" class="image-modal" aria-hidden="true">
+		<button id="image-modal-close" class="image-modal-close" aria-label="Close image preview">&times;</button>
+		<img id="image-modal-img" class="image-modal-img" src="" alt="" />
+	</div>
+</Layout>
+
+<script>
+	const day = document.getElementById('newspaper-sheet')!.getAttribute('data-day') as string;
+
+	const prevBtn = document.getElementById('prev-day-btn') as HTMLButtonElement;
+	const nextBtn = document.getElementById('next-day-btn') as HTMLButtonElement;
+	const dateSelect = document.getElementById('edition-date-select') as HTMLSelectElement;
+
+	const imageModal = document.getElementById('image-modal') as HTMLElement;
+	const imageModalImg = document.getElementById('image-modal-img') as HTMLImageElement;
+	const imageModalClose = document.getElementById('image-modal-close') as HTMLButtonElement;
+
+	function openImageModal(src: string, alt: string) {
+		imageModalImg.src = src;
+		imageModalImg.alt = alt;
+		imageModal.classList.add('is-open');
+		imageModal.setAttribute('aria-hidden', 'false');
+		document.body.classList.add('modal-open');
+	}
+
+	function closeImageModal() {
+		imageModal.classList.remove('is-open');
+		imageModal.setAttribute('aria-hidden', 'true');
+		document.body.classList.remove('modal-open');
+		imageModalImg.src = '';
+	}
+
+	document.querySelectorAll<HTMLImageElement>('.story-body img').forEach((img) => {
+		img.classList.add('is-zoomable');
+		img.addEventListener('click', () => openImageModal(img.currentSrc || img.src, img.alt));
+	});
+
+	imageModalClose.addEventListener('click', closeImageModal);
+	imageModal.addEventListener('click', (e) => {
+		if (e.target === imageModal) closeImageModal();
+	});
+	document.addEventListener('keydown', (e) => {
+		if (e.key === 'Escape' && imageModal.classList.contains('is-open')) closeImageModal();
+	});
+
+	dateSelect.addEventListener('change', () => {
+		window.location.href = `/${dateSelect.value}/`;
+	});
+
+	prevBtn?.addEventListener('click', () => {
+		const el = document.querySelectorAll('#edition-date-select option');
+		const idx = Array.from(el).findIndex((o) => (o as HTMLOptionElement).value === day);
+		const target = (el[idx + 1] as HTMLOptionElement | undefined)?.value;
+		if (target) window.location.href = `/${target}/`;
+	});
+
+	nextBtn?.addEventListener('click', () => {
+		const el = document.querySelectorAll('#edition-date-select option');
+		const idx = Array.from(el).findIndex((o) => (o as HTMLOptionElement).value === day);
+		const target = (el[idx - 1] as HTMLOptionElement | undefined)?.value;
+		if (target) window.location.href = `/${target}/`;
+	});
+
+</script>
