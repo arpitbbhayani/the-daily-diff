@@ -131,36 +131,9 @@ const pageDescription = isHomepage
 				<p>No articles match the selected filters in today's edition.</p>
 			</div>
 
-			{lead && (
-				<section class="lead-story" data-source={lead.source} data-interest={lead.interest_score}>
-					<div class="story-byline">
-						{bylineFor(lead) && <>{bylineFor(lead)}<span class="story-source-sep">&middot;</span></>}
-						<a class="story-source-link" href={lead.url} target="_blank" rel="noopener noreferrer">{sourceLabelFor(lead)} &rsaquo;</a>
-						{(lead.why_read || lead.authors.length > 0) && (
-							<span class="why-info" tabindex="0">
-								<svg class="why-info-icon" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-								<span class="why-tooltip">
-									{lead.why_read && <><strong>Why read:</strong> {lead.why_read}</>}
-									{lead.why_read && lead.authors.length > 0 && <br />}
-									{lead.authors.length > 0 && (
-										<><strong>Authors:</strong> {lead.authors.join(', ')}</>
-									)}
-								</span>
-							</span>
-						)}
-					</div>
-					<h2 class="story-headline">
-						<a href={lead.url} target="_blank" rel="noopener noreferrer">{lead.title}</a>
-					</h2>
-					<div class="story-body content blog-content">
-						<lead.Content />
-					</div>
-				</section>
-			)}
-
-			{rest.length > 0 && (
+			{articles.length > 0 && (
 				<section class="newspaper-columns">
-					{rest.map((article) => (
+					{articles.map((article) => (
 						<article class="story" data-source={article.source} data-interest={article.interest_score}>
 							<div class="story-byline">
 								{bylineFor(article) && <>{bylineFor(article)}<span class="story-source-sep">&middot;</span></>}
@@ -178,9 +151,9 @@ const pageDescription = isHomepage
 									</span>
 								)}
 							</div>
-							<h3 class="story-headline">
+							<h2 class="story-headline">
 								<a href={article.url} target="_blank" rel="noopener noreferrer">{article.title}</a>
-							</h3>
+							</h2>
 							<div class="story-body content blog-content">
 								<article.Content />
 							</div>
@@ -273,6 +246,8 @@ const pageDescription = isHomepage
 		const interestFilter = activeInterestBtn ? activeInterestBtn.getAttribute('data-filter')! : 'all';
 
 		let visibleCount = 0;
+		let firstVisibleStory: Element | null = null;
+
 		allStories.forEach((story) => {
 			const source = story.getAttribute('data-source');
 			const interest = story.getAttribute('data-interest');
@@ -282,11 +257,20 @@ const pageDescription = isHomepage
 
 			if (sourceMatch && interestMatch) {
 				story.removeAttribute('data-hidden');
+				story.classList.remove('is-lead');
+				if (!firstVisibleStory) {
+					firstVisibleStory = story;
+				}
 				visibleCount++;
 			} else {
 				story.setAttribute('data-hidden', 'true');
+				story.classList.remove('is-lead');
 			}
 		});
+
+		if (firstVisibleStory) {
+			(firstVisibleStory as Element).classList.add('is-lead');
+		}
 
 		storyCountEl.textContent = `${visibleCount} ${visibleCount === 1 ? 'Story' : 'Stories'}`;
 
