@@ -5,7 +5,7 @@ import sitemap from '@astrojs/sitemap';
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://tdd.arpitbhayani.me',
+  site: 'https://tdd.cat',
   integrations: [
     sitemap({
       serialize(item) {
