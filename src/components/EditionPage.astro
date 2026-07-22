@@ -116,20 +116,38 @@ const pageDescription = isHomepage
 				<hr class="masthead-rule-thick" />
 				
 				<div class="filter-bar">
-					<div class="source-filter" id="source-filter-container">
+					<div class="filter-group source-filter" id="source-filter-container">
 						<span class="filter-label">Source</span>
-						<button class="filter-btn" data-filter="all">All</button>
-						<button class="filter-btn" data-filter="arxiv">arXiv</button>
-						<button class="filter-btn active" data-filter="hn">HN</button>
+						<button class="filter-mobile-trigger" aria-haspopup="listbox" aria-expanded="false" id="source-filter-trigger">
+							<svg class="filter-trigger-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+							<span class="filter-trigger-text" id="source-filter-text">HN</span>
+							<svg class="filter-chevron-icon" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+								<path d="m6 9 6 6 6-6"/>
+							</svg>
+						</button>
+						<div class="filter-options">
+							<button class="filter-btn" data-filter="all">All</button>
+							<button class="filter-btn" data-filter="arxiv">arXiv</button>
+							<button class="filter-btn active" data-filter="hn">HN</button>
+						</div>
 					</div>
 
-					<div class="interest-filter" id="interest-filter-container">
+					<div class="filter-group interest-filter" id="interest-filter-container">
 						<span class="filter-label">Signal</span>
-						<button class="filter-btn active" data-filter="all">All</button>
-						<button class="filter-btn" data-filter="7">Notable</button>
-						<button class="filter-btn" data-filter="8">Recommended</button>
-						<button class="filter-btn" data-filter="9">Must-Read</button>
-						<button class="filter-btn" data-filter="10">Essential</button>
+						<button class="filter-mobile-trigger" aria-haspopup="listbox" aria-expanded="false" id="interest-filter-trigger">
+							<svg class="filter-trigger-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg>
+							<span class="filter-trigger-text" id="interest-filter-text">All</span>
+							<svg class="filter-chevron-icon" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+								<path d="m6 9 6 6 6-6"/>
+							</svg>
+						</button>
+						<div class="filter-options">
+							<button class="filter-btn active" data-filter="all">All</button>
+							<button class="filter-btn" data-filter="7">Notable</button>
+							<button class="filter-btn" data-filter="8">Recommended</button>
+							<button class="filter-btn" data-filter="9">Must-Read</button>
+							<button class="filter-btn" data-filter="10">Essential</button>
+						</div>
 					</div>
 				</div>
 			</header>
@@ -291,6 +309,17 @@ const pageDescription = isHomepage
 		} else {
 			noStoriesMessageEl.style.display = 'none';
 		}
+
+		// Update mobile trigger text
+		const sourceFilterText = document.getElementById('source-filter-text');
+		const interestFilterText = document.getElementById('interest-filter-text');
+		
+		if (sourceFilterText && activeSourceBtn) {
+			sourceFilterText.textContent = activeSourceBtn.textContent;
+		}
+		if (interestFilterText && activeInterestBtn) {
+			interestFilterText.textContent = activeInterestBtn.textContent;
+		}
 	}
 
 	sourceButtons.forEach((btn) => {
@@ -306,6 +335,46 @@ const pageDescription = isHomepage
 			interestButtons.forEach((b) => b.classList.remove('active'));
 			btn.classList.add('active');
 			updateActiveFilters();
+		});
+	});
+
+	// Mobile dropdown toggle logic
+	const filterGroups = document.querySelectorAll('.filter-group');
+
+	filterGroups.forEach((group) => {
+		const trigger = group.querySelector('.filter-mobile-trigger');
+		if (trigger) {
+			trigger.addEventListener('click', (e) => {
+				e.stopPropagation();
+				// Toggle this one, close all others
+				const isOpen = group.classList.contains('open');
+				filterGroups.forEach((g) => {
+					g.classList.remove('open');
+					g.querySelector('.filter-mobile-trigger')?.setAttribute('aria-expanded', 'false');
+				});
+				
+				if (!isOpen) {
+					group.classList.add('open');
+					trigger.setAttribute('aria-expanded', 'true');
+				}
+			});
+		}
+		
+		// When clicking a button inside options, close the dropdown
+		const options = group.querySelectorAll('.filter-btn');
+		options.forEach((btn) => {
+			btn.addEventListener('click', () => {
+				group.classList.remove('open');
+				trigger?.setAttribute('aria-expanded', 'false');
+			});
+		});
+	});
+
+	// Close dropdowns when clicking outside
+	document.addEventListener('click', () => {
+		filterGroups.forEach((group) => {
+			group.classList.remove('open');
+			group.querySelector('.filter-mobile-trigger')?.setAttribute('aria-expanded', 'false');
 		});
 	});
 
