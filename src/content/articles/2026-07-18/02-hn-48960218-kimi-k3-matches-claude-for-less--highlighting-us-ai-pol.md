@@ -1,8 +1,13 @@
 ---
-title: Kimi K3 matches Claude for less, highlighting US AI policy failures
-source: hn
-url: https://stephen.bochinski.dev/blog/2026/07/18/the-kimi-k3-moment/
+authors:
+- Stephen Bochinski
+comments: https://news.ycombinator.com/item?id=48960218
 date: '2026-07-18'
+hn_id: '48960218'
+image: /infographics/02-hn-48960218.jpg
+interest_score: 8
+section: ai
+source: hn
 tags:
 - ai-policy
 - catchup
@@ -12,20 +17,13 @@ tags:
 - kimi-k3
 - model-performance
 - open-models
-section: ai
-interest_score: 8
-hn_id: '48960218'
-comments: https://news.ycombinator.com/item?id=48960218
+title: Kimi K3 matches Claude for less, highlighting US AI policy failures
+url: https://stephen.bochinski.dev/blog/2026/07/18/the-kimi-k3-moment/
 why_read: This piece offers a critical comparison of open-source AI models like Kimi
   K3 against commercial offerings like Claude, demonstrating superior performance
   and cost-effectiveness from the former. It sheds light on the unintended consequences
   of US AI policy, which may be inadvertently benefiting foreign models.
-authors:
-- Stephen Bochinski
-image: 02-hn-48960218-infographic.png
 ---
-
-![](02-hn-48960218-infographic.png)
 
 An open-source LLM is now matching proprietary giants like Claude on coding tasks, but at a fraction of the cost. The Kimi K3 model offers nearly identical output quality and token counts, but its API pricing is dramatically lower ($3 vs $10 per million input tokens). This shifts the economics for many AI applications. 
 

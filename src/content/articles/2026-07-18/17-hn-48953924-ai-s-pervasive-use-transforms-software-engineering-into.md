@@ -4,7 +4,7 @@ authors:
 comments: https://news.ycombinator.com/item?id=48953924
 date: '2026-07-18'
 hn_id: '48953924'
-image: 17-hn-48953924-infographic.png
+image: /infographics/17-hn-48953924.jpg
 interest_score: 8
 section: engineering
 source: hn
@@ -22,9 +22,6 @@ why_read: This text offers a critical perspective on how widespread AI code gene
   Readers will understand the author's argument that AI has transformed the craft
   into 'slop' and has become an inescapable part of the job.
 ---
-
-
-![](17-hn-48953924-infographic.png)
 
 AI is turning software engineering into 'slop,' according to one veteran engineer's candid screed. This piece argues that the pervasive use of AI for generating code, pull request descriptions, and even design docs is fundamentally eroding the craft and joy of development. 
 

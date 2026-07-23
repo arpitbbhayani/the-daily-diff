@@ -32,6 +32,18 @@ interface Props {
 
 const { day, articles, issue, totalIssues, prevDay, nextDay, allDays, isHomepage = false } = Astro.props;
 
+const images = import.meta.glob('/src/content/articles/**/*.{png,jpg,jpeg,svg,webp}', { eager: true });
+
+function resolveImage(article: ArticleProps, day: string) {
+	if (!article.image) return null;
+	if (article.image.startsWith('/')) {
+		return "https://tdd-edge.b-cdn.net/" + article.image;
+	}
+	const key = `/src/content/articles/${day}/${article.image}`;
+	const imageModule = images[key] as { default: { src: string } } | undefined;
+	return imageModule?.default?.src || null;
+}
+
 const label = new Date(`${day}T00:00:00`).toLocaleDateString('en-US', {
 	weekday: 'long',
 	year: 'numeric',
@@ -169,6 +181,19 @@ const pageDescription = isHomepage
 							<h2 class="story-headline">
 								<a href={article.url} target="_blank" rel="noopener noreferrer">{article.title}</a>
 							</h2>
+							{resolveImage(article, day) && (
+								<div class="story-image-wrapper is-loading">
+									<img 
+										src={resolveImage(article, day)} 
+										alt={article.title} 
+										class="story-featured-image loading" 
+										loading="lazy"
+										width="560"
+										height="418"
+										onload="this.classList.remove('loading'); this.parentElement.classList.remove('is-loading');"
+									/>
+								</div>
+							)}
 							<div class="story-body content blog-content">
 								<article.Content />
 							</div>
@@ -219,7 +244,7 @@ const pageDescription = isHomepage
 		imageModalImg.src = '';
 	}
 
-	document.querySelectorAll<HTMLImageElement>('.story-body img').forEach((img) => {
+	document.querySelectorAll<HTMLImageElement>('.story-featured-image').forEach((img) => {
 		img.classList.add('is-zoomable');
 		img.addEventListener('click', () => openImageModal(img.currentSrc || img.src, img.alt));
 	});
@@ -365,3 +390,59 @@ const pageDescription = isHomepage
 	updateActiveFilters();
 
 </script>
+
+<style>
+	.story-image-wrapper {
+		position: relative;
+		width: 100%;
+		max-width: 560px;
+		height: auto;
+		aspect-ratio: 560 / 418;
+		overflow: hidden;
+		border-radius: 4px;
+		margin: 1em 0;
+		background-color: var(--bg-sheet-alt);
+	}
+
+	.story-image-wrapper.is-loading {
+		animation: shimmer 1.5s infinite ease-in-out;
+	}
+
+	@keyframes shimmer {
+		0% {
+			background-color: var(--bg-sheet-alt);
+		}
+		50% {
+			background-color: var(--bg-well);
+		}
+		100% {
+			background-color: var(--bg-sheet-alt);
+		}
+	}
+
+	.story-featured-image {
+		width: 100%;
+		height: auto;
+		aspect-ratio: 560 / 418;
+		display: block;
+		border-radius: 4px;
+		mix-blend-mode: multiply;
+		cursor: zoom-in;
+		transition: filter 0.4s ease, opacity 0.4s ease;
+	}
+
+	.story-featured-image.loading {
+		filter: blur(15px);
+		opacity: 0.6;
+	}
+
+	:global([data-theme="dark"]) .story-featured-image {
+		mix-blend-mode: normal;
+	}
+</style>
+
+<style is:global>
+	.story-body img {
+		display: none !important;
+	}
+</style>

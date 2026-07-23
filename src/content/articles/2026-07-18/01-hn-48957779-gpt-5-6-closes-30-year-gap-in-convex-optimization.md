@@ -1,8 +1,13 @@
 ---
-title: GPT-5.6 closes 30-year gap in convex optimization
-source: hn
-url: https://old.reddit.com/r/math/comments/1uxj3cy/after_openais_cdc_proof_announcement_gpt56_used_a/
+authors:
+- mbustamanter
+comments: https://news.ycombinator.com/item?id=48957779
 date: '2026-07-18'
+hn_id: '48957779'
+image: /infographics/01-hn-48957779.jpg
+interest_score: 9
+section: ai
+source: hn
 tags:
 - catchup
 - convex-optimization
@@ -10,19 +15,12 @@ tags:
 - gpt-5.6
 - hn
 - lean
-section: ai
-interest_score: 9
-hn_id: '48957779'
-comments: https://news.ycombinator.com/item?id=48957779
+title: GPT-5.6 closes 30-year gap in convex optimization
+url: https://old.reddit.com/r/math/comments/1uxj3cy/after_openais_cdc_proof_announcement_gpt56_used_a/
 why_read: This text highlights a significant mathematical breakthrough achieved with
   AI. Readers will learn how GPT-5.6 closed a 30-year gap in convex optimization,
   with verification in Lean.
-authors:
-- mbustamanter
-image: 01-hn-48957779-infographic.png
 ---
-
-![](01-hn-48957779-infographic.png)
 
 GPT-5.6 recently closed a 30-year gap in convex optimization, not by sheer brute force, but by using a targeted prompt. The resulting proof was independently verified with the Lean theorem prover, adding a layer of rigor. This is a significant leap. 
 

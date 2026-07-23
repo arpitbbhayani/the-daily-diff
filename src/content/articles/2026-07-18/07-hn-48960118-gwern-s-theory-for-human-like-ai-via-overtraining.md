@@ -1,8 +1,13 @@
 ---
-title: Gwern's theory for human-like AI via overtraining
-source: hn
-url: https://www.seangoedecke.com/overtraining-as-the-path-to-human-like-ai/
+authors:
+- Brajeshwar
+comments: https://news.ycombinator.com/item?id=48960118
 date: '2026-07-18'
+hn_id: '48960118'
+image: /infographics/07-hn-48960118.jpg
+interest_score: 8
+section: ai
+source: hn
 tags:
 - catchup
 - grokking
@@ -10,19 +15,12 @@ tags:
 - human-like-ai
 - large-language-models
 - overtraining
-section: ai
-interest_score: 8
-hn_id: '48960118'
-comments: https://news.ycombinator.com/item?id=48960118
+title: Gwern's theory for human-like AI via overtraining
+url: https://www.seangoedecke.com/overtraining-as-the-path-to-human-like-ai/
 why_read: This post introduces Gwern's theory for achieving truly flexible human-like
   intelligence in LLMs through overtraining. Readers will understand a novel perspective
   on AI development and the related concept of grokking.
-authors:
-- Brajeshwar
-image: 07-hn-48960118-infographic.png
 ---
-
-![](07-hn-48960118-infographic.png)
 
 Overtraining large language models might be the unconventional path to achieving truly human-like AI, according to Gwern, an AI commentator known for prescient predictions since GPT-3.
 

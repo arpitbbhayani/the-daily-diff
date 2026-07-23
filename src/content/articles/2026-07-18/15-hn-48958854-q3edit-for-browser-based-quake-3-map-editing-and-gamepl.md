@@ -1,8 +1,13 @@
 ---
-title: Q3Edit for browser-based Quake 3 map editing and gameplay
-source: hn
-url: https://q3edit.com
+authors:
+- drdator
+comments: https://news.ycombinator.com/item?id=48958854
 date: '2026-07-18'
+hn_id: '48958854'
+image: /infographics/15-hn-48958854.jpg
+interest_score: 8
+section: engineering
+source: hn
 tags:
 - browser-based
 - bsp-compilation
@@ -13,20 +18,13 @@ tags:
 - quake-3-maps
 - webassembly
 - webgl2
-section: engineering
-interest_score: 8
-hn_id: '48958854'
-comments: https://news.ycombinator.com/item?id=48958854
+title: Q3Edit for browser-based Quake 3 map editing and gameplay
+url: https://q3edit.com
 why_read: This text introduces Q3Edit, a browser-based editor that enables creating,
   compiling, and playing Quake 3 maps directly in your web browser. Readers will learn
   about its core features, including WebGL2 rendering and WebAssembly compilation
   of id Software's original q3map.
-authors:
-- drdator
-image: 15-hn-48958854-infographic.png
 ---
-
-![](15-hn-48958854-infographic.png)
 
 Running complex, legacy desktop applications like Quake 3 map editors directly in the browser is no longer a pipe dream. Q3Edit demonstrates how modern web technologies, specifically WebAssembly, make this a reality.
 

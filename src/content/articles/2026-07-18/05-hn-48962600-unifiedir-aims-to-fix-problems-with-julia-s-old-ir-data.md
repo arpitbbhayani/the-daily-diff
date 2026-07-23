@@ -1,8 +1,13 @@
 ---
-title: UnifiedIR aims to fix problems with Julia's old IR data structures
-source: hn
-url: https://github.com/JuliaLang/julia/pull/62334
+authors:
+- Keno
+comments: https://news.ycombinator.com/item?id=48962600
 date: '2026-07-18'
+hn_id: '48962600'
+image: /infographics/05-hn-48962600.jpg
+interest_score: 8
+section: engineering
+source: hn
 tags:
 - catchup
 - extensibility
@@ -10,20 +15,13 @@ tags:
 - ir-data-structures
 - julia
 - unifiedir
-section: engineering
-interest_score: 8
-hn_id: '48962600'
-comments: https://news.ycombinator.com/item?id=48962600
+title: UnifiedIR aims to fix problems with Julia's old IR data structures
+url: https://github.com/JuliaLang/julia/pull/62334
 why_read: This proposal introduces UnifiedIR, a new system for Julia's Intermediate
   Representation data structures. Readers will learn about the limitations of the
   current IR and how UnifiedIR aims to provide a more extensible and user-friendly
   solution.
-authors:
-- Keno
-image: 05-hn-48962600-infographic.png
 ---
-
-![](05-hn-48962600-infographic.png)
 
 Julia is undergoing a major internal architectural overhaul, and it is fascinating. A new pull request introduces "UnifiedIR," aiming to consolidate the language's decade-old Intermediate Representation (IR) data structures.
 

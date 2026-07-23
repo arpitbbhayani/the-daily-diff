@@ -1,8 +1,13 @@
 ---
-title: Harness Engineering improves agent output by shaping its environment
-source: hn
-url: https://github.com/lopopolo/harness-engineering
+authors:
+- Ryan Lopopolo
+comments: https://news.ycombinator.com/item?id=48963483
 date: '2026-07-18'
+hn_id: '48963483'
+image: /infographics/01-hn-48963483.jpg
+interest_score: 9
+section: ai
+source: hn
 tags:
 - agent-output
 - catchup
@@ -10,20 +15,13 @@ tags:
 - harness-engineering
 - hn
 - nonfunctional-requirements
-section: ai
-interest_score: 9
-hn_id: '48963483'
-comments: https://news.ycombinator.com/item?id=48963483
+title: Harness Engineering improves agent output by shaping its environment
+url: https://github.com/lopopolo/harness-engineering
 why_read: This resource explains harness engineering, a practice focused on improving
   AI agent output by shaping its external environment, context, and tools. Readers
   will learn how this approach keeps the agent model constant while focusing on environmental
   levers to enhance performance and carry organizational requirements.
-authors:
-- Ryan Lopopolo
-image: 01-hn-48963483-infographic.png
 ---
-
-![](01-hn-48963483-infographic.png)
 
 The biggest bottleneck for AI agents is often not the model itself, but how we 'harness' it. This repository introduces 'Harness Engineering,' a critical approach to improving agent output by meticulously shaping its environment.
 

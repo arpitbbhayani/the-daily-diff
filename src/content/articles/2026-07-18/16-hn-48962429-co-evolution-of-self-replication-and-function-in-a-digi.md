@@ -14,7 +14,7 @@ authors:
 comments: https://news.ycombinator.com/item?id=48962429
 date: '2026-07-18'
 hn_id: '48962429'
-image: 16-hn-48962429-infographic.png
+image: /infographics/16-hn-48962429.jpg
 interest_score: 8
 section: ai
 source: hn
@@ -34,9 +34,6 @@ why_read: This paper reveals how self-replication and function can spontaneously
   pressure shapes reproductive architectures and how metabolic constraints lead to
   conditional halting.
 ---
-
-
-![](16-hn-48962429-infographic.png)
 
 This research dives into how complex behaviors can emerge from simple rules, even in digital systems. Imagine Z80 assembly programs starting from randomness, then spontaneously evolving self-replication alongside the ability to solve mathematical problems.
 
