@@ -1,0 +1,344 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import ThemeToggleButton from '../../components/ThemeToggleButton.astro';
+import statsRaw from '../../data/stats.jsonl?raw';
+import { parseJsonl, snapshotForDay, aggregate, daysInMonth, dayLabel, monthLabel } from '../../lib/statsAggregate';
+
+const days = parseJsonl(statsRaw).sort((a, b) => a.date.localeCompare(b.date));
+const latest = days.at(-1);
+
+const numberFormatter = new Intl.NumberFormat('en-US');
+const currencyFormatter = new Intl.NumberFormat('en-US', {
+	style: 'currency',
+	currency: 'USD',
+	minimumFractionDigits: 2,
+	maximumFractionDigits: 2,
+});
+
+const dailySnapshot = latest ? snapshotForDay(latest) : null;
+const monthSnapshot = latest ? aggregate(daysInMonth(days, latest.date.slice(0, 7))) : null;
+const customSnapshot = latest ? aggregate(days) : null;
+
+const dayOptions = [...days].reverse().map((d) => ({ value: d.date, label: dayLabel(d.date) }));
+const firstDate = days[0]?.date;
+const lastDate = latest?.date;
+const thisMonthLabel = latest ? monthLabel(latest.date) : '';
+---
+
+<Layout
+	title="Stats | The Daily Diff"
+	description="Readership analytics and generation cost for The Daily Diff."
+>
+	<main class="page-container stats-page">
+		<header class="archive-header">
+			<div class="archive-title-group">
+				<a class="masthead-eyebrow-link stats-home-link" href="/" rel="noopener noreferrer">
+					<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"></path><path d="m12 19-7-7 7-7"></path></svg>
+					<span>tdd.cat</span>
+				</a>
+				<h1 class="archive-heading">Stats</h1>
+			</div>
+			<div class="archive-actions-group">
+				<a class="archive-latest-link" href="/archive/">Archive &rsaquo;</a>
+				<ThemeToggleButton />
+			</div>
+		</header>
+		<hr class="archive-rule-thin" />
+
+		{
+			!latest || !dailySnapshot || !monthSnapshot || !customSnapshot ? (
+				<div class="empty-state">
+					<h3 class="empty-state-title">No Stats Yet</h3>
+					<p class="empty-state-desc">
+						Add a day to <code>src/data/stats.json</code> to see readership and cost figures here.
+					</p>
+				</div>
+			) : (
+				<section class="stats-section-wrap">
+					<div class="filter-bar stats-view-bar">
+						<div class="filter-group" id="stats-view-toggle">
+							<span class="filter-label">View</span>
+							<button class="filter-btn active" data-view="daily">Daily</button>
+							<button class="filter-btn" data-view="month">This Month</button>
+							<button class="filter-btn" data-view="custom">Custom</button>
+						</div>
+					</div>
+
+					<section class="stats-view" id="stats-view-daily">
+						<div class="stats-controls">
+							<label class="stats-control-label" for="daily-select">Day</label>
+							<select id="daily-select" class="stats-select">
+								{dayOptions.map(({ value, label }) => (
+									<option value={value} selected={value === lastDate}>
+										{label}
+									</option>
+								))}
+							</select>
+						</div>
+
+						<div class="stats-cards">
+							<div class="stats-card">
+								<span class="stats-card-value" id="daily-card-views">{numberFormatter.format(dailySnapshot.totalViews)}</span>
+								<span class="stats-card-label">Total Views</span>
+							</div>
+							<div class="stats-card">
+								<span class="stats-card-value" id="daily-card-visitors">{numberFormatter.format(dailySnapshot.uniqueVisitors)}</span>
+								<span class="stats-card-label">Unique Visitors</span>
+							</div>
+							<div class="stats-card">
+								<span class="stats-card-value" id="daily-card-tokens">{numberFormatter.format(dailySnapshot.tokenUsage.totalTokens)}</span>
+								<span class="stats-card-label">Tokens Used</span>
+							</div>
+							<div class="stats-card">
+								<span class="stats-card-value" id="daily-card-cost">{currencyFormatter.format(dailySnapshot.tokenUsage.costUsd)}</span>
+								<span class="stats-card-label">Generation Cost</span>
+							</div>
+						</div>
+
+						<section class="stats-section">
+							<h2 class="stats-section-title">Views by Country</h2>
+							<div class="stats-country-list" id="daily-country-list" />
+						</section>
+
+						<section class="stats-section">
+							<h2 class="stats-section-title">Token Usage &amp; Cost</h2>
+							<div class="stats-token-grid">
+								<div class="stats-token-item">
+									<span class="stats-token-value" id="daily-token-input">{numberFormatter.format(dailySnapshot.tokenUsage.inputTokens)}</span>
+									<span class="stats-token-label">Input Tokens</span>
+								</div>
+								<div class="stats-token-item">
+									<span class="stats-token-value" id="daily-token-output">{numberFormatter.format(dailySnapshot.tokenUsage.outputTokens)}</span>
+									<span class="stats-token-label">Output Tokens</span>
+								</div>
+								<div class="stats-token-item">
+									<span class="stats-token-value" id="daily-token-cost">{currencyFormatter.format(dailySnapshot.tokenUsage.costUsd)}</span>
+									<span class="stats-token-label">Cost (USD)</span>
+								</div>
+							</div>
+						</section>
+					</section>
+
+					<section class="stats-view" id="stats-view-month" hidden>
+						<p class="stats-section-note stats-month-label">{thisMonthLabel}</p>
+
+						<div class="stats-cards">
+							<div class="stats-card">
+								<span class="stats-card-value" id="month-card-views">{numberFormatter.format(monthSnapshot.totalViews)}</span>
+								<span class="stats-card-label">Total Views</span>
+							</div>
+							<div class="stats-card">
+								<span class="stats-card-value" id="month-card-visitors">{numberFormatter.format(monthSnapshot.uniqueVisitors)}</span>
+								<span class="stats-card-label">Unique Visitors</span>
+							</div>
+							<div class="stats-card">
+								<span class="stats-card-value" id="month-card-tokens">{numberFormatter.format(monthSnapshot.tokenUsage.totalTokens)}</span>
+								<span class="stats-card-label">Tokens Used</span>
+							</div>
+							<div class="stats-card">
+								<span class="stats-card-value" id="month-card-cost">{currencyFormatter.format(monthSnapshot.tokenUsage.costUsd)}</span>
+								<span class="stats-card-label">Generation Cost</span>
+							</div>
+						</div>
+
+						<section class="stats-section">
+							<h2 class="stats-section-title">Views by Country</h2>
+							<div class="stats-country-list" id="month-country-list" />
+						</section>
+
+						<section class="stats-section">
+							<h2 class="stats-section-title">Token Usage &amp; Cost</h2>
+							<div class="stats-token-grid">
+								<div class="stats-token-item">
+									<span class="stats-token-value" id="month-token-input">{numberFormatter.format(monthSnapshot.tokenUsage.inputTokens)}</span>
+									<span class="stats-token-label">Input Tokens</span>
+								</div>
+								<div class="stats-token-item">
+									<span class="stats-token-value" id="month-token-output">{numberFormatter.format(monthSnapshot.tokenUsage.outputTokens)}</span>
+									<span class="stats-token-label">Output Tokens</span>
+								</div>
+								<div class="stats-token-item">
+									<span class="stats-token-value" id="month-token-cost">{currencyFormatter.format(monthSnapshot.tokenUsage.costUsd)}</span>
+									<span class="stats-token-label">Cost (USD)</span>
+								</div>
+							</div>
+						</section>
+					</section>
+
+					<section class="stats-view" id="stats-view-custom" hidden>
+						<div class="stats-controls">
+							<label class="stats-control-label" for="custom-from">From</label>
+							<input type="date" id="custom-from" class="stats-date-input" min={firstDate} max={lastDate} value={firstDate} />
+							<label class="stats-control-label" for="custom-to">To</label>
+							<input type="date" id="custom-to" class="stats-date-input" min={firstDate} max={lastDate} value={lastDate} />
+						</div>
+
+						<div class="stats-cards">
+							<div class="stats-card">
+								<span class="stats-card-value" id="custom-card-views">{numberFormatter.format(customSnapshot.totalViews)}</span>
+								<span class="stats-card-label">Total Views</span>
+							</div>
+							<div class="stats-card">
+								<span class="stats-card-value" id="custom-card-visitors">{numberFormatter.format(customSnapshot.uniqueVisitors)}</span>
+								<span class="stats-card-label">Unique Visitors</span>
+							</div>
+							<div class="stats-card">
+								<span class="stats-card-value" id="custom-card-tokens">{numberFormatter.format(customSnapshot.tokenUsage.totalTokens)}</span>
+								<span class="stats-card-label">Tokens Used</span>
+							</div>
+							<div class="stats-card">
+								<span class="stats-card-value" id="custom-card-cost">{currencyFormatter.format(customSnapshot.tokenUsage.costUsd)}</span>
+								<span class="stats-card-label">Generation Cost</span>
+							</div>
+						</div>
+
+						<section class="stats-section">
+							<h2 class="stats-section-title">Views by Country</h2>
+							<div class="stats-country-list" id="custom-country-list" />
+						</section>
+
+						<section class="stats-section">
+							<h2 class="stats-section-title">Token Usage &amp; Cost</h2>
+							<div class="stats-token-grid">
+								<div class="stats-token-item">
+									<span class="stats-token-value" id="custom-token-input">{numberFormatter.format(customSnapshot.tokenUsage.inputTokens)}</span>
+									<span class="stats-token-label">Input Tokens</span>
+								</div>
+								<div class="stats-token-item">
+									<span class="stats-token-value" id="custom-token-output">{numberFormatter.format(customSnapshot.tokenUsage.outputTokens)}</span>
+									<span class="stats-token-label">Output Tokens</span>
+								</div>
+								<div class="stats-token-item">
+									<span class="stats-token-value" id="custom-token-cost">{currencyFormatter.format(customSnapshot.tokenUsage.costUsd)}</span>
+									<span class="stats-token-label">Cost (USD)</span>
+								</div>
+							</div>
+						</section>
+					</section>
+				</section>
+			)
+		}
+	</main>
+</Layout>
+
+<script>
+	import statsRaw from '../../data/stats.jsonl?raw';
+	import { parseJsonl, aggregate, daysInRange } from '../../lib/statsAggregate';
+
+	const days = parseJsonl(statsRaw).sort((a, b) => a.date.localeCompare(b.date));
+	const byDate = new Map(days.map((d) => [d.date, d]));
+
+	const numberFormatter = new Intl.NumberFormat('en-US');
+	const currencyFormatter = new Intl.NumberFormat('en-US', {
+		style: 'currency',
+		currency: 'USD',
+		minimumFractionDigits: 2,
+		maximumFractionDigits: 2,
+	});
+
+	function renderCountryList(listEl: Element, countries: { country: string; views: number }[]) {
+		listEl.innerHTML = '';
+		const sorted = [...countries].sort((a, b) => b.views - a.views);
+		const max = Math.max(...sorted.map((c) => c.views), 1);
+		for (const { country, views } of sorted) {
+			const row = document.createElement('div');
+			row.className = 'stats-country-row';
+			row.innerHTML = `
+				<span class="stats-country-name">${country}</span>
+				<div class="stats-country-bar-track">
+					<div class="stats-country-bar-fill" style="width: ${(views / max) * 100}%"></div>
+				</div>
+				<span class="stats-country-value">${numberFormatter.format(views)}</span>
+			`;
+			listEl.appendChild(row);
+		}
+	}
+
+	function renderView(
+		prefix: string,
+		snapshot: {
+			totalViews: number;
+			uniqueVisitors: number;
+			countries: { country: string; views: number }[];
+			tokenUsage: { inputTokens: number; outputTokens: number; totalTokens: number; costUsd: number };
+		}
+	) {
+		const setText = (id: string, value: string) => {
+			const el = document.getElementById(id);
+			if (el) el.textContent = value;
+		};
+		setText(`${prefix}-card-views`, numberFormatter.format(snapshot.totalViews));
+		setText(`${prefix}-card-visitors`, numberFormatter.format(snapshot.uniqueVisitors));
+		setText(`${prefix}-card-tokens`, numberFormatter.format(snapshot.tokenUsage.totalTokens));
+		setText(`${prefix}-card-cost`, currencyFormatter.format(snapshot.tokenUsage.costUsd));
+		setText(`${prefix}-token-input`, numberFormatter.format(snapshot.tokenUsage.inputTokens));
+		setText(`${prefix}-token-output`, numberFormatter.format(snapshot.tokenUsage.outputTokens));
+		setText(`${prefix}-token-cost`, currencyFormatter.format(snapshot.tokenUsage.costUsd));
+
+		const listEl = document.getElementById(`${prefix}-country-list`);
+		if (listEl) renderCountryList(listEl, snapshot.countries);
+	}
+
+	// Daily view: re-render when the selected day changes
+	const dailySelect = document.getElementById('daily-select') as HTMLSelectElement | null;
+	dailySelect?.addEventListener('change', () => {
+		const day = byDate.get(dailySelect.value);
+		if (!day) return;
+		renderView('daily', {
+			totalViews: day.analytics.totalViews,
+			uniqueVisitors: day.analytics.uniqueVisitors,
+			countries: day.analytics.countries,
+			tokenUsage: day.tokenUsage,
+		});
+	});
+
+	// Custom view: re-render when the date range changes
+	const fromInput = document.getElementById('custom-from') as HTMLInputElement | null;
+	const toInput = document.getElementById('custom-to') as HTMLInputElement | null;
+
+	function renderCustomRange() {
+		if (!fromInput || !toInput) return;
+		const from = fromInput.value;
+		const to = toInput.value;
+		if (!from || !to || from > to) return;
+		renderView('custom', aggregate(daysInRange(days, from, to)));
+	}
+
+	fromInput?.addEventListener('change', renderCustomRange);
+	toInput?.addEventListener('change', renderCustomRange);
+
+	// Country lists aren't server-rendered, so populate all three views on load
+	const initialDay = byDate.get(dailySelect?.value ?? '');
+	if (initialDay) {
+		renderView('daily', {
+			totalViews: initialDay.analytics.totalViews,
+			uniqueVisitors: initialDay.analytics.uniqueVisitors,
+			countries: initialDay.analytics.countries,
+			tokenUsage: initialDay.tokenUsage,
+		});
+	}
+	const monthPrefix = days.at(-1)?.date.slice(0, 7);
+	if (monthPrefix) {
+		renderView('month', aggregate(days.filter((d) => d.date.startsWith(monthPrefix))));
+	}
+	renderCustomRange();
+
+	// View toggle
+	const viewButtons = document.querySelectorAll<HTMLButtonElement>('#stats-view-toggle .filter-btn');
+	const views: Record<string, HTMLElement | null> = {
+		daily: document.getElementById('stats-view-daily'),
+		month: document.getElementById('stats-view-month'),
+		custom: document.getElementById('stats-view-custom'),
+	};
+
+	viewButtons.forEach((btn) => {
+		btn.addEventListener('click', () => {
+			viewButtons.forEach((b) => b.classList.remove('active'));
+			btn.classList.add('active');
+			const target = btn.getAttribute('data-view')!;
+			for (const [key, el] of Object.entries(views)) {
+				if (el) el.hidden = key !== target;
+			}
+		});
+	});
+</script>
