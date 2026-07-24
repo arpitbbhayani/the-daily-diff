@@ -1,8 +1,13 @@
 ---
-title: Uncovering red flags in a suspicious remote job offer
-source: hn
-url: https://citizendot.github.io/articles/fake-job-interview-git-hook-malware/
+authors:
+- Appaji
+comments: https://news.ycombinator.com/item?id=49013036
 date: '2026-07-22'
+hn_id: '49013036'
+image: /infographics/04-hn-49013036.jpg
+interest_score: 8
+section: career
+source: hn
 tags:
 - catchup
 - hn
@@ -13,15 +18,11 @@ tags:
 - scam-detection
 - take-home-assignment
 - y-combinator-startup
-section: career
-interest_score: 8
-hn_id: '49013036'
-comments: https://news.ycombinator.com/item?id=49013036
+title: Uncovering red flags in a suspicious remote job offer
+url: https://citizendot.github.io/articles/fake-job-interview-git-hook-malware/
 why_read: Read this to learn how to identify various red flags in a job recruitment
   process, particularly for high-paying remote roles. It illustrates a real-world
   example of a suspicious take-home assignment.
-authors:
-- Appaji
 ---
 
 A recruiter sent a take-home project that hid a full-blown malware operation, discovered by an unsuspecting engineer. They found a malicious Git hook designed to encode .git folder contents into base64 and exfiltrate them to a remote server.
