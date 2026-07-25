@@ -1,6 +1,7 @@
 import rss from '@astrojs/rss';
 import { getCollection } from 'astro:content';
 import type { APIContext } from 'astro';
+import { SITE_METADATA } from '../config';
 
 export async function GET(context: APIContext) {
   const entries = await getCollection('articles');
@@ -20,11 +21,10 @@ export async function GET(context: APIContext) {
   const items = chronological.map((day) => {
     const dayEntries = byDay.get(day)!;
     
-    // Sort articles by interest score to find the lead story
+    // Sort articles by interest score to find top stories
     const sorted = [...dayEntries].sort(
       (a, b) => (b.data.interest_score ?? 0) - (a.data.interest_score ?? 0)
     );
-    const lead = sorted[0];
     
     const label = new Date(`${day}T00:00:00`).toLocaleDateString('en-US', {
       weekday: 'long',
@@ -33,12 +33,24 @@ export async function GET(context: APIContext) {
       day: 'numeric',
     });
 
-    const description = `${dayEntries.length} curated engineering ${
-      dayEntries.length === 1 ? 'read' : 'reads'
-    } from arXiv and Hacker News for ${label}${lead ? `, including "${lead.data.title}"` : ''}.`;
+    // Get up to top 5 stories
+    const topStories = sorted.slice(0, 5);
+    const storyBullets = topStories
+      .map((entry) => `<li>${entry.data.title}</li>`)
+      .join('');
+
+    const totalCount = dayEntries.length;
+    const countText = `${totalCount} high-signal ${
+      totalCount === 1 ? 'paper, discussion, or insight' : 'papers, discussions, and insights'
+    }`;
+
+    const description = `<p><strong>Featured stories:</strong></p>` +
+      `<ul>${storyBullets}</ul>` +
+      `<p>A curation of ${countText} for ${label}. ` +
+      `Built for software engineers who value depth over noise.</p>`;
 
     return {
-      title: `The Daily Diff — ${label}`,
+      title: `${SITE_METADATA.name} — ${label}`,
       pubDate: new Date(`${day}T00:00:00`),
       description,
       link: `/${day}/`,
@@ -46,8 +58,8 @@ export async function GET(context: APIContext) {
   });
 
   return rss({
-    title: 'The Daily Diff',
-    description: 'The Daily Diff is a daily digest of curated arXiv papers and Hacker News threads for engineers — signal, not noise.',
+    title: SITE_METADATA.name,
+    description: SITE_METADATA.description,
     site: context.site || 'https://tdd.cat',
     items,
   });
