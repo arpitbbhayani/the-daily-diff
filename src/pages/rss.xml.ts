@@ -4,7 +4,7 @@ import type { APIContext } from 'astro';
 import { SITE_METADATA } from '../config';
 
 export async function GET(context: APIContext) {
-  const entries = await getCollection('articles');
+  const entries = await getCollection('stories');
   
   // Group entries by day
   const byDay = new Map<string, typeof entries>();
@@ -21,7 +21,7 @@ export async function GET(context: APIContext) {
   const items = chronological.map((day) => {
     const dayEntries = byDay.get(day)!;
     
-    // Sort articles by interest score to find top stories
+    // Sort stories by interest score to find top stories
     const sorted = [...dayEntries].sort(
       (a, b) => (b.data.interest_score ?? 0) - (a.data.interest_score ?? 0)
     );

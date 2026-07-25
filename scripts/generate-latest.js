@@ -1,21 +1,21 @@
 import fs from 'fs';
 import path from 'path';
 
-// Find the latest day directory under src/content/articles
-const articlesDir = path.join(process.cwd(), 'src/content/articles');
-const days = fs.readdirSync(articlesDir)
-  .filter(file => fs.statSync(path.join(articlesDir, file)).isDirectory())
+// Find the latest day directory under src/content/stories
+const storiesDir = path.join(process.cwd(), 'src/content/stories');
+const days = fs.readdirSync(storiesDir)
+  .filter(file => fs.statSync(path.join(storiesDir, file)).isDirectory())
   .sort();
 
 if (days.length === 0) {
-  console.error('No articles found');
+  console.error('No stories found');
   process.exit(1);
 }
 
 const latestDay = days[days.length - 1];
 console.log(`Latest day: ${latestDay}`);
 
-const latestDayDir = path.join(articlesDir, latestDay);
+const latestDayDir = path.join(storiesDir, latestDay);
 const files = fs.readdirSync(latestDayDir)
   .filter(file => file.endsWith('.md'))
   .sort();
@@ -30,7 +30,7 @@ if (files.length === 0) {
 // We separate consecutive files with 80 "-" characters.
 const separator = '\n\n' + '-'.repeat(80) + '\n\n';
 
-const rawArticles = files.map(file => {
+const rawStories = files.map(file => {
   const content = fs.readFileSync(path.join(latestDayDir, file), 'utf8');
   return {
     filename: file,
@@ -38,7 +38,7 @@ const rawArticles = files.map(file => {
   };
 });
 
-const concatenated = rawArticles.map(a => a.rawContent).join(separator);
+const concatenated = rawStories.map(a => a.rawContent).join(separator);
 
 // Write to public/latest.md -> Wait, it writes to public/md!
 const publicDir = path.join(process.cwd(), 'public');
@@ -153,8 +153,8 @@ function parseYAML(yamlString) {
   return result;
 }
 
-const articlesJson = rawArticles.map(art => {
-  const parsed = parseFrontmatterAndContent(art.rawContent);
+const storiesJson = rawStories.map(story => {
+  const parsed = parseFrontmatterAndContent(story.rawContent);
   return {
     ...parsed.metadata,
     content: parsed.content
@@ -165,7 +165,7 @@ const jsonOutput = {
   name: siteName,
   description: siteDescription,
   date: latestDay,
-  articles: articlesJson
+  stories: storiesJson
 };
 
 const targetPathJSON = path.join(publicDir, 'json');

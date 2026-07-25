@@ -9,7 +9,7 @@ const SOURCE_LABEL: Record<string, string> = {
 	hn: 'HN',
 };
 
-interface ArticleProps {
+interface StoryProps {
 	slug: string;
 	title: string;
 	source: string;
@@ -29,7 +29,7 @@ interface ArticleProps {
 
 interface Props {
 	day: string;
-	articles: ArticleProps[];
+	stories: StoryProps[];
 	issue: number;
 	totalIssues: number;
 	prevDay: string | null;
@@ -38,16 +38,16 @@ interface Props {
 	isHomepage?: boolean;
 }
 
-const { day, articles, issue, totalIssues, prevDay, nextDay, allDays, isHomepage = false } = Astro.props;
+const { day, stories, issue, totalIssues, prevDay, nextDay, allDays, isHomepage = false } = Astro.props;
 
-const images = import.meta.glob('/src/content/articles/**/*.{png,jpg,jpeg,svg,webp}', { eager: true });
+const images = import.meta.glob('/src/content/stories/**/*.{png,jpg,jpeg,svg,webp}', { eager: true });
 
-function resolveImage(article: ArticleProps, day: string) {
-	if (!article.image) return null;
-	if (article.image.startsWith('/')) {
-		return "https://tdd-edge.b-cdn.net/" + article.image;
+function resolveImage(story: StoryProps, day: string) {
+	if (!story.image) return null;
+	if (story.image.startsWith('/')) {
+		return "https://tdd-edge.b-cdn.net/" + story.image;
 	}
-	const key = `/src/content/articles/${day}/${article.image}`;
+	const key = `/src/content/stories/${day}/${story.image}`;
 	const imageModule = images[key] as { default: { src: string } } | undefined;
 	return imageModule?.default?.src || null;
 }
@@ -59,19 +59,19 @@ const label = new Date(`${day}T00:00:00`).toLocaleDateString('en-US', {
 	day: 'numeric',
 });
 
-function bylineFor(article: ArticleProps) {
-	if (article.authors.length > 0) {
-		return `By ${article.authors[0]}${article.authors.length > 1 ? ' et al.' : ''}`;
+function bylineFor(story: StoryProps) {
+	if (story.authors.length > 0) {
+		return `By ${story.authors[0]}${story.authors.length > 1 ? ' et al.' : ''}`;
 	}
 	return null;
 }
 
-function sourceLabelFor(article: ArticleProps) {
-	return SOURCE_LABEL[article.source] ?? article.source.toUpperCase();
+function sourceLabelFor(story: StoryProps) {
+	return SOURCE_LABEL[story.source] ?? story.source.toUpperCase();
 }
 
-const lead = articles[0];
-const rest = articles.slice(1);
+const lead = stories[0];
+const rest = stories.slice(1);
 
 const pageTitle = isHomepage 
 	? `${SITE_METADATA.name} | ${SITE_METADATA.tagline}` 
@@ -82,7 +82,7 @@ const pageDescription = SITE_METADATA.longDescription;
 
 <Layout title={pageTitle} description={pageDescription} image={resolveImage(lead, day) || undefined}>
 	<main class="page-container">
-		<article id="newspaper-sheet" class="newspaper-sheet" data-day={day} data-count={articles.length} data-prev={prevDay} data-next={nextDay}>
+		<article id="newspaper-sheet" class="newspaper-sheet" data-day={day} data-count={stories.length} data-prev={prevDay} data-next={nextDay}>
 			<header class="masthead">
 				<div class="masthead-eyebrow">
 					<span class="masthead-eyebrow-left">
@@ -105,7 +105,7 @@ const pageDescription = SITE_METADATA.longDescription;
 						</button>
 					</div>
 					<div class="masthead-eyebrow-right">
-						<span id="masthead-story-count">{articles.length} {articles.length === 1 ? 'Story' : 'Stories'}</span>
+						<span id="masthead-story-count">{stories.length} {stories.length === 1 ? 'Story' : 'Stories'}</span>
 						<ThemeToggleButton />
 					</div>
 				</div>
@@ -159,43 +159,43 @@ const pageDescription = SITE_METADATA.longDescription;
 			</header>
 
 			<div class="no-stories-message" id="no-stories-message">
-				<p>No articles match the selected filters in today's edition.</p>
+				<p>No stories match the selected filters in today's edition.</p>
 			</div>
 
-			{articles.length > 0 && (
+			{stories.length > 0 && (
 				<section class="newspaper-columns">
-					{articles.map((article, index) => (
-						<article class={`story ${index === 0 ? 'is-lead' : ''}`} data-source={article.source} data-interest={article.interest_score}>
+					{stories.map((story, index) => (
+						<article class={`story ${index === 0 ? 'is-lead' : ''}`} data-source={story.source} data-interest={story.interest_score}>
 							<div class="story-byline">
-								{bylineFor(article) && <>{bylineFor(article)}<span class="story-source-sep">&middot;</span></>}
-								<a class="story-source-link" href={article.url} target="_blank" rel="noopener noreferrer">{sourceLabelFor(article)} &rsaquo;</a>
-								{article.comments && (
+								{bylineFor(story) && <>{bylineFor(story)}<span class="story-source-sep">&middot;</span></>}
+								<a class="story-source-link" href={story.url} target="_blank" rel="noopener noreferrer">{sourceLabelFor(story)} &rsaquo;</a>
+								{story.comments && (
 									<>
 										<span class="story-source-sep">&middot;</span>
-										<a class="story-source-link" href={article.comments} target="_blank" rel="noopener noreferrer">Discuss &rsaquo;</a>
+										<a class="story-source-link" href={story.comments} target="_blank" rel="noopener noreferrer">Discuss &rsaquo;</a>
 									</>
 								)}
-								{(article.why_read || article.authors.length > 0) && (
+								{(story.why_read || story.authors.length > 0) && (
 									<span class="why-info" tabindex="0">
 										<svg class="why-info-icon" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
 										<span class="why-tooltip">
-											{article.why_read && <><strong>Why read:</strong> {article.why_read}</>}
-											{article.why_read && article.authors.length > 0 && <br />}
-											{article.authors.length > 0 && (
-												<><strong>Authors:</strong> {article.authors.join(', ')}</>
+											{story.why_read && <><strong>Why read:</strong> {story.why_read}</>}
+											{story.why_read && story.authors.length > 0 && <br />}
+											{story.authors.length > 0 && (
+												<><strong>Authors:</strong> {story.authors.join(', ')}</>
 											)}
 										</span>
 									</span>
 								)}
 							</div>
 							<h2 class="story-headline">
-								<a href={article.url} target="_blank" rel="noopener noreferrer">{article.title}</a>
+								<a href={story.url} target="_blank" rel="noopener noreferrer">{story.title}</a>
 							</h2>
-							{resolveImage(article, day) && (
+							{resolveImage(story, day) && (
 								<div class="story-image-wrapper is-loading">
 									<img 
-										src={resolveImage(article, day)} 
-										alt={article.title} 
+										src={resolveImage(story, day)} 
+										alt={story.title} 
 										class="story-featured-image loading" 
 										loading="lazy"
 										width="560"
@@ -205,7 +205,7 @@ const pageDescription = SITE_METADATA.longDescription;
 								</div>
 							)}
 							<div class="story-body content blog-content">
-								<article.Content />
+								<story.Content />
 							</div>
 						</article>
 					))}
