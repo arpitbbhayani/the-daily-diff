@@ -1,0 +1,236 @@
+---
+---
+
+<div id="pwa-install-banner" class="pwa-banner" aria-hidden="true" hidden>
+	<div class="pwa-banner-content">
+		<div class="pwa-banner-info">
+			<img class="pwa-banner-icon" src="/icon.png" alt="The Daily Diff Icon" width="40" height="40" />
+			<div class="pwa-banner-text">
+				<strong class="pwa-banner-title">The Daily Diff</strong>
+				<span class="pwa-banner-desc" id="pwa-desc-text">Install the app for offline reading and faster access.</span>
+			</div>
+		</div>
+		<div class="pwa-banner-actions">
+			<button id="pwa-install-btn" class="pwa-action-btn">Install</button>
+			<button id="pwa-close-btn" class="pwa-close-btn" aria-label="Dismiss">&times;</button>
+		</div>
+	</div>
+</div>
+
+<style>
+	.pwa-banner {
+		position: fixed;
+		bottom: 1rem;
+		left: 1rem;
+		right: 1rem;
+		background-color: var(--bg-sheet);
+		border: 1px solid var(--rule);
+		border-radius: 6px;
+		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.1);
+		z-index: 9999;
+		padding: 0.75rem 1rem;
+		font-family: var(--font-body);
+		transition: transform 0.3s ease, opacity 0.3s ease;
+		transform: translateY(100px);
+		opacity: 0;
+	}
+
+	.pwa-banner.is-visible {
+		transform: translateY(0);
+		opacity: 1;
+	}
+
+	.pwa-banner-content {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 1rem;
+		max-width: var(--sheet-max);
+		margin: 0 auto;
+	}
+
+	.pwa-banner-info {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+	}
+
+	.pwa-banner-icon {
+		border-radius: 8px;
+		border: 1px solid var(--rule-soft);
+	}
+
+	.pwa-banner-text {
+		display: flex;
+		flex-direction: column;
+		line-height: 1.35;
+	}
+
+	.pwa-banner-title {
+		font-family: var(--font-display);
+		font-size: 0.85rem;
+		color: var(--ink);
+	}
+
+	.pwa-banner-desc {
+		font-size: 0.72rem;
+		color: var(--ink-soft);
+	}
+
+	.pwa-banner-actions {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+	}
+
+	.pwa-action-btn {
+		background-color: var(--accent);
+		color: var(--ink-invert);
+		border: 1px solid var(--accent);
+		font-size: 0.75rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		padding: 0.4rem 0.8rem;
+		border-radius: 4px;
+		cursor: pointer;
+		white-space: nowrap;
+		transition: background-color 0.2s, border-color 0.2s;
+	}
+
+	.pwa-action-btn:hover {
+		background-color: var(--ink);
+		border-color: var(--ink);
+	}
+
+	.pwa-close-btn {
+		background: none;
+		border: none;
+		color: var(--ink-faint);
+		font-size: 1.5rem;
+		line-height: 1;
+		padding: 0 0.25rem;
+		cursor: pointer;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.pwa-close-btn:hover {
+		color: var(--ink);
+	}
+
+	@media (max-width: 600px) {
+		.pwa-banner {
+			bottom: 0.5rem;
+			left: 0.5rem;
+			right: 0.5rem;
+			padding: 0.6rem 0.8rem;
+		}
+
+		.pwa-banner-title {
+			font-size: 0.8rem;
+		}
+
+		.pwa-banner-desc {
+			font-size: 0.65rem;
+		}
+
+		.pwa-action-btn {
+			font-size: 0.7rem;
+			padding: 0.35rem 0.65rem;
+		}
+	}
+</style>
+
+<script>
+	let deferredPrompt: any = null;
+
+	const banner = document.getElementById('pwa-install-banner') as HTMLElement | null;
+	const installBtn = document.getElementById('pwa-install-btn') as HTMLButtonElement | null;
+	const closeBtn = document.getElementById('pwa-close-btn') as HTMLButtonElement | null;
+	const descText = document.getElementById('pwa-desc-text') as HTMLElement | null;
+
+	// Check if already in standalone (installed) mode
+	const isStandalone = window.matchMedia('(display-mode: standalone)').matches 
+		|| (window.navigator as any).standalone;
+
+	// Check if the user has dismissed this session/permanently
+	const isDismissed = localStorage.getItem('pwa-banner-dismissed');
+
+	// Detect Apple/iOS devices
+	const isiOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+
+	function showBanner() {
+		if (banner && !isStandalone && !isDismissed) {
+			banner.removeAttribute('hidden');
+			banner.setAttribute('aria-hidden', 'false');
+			// Allow a tiny paint delay to trigger css transition slide-up
+			setTimeout(() => {
+				banner.classList.add('is-visible');
+			}, 100);
+		}
+	}
+
+	function dismissBanner() {
+		if (banner) {
+			banner.classList.remove('is-visible');
+			setTimeout(() => {
+				banner.setAttribute('hidden', 'true');
+				banner.setAttribute('aria-hidden', 'true');
+			}, 300);
+			localStorage.setItem('pwa-banner-dismissed', 'true');
+		}
+	}
+
+	// 1. Android / Chrome & other compatible browsers:
+	window.addEventListener('beforeinstallprompt', (e) => {
+		// Prevent Chrome 67 and earlier from automatically showing the prompt
+		e.preventDefault();
+		// Stash the event so it can be triggered later.
+		deferredPrompt = e;
+		// Show our custom install banner
+		showBanner();
+	});
+
+	if (installBtn) {
+		installBtn.addEventListener('click', async () => {
+			if (deferredPrompt) {
+				// Show native install prompt
+				deferredPrompt.prompt();
+				// Wait for user to respond
+				const { outcome } = await deferredPrompt.userChoice;
+				console.log(`User response to install prompt: ${outcome}`);
+				// We no longer need the prompt
+				deferredPrompt = null;
+				dismissBanner();
+			} else if (isiOS) {
+				// If iOS, clicking "Install" tells them how to install
+				if (descText) {
+					descText.innerHTML = 'Tap the <strong style="color:var(--accent);">Share</strong> button, then select <strong style="color:var(--accent);">Add to Home Screen</strong>.';
+				}
+				if (installBtn) {
+					installBtn.style.display = 'none'; // Hide install button once instruction is displayed
+				}
+			}
+		});
+	}
+
+	if (closeBtn) {
+		closeBtn.addEventListener('click', () => {
+			dismissBanner();
+		});
+	}
+
+	// 2. iOS Safari (which doesn't support 'beforeinstallprompt'):
+	// If it's iOS, not standalone, and not dismissed, show instruction banner
+	if (isiOS && !isStandalone && !isDismissed) {
+		// Wait 2 seconds to not overwhelm the user immediately on page load
+		setTimeout(() => {
+			if (installBtn) {
+				installBtn.textContent = 'How-To';
+			}
+			showBanner();
+		}, 2000);
+	}
+</script>

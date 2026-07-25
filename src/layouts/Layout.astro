@@ -1,5 +1,6 @@
 ---
 import '../styles/main.scss';
+import PWAInstallBanner from '../components/PWAInstallBanner.astro';
 
 interface Props {
 	title?: string;
@@ -87,15 +88,33 @@ const gaId = "G-D4HXVQC71F";
 		<script is:inline>
 			if ('serviceWorker' in navigator) {
 				window.addEventListener('load', () => {
-					navigator.serviceWorker.register('/sw.js')
-						.then((reg) => console.log('PWA ServiceWorker Active:', reg.scope))
-						.catch((err) => console.warn('PWA ServiceWorker Failed:', err));
+					navigator.serviceWorker.getRegistrations().then((registrations) => {
+						// 1. Proactively unregister any legacy or versioned service workers
+						for (const reg of registrations) {
+							if (reg.active && (reg.active.scriptURL.includes('?v=') || !reg.active.scriptURL.endsWith('/sw.js'))) {
+								reg.unregister().then(() => {
+									console.log('Successfully removed old versioned service worker:', reg.active.scriptURL);
+								});
+							}
+						}
+						
+						// 2. Register the stable, clean, non-versioned service worker
+						navigator.serviceWorker.register('/sw.js')
+							.then((reg) => {
+								console.log('PWA ServiceWorker Active:', reg.scope);
+								if (reg) {
+									reg.update(); // Force immediate update check
+								}
+							})
+							.catch((err) => console.warn('PWA ServiceWorker Failed:', err));
+					});
 				});
 			}
 		</script>
 	</head>
 	<body>
 		<slot />
+		<PWAInstallBanner />
 	</body>
 </html>
 

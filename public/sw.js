@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tdd-cache-v2';
+const CACHE_NAME = 'the-daily-diff-cache';
 const ASSETS_TO_CACHE = [
   '/',
   '/archive/',
@@ -37,21 +37,35 @@ self.addEventListener('fetch', (event) => {
   // Skip cross-origin and non-GET requests
   if (request.method !== 'GET' || url.origin !== self.location.origin) return;
 
-  // HTML page fetches (Network-First, Fallback-to-Cache)
-  if (request.headers.get('accept')?.includes('text/html')) {
+  const isDoc = request.headers.get('accept')?.includes('text/html');
+  const isStaticResource = /\.(css|js|json|jsonl)$/i.test(url.pathname);
+
+  // 1. Network-First with Cache Fallback for HTML Documents and Code/Data resources
+  // This guarantees that online users always get the freshest layouts, styles, and data instantly on refresh.
+  if (isDoc || isStaticResource) {
     event.respondWith(
       fetch(request)
         .then((response) => {
-          const copy = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
+          if (response && response.status === 200 && response.type === 'basic') {
+            const copy = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
+          }
           return response;
         })
-        .catch(() => caches.match(request).then((cached) => cached || caches.match('/')))
+        .catch(() => {
+          return caches.match(request).then((cached) => {
+            if (cached) return cached;
+            // For documents, fall back to the root if not found in cache
+            if (isDoc) return caches.match('/');
+            return Promise.reject('Offline and asset not in cache');
+          });
+        })
     );
     return;
   }
 
-  // Static Assets (Cache-First, Fallback-to-Network)
+  // 2. Cache-First with Network Fallback for heavy media, fonts, and metadata
+  // This saves bandwidth on mobile data and ensures lightning-fast media loading.
   event.respondWith(
     caches.match(request).then((cached) => {
       if (cached) return cached;
