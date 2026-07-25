@@ -155,14 +155,11 @@
 	const isStandalone = window.matchMedia('(display-mode: standalone)').matches 
 		|| (window.navigator as any).standalone;
 
-	// Check if the user has dismissed this session/permanently
-	const isDismissed = localStorage.getItem('pwa-banner-dismissed');
-
 	// Detect Apple/iOS devices
 	const isiOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
 
 	function showBanner() {
-		if (banner && !isStandalone && !isDismissed) {
+		if (banner && !isStandalone) {
 			banner.removeAttribute('hidden');
 			banner.setAttribute('aria-hidden', 'false');
 			// Allow a tiny paint delay to trigger css transition slide-up
@@ -179,14 +176,11 @@
 				banner.setAttribute('hidden', 'true');
 				banner.setAttribute('aria-hidden', 'true');
 			}, 300);
-			localStorage.setItem('pwa-banner-dismissed', 'true');
 		}
 	}
 
 	// 1. Android / Chrome & other compatible browsers:
 	window.addEventListener('beforeinstallprompt', (e) => {
-		// Prevent Chrome 67 and earlier from automatically showing the prompt
-		e.preventDefault();
 		// Stash the event so it can be triggered later.
 		deferredPrompt = e;
 		// Show our custom install banner
@@ -223,13 +217,10 @@
 	}
 
 	// 2. iOS Safari (which doesn't support 'beforeinstallprompt'):
-	// If it's iOS, not standalone, and not dismissed, show instruction banner
-	if (isiOS && !isStandalone && !isDismissed) {
+	// If it's iOS and not standalone, show instruction banner
+	if (isiOS && !isStandalone) {
 		// Wait 2 seconds to not overwhelm the user immediately on page load
 		setTimeout(() => {
-			if (installBtn) {
-				installBtn.textContent = 'How-To';
-			}
 			showBanner();
 		}, 2000);
 	}
