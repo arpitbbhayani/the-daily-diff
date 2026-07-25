@@ -152,8 +152,13 @@ import { SITE_METADATA } from '../config';
 	const closeBtn = document.getElementById('pwa-close-btn') as HTMLButtonElement | null;
 	const descText = document.getElementById('pwa-desc-text') as HTMLElement | null;
 
-	// Detect Apple/iOS devices
-	const isiOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+	// Detect Apple/iOS/iPadOS devices (including modern iPads configured as desktop Safari)
+	const isiOS = (/iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream) || 
+		(navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+	// Check if already in standalone display mode (running as installed PWA)
+	const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
+		(navigator as any).standalone === true;
 
 	function showBanner() {
 		if (banner) {
@@ -180,8 +185,10 @@ import { SITE_METADATA } from '../config';
 	window.addEventListener('beforeinstallprompt', (e) => {
 		// Stash the event so it can be triggered later.
 		deferredPrompt = e;
-		// Show our custom install banner
-		showBanner();
+		// Show our custom install banner if not already installed/standalone
+		if (!isStandalone) {
+			showBanner();
+		}
 	});
 
 	if (installBtn) {
@@ -198,7 +205,12 @@ import { SITE_METADATA } from '../config';
 			} else if (isiOS) {
 				// If iOS, clicking "Install" tells them how to install
 				if (descText) {
-					descText.innerHTML = 'Tap the <strong style="color:var(--accent);">Share</strong> button, then select <strong style="color:var(--accent);">Add to Home Screen</strong>.';
+					const isInApp = /FBAN|FBAV|Instagram|Twitter|Slack|GSA|Line/i.test(navigator.userAgent);
+					if (isInApp) {
+						descText.innerHTML = 'Tap your browser menu or <strong style="color:var(--accent);">...</strong>, select <strong style="color:var(--accent);">Open in Safari</strong>, then try installing again.';
+					} else {
+						descText.innerHTML = 'Tap the <strong style="color:var(--accent);">Share</strong> button, then select <strong style="color:var(--accent);">Add to Home Screen</strong>.';
+					}
 				}
 				if (installBtn) {
 					installBtn.style.display = 'none'; // Hide install button once instruction is displayed
@@ -214,8 +226,8 @@ import { SITE_METADATA } from '../config';
 	}
 
 	// 2. iOS Safari (which doesn't support 'beforeinstallprompt'):
-	// If it's iOS, show instruction banner
-	if (isiOS) {
+	// If it's iOS/iPadOS and not already running as a standalone app, show instruction banner
+	if (isiOS && !isStandalone) {
 		// Wait 2 seconds to not overwhelm the user immediately on page load
 		setTimeout(() => {
 			showBanner();
