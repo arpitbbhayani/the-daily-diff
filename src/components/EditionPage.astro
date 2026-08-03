@@ -71,6 +71,27 @@ function sourceLabelFor(story: StoryProps) {
 	return SOURCE_LABEL[story.source] ?? story.source.toUpperCase();
 }
 
+// Deterministic PRNG seeded by the day, so the feature spacing looks random
+// but stays stable across re-renders of the same edition.
+function createSeededRandom(seed: string) {
+	let h = 0;
+	for (let i = 0; i < seed.length; i++) {
+		h = (Math.imul(31, h) + seed.charCodeAt(i)) | 0;
+	}
+	let state = h >>> 0;
+	return () => {
+		state = (state + 0x6d2b79f5) | 0;
+		let t = Math.imul(state ^ (state >>> 15), 1 | state);
+		t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+		return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+	};
+}
+
+function randomFeatureGap(rng: () => number) {
+	// A random multiple of 4: 4 (one horizontal after three vertical) or 8.
+	return 4 * (1 + Math.floor(rng() * 2));
+}
+
 const lead = stories[0];
 const rest = stories.slice(1);
 
@@ -162,10 +183,47 @@ const pageDescription = SITE_METADATA.longDescription;
 				<p>No stories match the selected filters in today's edition.</p>
 			</div>
 
-			{stories.length > 0 && (
+			{stories.length > 0 && (() => {
+				const featureRng = createSeededRandom(day);
+				let storiesSinceFeature = 0;
+				let nextFeatureGap = randomFeatureGap(featureRng);
+				let featureCount = 0;
+
+				return (
 				<section class="newspaper-columns">
-					{stories.map((story, index) => (
-						<article class={`story ${index === 0 ? 'is-lead' : ''}`} data-source={story.source} data-interest={story.interest_score}>
+					{stories.map((story, index) => {
+						const img = resolveImage(story, day);
+						const hasImage = Boolean(img);
+						const isLead = index === 0;
+
+						let isFeature = false;
+						if (!isLead) {
+							storiesSinceFeature++;
+							if (storiesSinceFeature >= nextFeatureGap && hasImage) {
+								isFeature = true;
+								storiesSinceFeature = 0;
+								nextFeatureGap = randomFeatureGap(featureRng);
+								featureCount++;
+							}
+						}
+						const featureReverse = isFeature && featureCount % 2 === 0;
+
+						const classes = [
+							'story',
+							isLead ? 'is-lead' : '',
+							isFeature ? 'is-feature' : '',
+							featureReverse ? 'is-feature-reverse' : '',
+							hasImage ? 'has-image' : 'no-image',
+						].filter(Boolean).join(' ');
+
+						return (
+						<article
+							class={classes}
+							data-source={story.source}
+							data-interest={story.interest_score}
+							data-feature={isFeature ? 'true' : undefined}
+							data-feature-reverse={featureReverse ? 'true' : undefined}
+						>
 							<div class="story-byline">
 								{bylineFor(story) && <>{bylineFor(story)}<span class="story-source-sep">&middot;</span></>}
 								<a class="story-source-link" href={story.url} target="_blank" rel="noopener noreferrer">{sourceLabelFor(story)} &rsaquo;</a>
@@ -191,12 +249,12 @@ const pageDescription = SITE_METADATA.longDescription;
 							<h2 class="story-headline">
 								<a href={story.url} target="_blank" rel="noopener noreferrer">{story.title}</a>
 							</h2>
-							{resolveImage(story, day) && (
+							{img && (
 								<div class="story-image-wrapper is-loading">
-									<img 
-										src={resolveImage(story, day)} 
-										alt={story.title} 
-										class="story-featured-image loading" 
+									<img
+										src={img}
+										alt={story.title}
+										class="story-featured-image loading"
 										loading="lazy"
 										width="560"
 										height="418"
@@ -208,9 +266,11 @@ const pageDescription = SITE_METADATA.longDescription;
 								<story.Content />
 							</div>
 						</article>
-					))}
+						);
+					})}
 				</section>
-			)}
+				);
+			})()}
 
 			<Footer label={label} showDelayNote={isHomepage} />
 		</article>
@@ -287,32 +347,46 @@ const pageDescription = SITE_METADATA.longDescription;
 		const interestFilter = activeInterestBtn ? activeInterestBtn.getAttribute('data-filter')! : 'all';
 
 		let visibleCount = 0;
-		let firstVisibleStory: Element | null = null;
+		const visibleStories: Element[] = [];
 
 		allStories.forEach((story) => {
 			const source = story.getAttribute('data-source');
 			const interest = story.getAttribute('data-interest');
 
 			const sourceMatch = (sourceFilter === 'all' || source === sourceFilter);
-			const interestMatch = (interestFilter === 'all' || 
+			const interestMatch = (interestFilter === 'all' ||
 				(interestFilter === '9' ? (interest === '9' || interest === '10') : interest === interestFilter));
+
+			story.classList.remove('is-lead', 'is-feature', 'is-feature-reverse');
 
 			if (sourceMatch && interestMatch) {
 				story.removeAttribute('data-hidden');
-				story.classList.remove('is-lead');
-				if (!firstVisibleStory) {
-					firstVisibleStory = story;
-				}
+				visibleStories.push(story);
 				visibleCount++;
 			} else {
 				story.setAttribute('data-hidden', 'true');
-				story.classList.remove('is-lead');
 			}
 		});
 
-		if (firstVisibleStory) {
-			(firstVisibleStory as Element).classList.add('is-lead');
-		}
+		// Re-derive is-lead / is-feature from the currently VISIBLE order, not the
+		// server-rendered order — hidden stories can otherwise collapse the gap and
+		// put a feature spread right after the lead.
+		visibleStories.forEach((story, i) => {
+			if (i === 0) {
+				story.classList.add('is-lead');
+				return;
+			}
+			if (i === 1) {
+				// A feature can never be the very next visible story after the lead.
+				return;
+			}
+			if (story.getAttribute('data-feature') === 'true') {
+				story.classList.add('is-feature');
+				if (story.getAttribute('data-feature-reverse') === 'true') {
+					story.classList.add('is-feature-reverse');
+				}
+			}
+		});
 
 		storyCountEl.textContent = `${visibleCount} ${visibleCount === 1 ? 'Story' : 'Stories'}`;
 
@@ -456,9 +530,11 @@ const pageDescription = SITE_METADATA.longDescription;
 		.story.is-lead:has(.story-image-wrapper) {
 			display: grid;
 			grid-template-columns: 1fr 1.2fr;
+			grid-auto-flow: row dense;
 			column-gap: 2rem;
 		}
 
+		.story.is-lead:has(.story-image-wrapper)::before,
 		.story.is-lead:has(.story-image-wrapper) .story-byline,
 		.story.is-lead:has(.story-image-wrapper) .story-headline {
 			grid-column: 1 / span 2;
@@ -466,14 +542,100 @@ const pageDescription = SITE_METADATA.longDescription;
 
 		.story.is-lead:has(.story-image-wrapper) .story-image-wrapper {
 			grid-column: 1;
-			grid-row: 3;
 			margin: 0;
 		}
 
 		.story.is-lead:has(.story-image-wrapper) .story-body {
 			grid-column: 2;
-			grid-row: 3;
 			column-count: 1 !important;
+		}
+	}
+
+	/*
+	 * Section label for the lead story and periodic feature spreads, rendered as a
+	 * pseudo-element (not a template-level element) because the client-side filter
+	 * script reassigns the "is-lead" class to whichever story ends up first-visible —
+	 * a ::before tied to the class always tracks the runtime element, not the
+	 * server-sorted index.
+	 */
+	.story.is-lead::before,
+	.story.is-feature::before {
+		display: block;
+		margin: 0 0 0.35rem;
+		font-family: var(--font-display);
+		font-size: 0.66rem;
+		font-weight: 700;
+		letter-spacing: 0.09em;
+		text-transform: uppercase;
+		color: var(--accent-ink);
+	}
+
+	.story.is-lead::before {
+		content: '\2022  Top Story';
+	}
+
+	.story.is-feature::before {
+		content: '\2022  Featured';
+	}
+
+	/* Regular stories with an image: just a slightly rounded image, no card box */
+	.story.has-image:not(.is-lead):not(.is-feature) .story-featured-image {
+		border-radius: 6px;
+	}
+
+	/* Denser "in brief" treatment for regular stories without an image */
+	.story.no-image:not(.is-lead) .story-headline {
+		font-size: 1rem;
+	}
+
+	.story.no-image:not(.is-lead) .story-body {
+		font-size: 0.78rem;
+	}
+
+	/* Periodic feature spread: breaks the column flow for rhythm */
+	.story.is-feature {
+		padding: 1.1rem 0 1rem;
+		border-bottom: 1px solid var(--rule-soft);
+		margin-bottom: 1.5rem;
+	}
+
+	.story.is-feature .story-headline {
+		font-size: clamp(1.2rem, 2.4vw, 1.6rem);
+	}
+
+	@media (min-width: 720px) {
+		.story.is-feature {
+			column-span: all;
+			display: grid;
+			grid-template-columns: 1fr 1.3fr;
+			grid-auto-flow: row dense;
+			column-gap: 2.2rem;
+			align-items: start;
+		}
+
+		.story.is-feature::before,
+		.story.is-feature .story-byline,
+		.story.is-feature .story-headline {
+			grid-column: 1 / -1;
+		}
+
+		.story.is-feature .story-image-wrapper {
+			grid-column: 1;
+			margin: 0;
+		}
+
+		.story.is-feature .story-body {
+			grid-column: 2;
+			column-count: 1 !important;
+			font-size: 0.86rem;
+		}
+
+		.story.is-feature-reverse .story-image-wrapper {
+			grid-column: 2;
+		}
+
+		.story.is-feature-reverse .story-body {
+			grid-column: 1;
 		}
 	}
 </style>
