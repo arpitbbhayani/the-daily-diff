@@ -1,8 +1,15 @@
 ---
-title: AI agents must format complex shell commands for human readability
-source: github
-url: https://github.com/a-b/readable-ad-hoc-commands
+authors:
+- a-b
+comments: https://news.ycombinator.com/item?id=49129991
 date: '2026-08-01'
+depth_score: 7
+hn_id: '49129991'
+image: /infographics/57-github-49129991.jpg
+interest_score: 8
+novelty_score: 7
+section: ai
+source: github
 tags:
 - ad-hoc-commands
 - ai-agents
@@ -11,18 +18,12 @@ tags:
 - command-readability
 - github
 - shell-commands
-section: ai
-interest_score: 8
-depth_score: 7
+title: AI agents must format complex shell commands for human readability
+url: https://github.com/a-b/readable-ad-hoc-commands
 utility_score: 9
-novelty_score: 7
-hn_id: '49129991'
-comments: https://news.ycombinator.com/item?id=49129991
 why_read: This explains why it is critical for AI agents to format complex commands
   for readability before execution, improving transparency and safety. It demonstrates
   a method to achieve this, preventing blind execution of multi-step shell commands.
-authors:
-- a-b
 ---
 
 Ever seen an AI agent generate a gnarly one-liner shell command you could not parse? This new GitHub project solves that.

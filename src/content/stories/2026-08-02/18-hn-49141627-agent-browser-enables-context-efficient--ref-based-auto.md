@@ -1,8 +1,15 @@
 ---
-title: Agent-Browser Enables Context-Efficient, Ref-Based Automation for AI
-source: hn
-url: https://agent-browser.dev/
+authors:
+- Garbage
+comments: https://news.ycombinator.com/item?id=49141627
 date: '2026-08-02'
+depth_score: 7
+hn_id: '49141627'
+image: /infographics/18-hn-49141627.jpg
+interest_score: 8
+novelty_score: 8
+section: ai
+source: hn
 tags:
 - ai-agents
 - browser-automation
@@ -11,19 +18,13 @@ tags:
 - deterministic-selection
 - hn
 - ref-based-interaction
-section: ai
-interest_score: 8
-depth_score: 7
+title: Agent-Browser Enables Context-Efficient, Ref-Based Automation for AI
+url: https://agent-browser.dev/
 utility_score: 9
-novelty_score: 8
-hn_id: '49141627'
-comments: https://news.ycombinator.com/item?id=49141627
 why_read: This text introduces agent-browser, a Rust CLI tool for browser automation
   specifically designed for AI agents. Readers will learn how it uses compact, ref-based
   output to achieve context efficiency and deterministic element selection, making
   it ideal for LLM integration.
-authors:
-- Garbage
 ---
 
 Building robust AI agents that interact with web interfaces is often bottlenecked by two major issues: the massive token cost of DOM representations and the flaky nature of element selection. Agent-Browser, a new CLI written in Rust, tackles these head-on with an "Agent-first" design.

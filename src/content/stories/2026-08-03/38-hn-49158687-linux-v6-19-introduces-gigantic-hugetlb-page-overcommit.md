@@ -1,8 +1,15 @@
 ---
-title: Linux v6.19 introduces gigantic HugeTLB page overcommit support
-source: hn
-url: https://blogs.oracle.com/linux/hugetlb-gigantic-page-overcommit
+authors:
+- Jane Chu
+comments: https://news.ycombinator.com/item?id=49158687
 date: '2026-08-03'
+depth_score: 9
+hn_id: '49158687'
+image: /infographics/38-hn-49158687.jpg
+interest_score: 8
+novelty_score: 7
+section: systems
+source: hn
 tags:
 - catchup
 - gigantic-pages
@@ -11,18 +18,12 @@ tags:
 - linux-kernel
 - memory-management
 - page-overcommit
-section: systems
-interest_score: 8
-depth_score: 9
+title: Linux v6.19 introduces gigantic HugeTLB page overcommit support
+url: https://blogs.oracle.com/linux/hugetlb-gigantic-page-overcommit
 utility_score: 8
-novelty_score: 7
-hn_id: '49158687'
-comments: https://news.ycombinator.com/item?id=49158687
 why_read: Read this to understand how Linux v6.19 enables overcommit for gigantic
   HugeTLB pages, addressing a long-standing flexibility gap in memory reservation.
   You will learn about the changes, why they matter, and how to verify this new behavior.
-authors:
-- Jane Chu
 ---
 
 Linux v6.19 brings a critical advancement for memory-intensive applications: overcommit support for gigantic HugeTLB pages (e.g., 1 GiB on x86). Historically, using HugeTLB pages forced a trade-off between predictability (reserving pages upfront) and flexibility (allocating only when needed). This new feature specifically addresses the flexibility gap for gigantic pages.

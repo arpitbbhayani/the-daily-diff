@@ -1,8 +1,15 @@
 ---
-title: Headless Rust Excel Engine for Agents Achieves Speed and Fidelity
-source: hn
-url: https://twitter.com/peterjliu/status/2084298237884948928
+authors:
+- Peter J. Liu
+comments: https://news.ycombinator.com/item?id=49157149
 date: '2026-08-03'
+depth_score: 8
+hn_id: '49157149'
+image: /infographics/26-hn-49157149.jpg
+interest_score: 8
+novelty_score: 8
+section: ai
+source: hn
 tags:
 - agentic-loops
 - ai
@@ -14,19 +21,13 @@ tags:
 - performance
 - rust
 - software-agents
-section: ai
-interest_score: 8
-depth_score: 8
+title: Headless Rust Excel Engine for Agents Achieves Speed and Fidelity
+url: https://twitter.com/peterjliu/status/2084298237884948928
 utility_score: 9
-novelty_score: 8
-hn_id: '49157149'
-comments: https://news.ycombinator.com/item?id=49157149
 why_read: Read this to understand how a Rust-based, headless Excel engine can achieve
   100x performance improvements and near 100% fidelity for AI agents. It explains
   why such an engine is crucial for modern AI applications and financial firms, surpassing
   existing solutions like Google Sheets and LibreOffice.
-authors:
-- Peter J. Liu
 ---
 
 An engineering team has successfully rewritten the Excel engine in Rust, specifically optimizing it for headless operation by AI agents. This new engine boasts up to a 100x speed improvement and near 100 percent fidelity with Excel, surpassing even LibreOffice.

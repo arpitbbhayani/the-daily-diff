@@ -1,8 +1,15 @@
 ---
-title: INT8 ConvRot becomes new standard for 8-bit quantized AI models
-source: hn
-url: https://note.com/hirorohi03/n/n047a8c5f7f8b?hl=en
+authors:
+- "ひろろひ\U0001F408‍⬛Forge Neo推し"
+comments: https://news.ycombinator.com/item?id=49157645
 date: '2026-08-03'
+depth_score: 8
+hn_id: '49157645'
+image: /infographics/11-hn-49157645.jpg
+interest_score: 8
+novelty_score: 7
+section: ai
+source: hn
 tags:
 - ai-model-formats
 - catchup
@@ -11,18 +18,12 @@ tags:
 - hn
 - int8-convrot
 - quantization
-section: ai
-interest_score: 8
-depth_score: 8
+title: INT8 ConvRot becomes new standard for 8-bit quantized AI models
+url: https://note.com/hirorohi03/n/n047a8c5f7f8b?hl=en
 utility_score: 8
-novelty_score: 7
-hn_id: '49157645'
-comments: https://news.ycombinator.com/item?id=49157645
 why_read: Read this to understand INT8 ConvRot, a new quantization method outperforming
   FP8 for AI models. You will learn why it is becoming the standard for 8-bit quantized
   models due to performance benefits and smaller file sizes.
-authors:
-- "\u3072\u308D\u308D\u3072\U0001F408\u200D\u2B1BForge Neo\u63A8\u3057"
 ---
 
 A major shift is happening in AI model quantization: INT8 ConvRot is quickly becoming the new standard, potentially making FP8 obsolete for many applications. This new method, now natively supported in tools like ComfyUI, offers surprising performance gains.

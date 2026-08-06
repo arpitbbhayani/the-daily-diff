@@ -1,8 +1,15 @@
 ---
-title: Entangle simplifies sharing and migrating live coding sessions
-source: github
-url: https://github.com/gowtham-sai-yadav/entangle
+authors:
+- Gowtham Sai Yadav
+comments: https://news.ycombinator.com/item?id=49168465
 date: '2026-08-04'
+depth_score: 7
+hn_id: '49168465'
+image: /infographics/34-github-49168465.jpg
+interest_score: 8
+novelty_score: 8
+section: ai
+source: github
 tags:
 - account-free
 - catchup
@@ -12,18 +19,12 @@ tags:
 - live-coding-sessions
 - session-migration
 - session-sharing
-section: ai
-interest_score: 8
-depth_score: 7
+title: Entangle simplifies sharing and migrating live coding sessions
+url: https://github.com/gowtham-sai-yadav/entangle
 utility_score: 9
-novelty_score: 8
-hn_id: '49168465'
-comments: https://news.ycombinator.com/item?id=49168465
 why_read: This tool solves the challenge of sharing and migrating live coding sessions
   between users or machines. Readers will learn how to easily transfer coding session
   history while preserving context, without needing accounts.
-authors:
-- Gowtham Sai Yadav
 ---
 
 Ever struggled to hand off a live AI coding session to a teammate or migrate your entire agent history to a new laptop? Entangle offers an elegant, "three words" solution, encrypted and completely account-free.

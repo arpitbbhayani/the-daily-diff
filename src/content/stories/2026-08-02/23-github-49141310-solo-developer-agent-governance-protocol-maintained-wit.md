@@ -1,8 +1,15 @@
 ---
-title: Solo Developer Agent Governance Protocol Maintained Without Writing Code
-source: github
-url: https://github.com/Sovereign34/agent-protocol-notes
+authors:
+- Sovereign34
+comments: https://news.ycombinator.com/item?id=49141310
 date: '2026-08-02'
+depth_score: 8
+hn_id: '49141310'
+image: /infographics/23-github-49141310.jpg
+interest_score: 8
+novelty_score: 8
+section: ai
+source: github
 tags:
 - agent-governance
 - ai-driven-execution
@@ -12,20 +19,14 @@ tags:
 - no-code
 - oversight-protocol
 - solo-developer-scale
-section: ai
-interest_score: 8
-depth_score: 8
+title: Solo Developer Agent Governance Protocol Maintained Without Writing Code
+url: https://github.com/Sovereign34/agent-protocol-notes
 utility_score: 9
-novelty_score: 8
-hn_id: '49141310'
-comments: https://news.ycombinator.com/item?id=49141310
 why_read: This text introduces a novel, file-based agent governance protocol designed
   for solo developers, showcasing how robust oversight and decision-making can be
   maintained across multiple production projects without writing code, by leveraging
   AI for execution. Readers will gain insight into a lightweight alternative to enterprise
   solutions for managing AI agents.
-authors:
-- Sovereign34
 ---
 
 What if you could manage and govern four production AI projects without writing a single line of code? This GitHub repository showcases a self-correcting, file-based agent governance protocol that makes it possible.

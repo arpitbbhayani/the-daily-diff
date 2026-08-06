@@ -1,8 +1,15 @@
 ---
-title: Ternary 20B MoE runs efficiently on an iPhone
-source: hn
-url: https://deepgrove.ai/maple-preview
+authors:
+- edwardbzhang
+comments: https://news.ycombinator.com/item?id=49173984
 date: '2026-08-04'
+depth_score: 8
+hn_id: '49173984'
+image: /infographics/08-hn-49173984.jpg
+interest_score: 8
+novelty_score: 8
+section: ai
+source: hn
 tags:
 - catchup
 - hn
@@ -12,18 +19,12 @@ tags:
 - model-performance
 - on-device-ai
 - ternary-model
-section: ai
-interest_score: 8
-depth_score: 8
+title: Ternary 20B MoE runs efficiently on an iPhone
+url: https://deepgrove.ai/maple-preview
 utility_score: 9
-novelty_score: 8
-hn_id: '49173984'
-comments: https://news.ycombinator.com/item?id=49173984
 why_read: This shows a Ternary 20B Mixture of Experts model running efficiently on
   an iPhone, achieving 120 tokens per second. It demonstrates the feasibility and
   performance of powerful on-device AI for mobile applications.
-authors:
-- edwardbzhang
 ---
 
 Achieving high-performance LLM inference on edge devices is a significant challenge, but Maple-Preview is breaking new ground. This "Show HN" demonstrates a 20B Mixture-of-Experts model, enhanced with ternary weights, running at an astonishing 120 tokens per second directly on an iPhone.

@@ -1,8 +1,15 @@
 ---
-title: Agent turns as durable data ensure system reliability
-source: hn
-url: https://conol.ai/blog/building-agents-that-survive-their-own-execution
+authors:
+- greatony
+comments: https://news.ycombinator.com/item?id=49140409
 date: '2026-08-02'
+depth_score: 8
+hn_id: '49140409'
+image: /infographics/38-hn-49140409.jpg
+interest_score: 8
+novelty_score: 7
+section: ai
+source: hn
 tags:
 - agent-systems
 - catchup
@@ -10,18 +17,12 @@ tags:
 - hn
 - state-management
 - system-reliability
-section: ai
-interest_score: 8
-depth_score: 8
+title: Agent turns as durable data ensure system reliability
+url: https://conol.ai/blog/building-agents-that-survive-their-own-execution
 utility_score: 9
-novelty_score: 7
-hn_id: '49140409'
-comments: https://news.ycombinator.com/item?id=49140409
 why_read: This post highlights a critical reliability issue in agent runtimes where
   state is lost upon process failure or hang. Readers will learn the importance of
   making agent turns durable data to build robust and fault-tolerant agent systems.
-authors:
-- greatony
 ---
 
 Building reliable AI agents requires more than just a smart model; it demands robust system design. Many agent runtimes fail because crucial state lives only in the stack, making them fragile against process crashes.

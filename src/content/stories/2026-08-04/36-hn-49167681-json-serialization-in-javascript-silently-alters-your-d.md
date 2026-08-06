@@ -1,8 +1,15 @@
 ---
-title: JSON serialization in JavaScript silently alters your data
-source: hn
-url: https://blog.gaborkoos.com/posts/2026-08-03-Your-JSON-Is-Lying-to-You/
+authors:
+- birdculture
+comments: https://news.ycombinator.com/item?id=49167681
 date: '2026-08-04'
+depth_score: 7
+hn_id: '49167681'
+image: /infographics/36-hn-49167681.jpg
+interest_score: 8
+novelty_score: 6
+section: engineering
+source: hn
 tags:
 - catchup
 - data-integrity
@@ -12,18 +19,12 @@ tags:
 - number-precision
 - serialization
 - type-conversion
-section: engineering
-interest_score: 8
-depth_score: 7
+title: JSON serialization in JavaScript silently alters your data
+url: https://blog.gaborkoos.com/posts/2026-08-03-Your-JSON-Is-Lying-to-You/
 utility_score: 9
-novelty_score: 6
-hn_id: '49167681'
-comments: https://news.ycombinator.com/item?id=49167681
 why_read: This article demonstrates how JSON serialization in JavaScript can silently
   modify data, altering numbers, dropping properties, and changing types. Readers
   will learn about these unexpected behaviors and their implications for data integrity.
-authors:
-- birdculture
 ---
 
 Ever debugged a subtle data corruption bug with JSON? Your JSON.stringify might be quietly lying to you. This article dives into critical JavaScript serialization pitfalls that every senior engineer must know.

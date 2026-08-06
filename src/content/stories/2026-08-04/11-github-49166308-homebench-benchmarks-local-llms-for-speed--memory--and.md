@@ -1,8 +1,15 @@
 ---
-title: homebench benchmarks local LLMs for speed, memory, and quality
-source: github
-url: https://github.com/david-g-3654/homebench
+authors:
+- david-g-3654
+comments: https://news.ycombinator.com/item?id=49166308
 date: '2026-08-04'
+depth_score: 7
+hn_id: '49166308'
+image: /infographics/11-github-49166308.jpg
+interest_score: 8
+novelty_score: 7
+section: ai
+source: github
 tags:
 - catchup
 - github
@@ -17,19 +24,13 @@ tags:
 - terminal-ui
 - vllm
 - zero-configuration
-section: ai
-interest_score: 8
-depth_score: 7
+title: homebench benchmarks local LLMs for speed, memory, and quality
+url: https://github.com/david-g-3654/homebench
 utility_score: 9
-novelty_score: 7
-hn_id: '49166308'
-comments: https://news.ycombinator.com/item?id=49166308
 why_read: This tool provides a simple, unified way to benchmark local LLMs across
   speed, memory, and quality, offering an at-a-glance comparison for various runners
   like Ollama and LM Studio. Readers will learn how to easily evaluate and compare
   their local models to choose the best fit for their needs.
-authors:
-- david-g-3654
 ---
 
 Choosing the right local LLM setup for your application can feel like navigating a maze, especially with trade-offs between speed, memory, and quality. Homebench cuts through this complexity by offering a single-command benchmarking tool that works across Ollama, LM Studio, llama.cpp, and vLLM.

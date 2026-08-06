@@ -1,8 +1,15 @@
 ---
-title: Reims vGPU delivers accelerated graphics for stock macOS guests
-source: hn
-url: https://reims-vgpu.com/
+authors:
+- vsrinivas
+comments: https://news.ycombinator.com/item?id=49131200
 date: '2026-08-01'
+depth_score: 8
+hn_id: '49131200'
+image: /infographics/55-hn-49131200.jpg
+interest_score: 8
+novelty_score: 8
+section: systems
+source: hn
 tags:
 - accelerated-graphics
 - catchup
@@ -11,18 +18,12 @@ tags:
 - qemu
 - reims-vgpu
 - vulkan
-section: systems
-interest_score: 8
-depth_score: 8
+title: Reims vGPU delivers accelerated graphics for stock macOS guests
+url: https://reims-vgpu.com/
 utility_score: 7
-novelty_score: 8
-hn_id: '49131200'
-comments: https://news.ycombinator.com/item?id=49131200
 why_read: This introduces Reims vGPU, an open-source project enabling accelerated
   graphics for unmodified macOS guests under QEMU. Readers will learn how it leverages
   Apple's native drivers and a Vulkan backend for high-performance virtualization.
-authors:
-- vsrinivas
 ---
 
 Getting accelerated graphics in macOS virtual machines has always been a significant hurdle. Reims vGPU tackles this by using Apple's own AppleParavirtGPU.kext within the unmodified guest, rather than requiring custom drivers or modifications.

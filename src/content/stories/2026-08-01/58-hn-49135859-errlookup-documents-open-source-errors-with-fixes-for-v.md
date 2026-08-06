@@ -1,8 +1,15 @@
 ---
-title: ErrLookup documents open-source errors with fixes for various users
-source: hn
-url: https://errors.standardbeagle.com/
+authors:
+- andybrummer
+comments: https://news.ycombinator.com/item?id=49135859
 date: '2026-08-01'
+depth_score: 7
+hn_id: '49135859'
+image: /infographics/58-hn-49135859.jpg
+interest_score: 8
+novelty_score: 7
+section: engineering
+source: hn
 tags:
 - catchup
 - coding-agents
@@ -12,18 +19,12 @@ tags:
 - hn
 - open-source-errors
 - source-code-analysis
-section: engineering
-interest_score: 8
-depth_score: 7
+title: ErrLookup documents open-source errors with fixes for various users
+url: https://errors.standardbeagle.com/
 utility_score: 9
-novelty_score: 7
-hn_id: '49135859'
-comments: https://news.ycombinator.com/item?id=49135859
 why_read: Read this to understand how ErrLookup provides detailed documentation for
   open-source errors, including causes and fixes. It's valuable for developers and
   coding agents seeking efficient error resolution.
-authors:
-- andybrummer
 ---
 
 Debugging with cryptic error messages is a time sink. What if your coding agent, or even you, could instantly know the exact cause and the library-recommended fix for any open-source error? ErrLookup is an MCP server doing precisely that.

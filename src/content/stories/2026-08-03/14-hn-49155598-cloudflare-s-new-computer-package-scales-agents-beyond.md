@@ -1,8 +1,15 @@
 ---
-title: Cloudflare's new computer package scales agents beyond traditional containers
-source: hn
-url: https://blog.cloudflare.com/cloudflare-computer/
+authors:
+- aofeisheng
+comments: https://news.ycombinator.com/item?id=49155598
 date: '2026-08-03'
+depth_score: 7
+hn_id: '49155598'
+image: /infographics/14-hn-49155598.jpg
+interest_score: 8
+novelty_score: 8
+section: ai
+source: hn
 tags:
 - agent-runtime
 - agentic-systems
@@ -11,18 +18,12 @@ tags:
 - containerization
 - hn
 - scalable-compute
-section: ai
-interest_score: 8
-depth_score: 7
+title: Cloudflare's new computer package scales agents beyond traditional containers
+url: https://blog.cloudflare.com/cloudflare-computer/
 utility_score: 8
-novelty_score: 8
-hn_id: '49155598'
-comments: https://news.ycombinator.com/item?id=49155598
 why_read: Readers will learn about Cloudflare's new `@cloudflare/computer` package,
   which provides a scalable runtime for AI agents. It explains why traditional containerization
   methods are insufficient for the future demands of agentic systems.
-authors:
-- aofeisheng
 ---
 
 Scaling AI agents beyond simple containerization is a looming challenge that Cloudflare is tackling head-on with their new @cloudflare/computer offering. This is not just another agent framework; it is a fundamental shift in runtime philosophy.

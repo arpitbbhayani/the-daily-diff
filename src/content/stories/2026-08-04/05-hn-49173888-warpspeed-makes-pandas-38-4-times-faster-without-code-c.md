@@ -1,8 +1,15 @@
 ---
-title: WarpSpeed makes pandas 38.4 times faster without code changes
-source: hn
-url: https://www.doubleai.com/research/warpspeed-pandas-blogpost
+authors:
+- mad
+comments: https://news.ycombinator.com/item?id=49173888
 date: '2026-08-04'
+depth_score: 9
+hn_id: '49173888'
+image: /infographics/05-hn-49173888.jpg
+interest_score: 9
+novelty_score: 8
+section: engineering
+source: hn
 tags:
 - catchup
 - data-processing
@@ -11,18 +18,12 @@ tags:
 - pandas
 - performance-optimization
 - warpspeed
-section: engineering
-interest_score: 9
-depth_score: 9
+title: WarpSpeed makes pandas 38.4 times faster without code changes
+url: https://www.doubleai.com/research/warpspeed-pandas-blogpost
 utility_score: 9
-novelty_score: 8
-hn_id: '49173888'
-comments: https://news.ycombinator.com/item?id=49173888
 why_read: Read this to learn how WarpSpeed achieves a 38.4x speedup for pandas operations
   as a drop-in replacement. It offers a practical solution for improving data analysis
   performance without modifying existing code.
-authors:
-- mad
 ---
 
 Imagine accelerating your data processing workflows by nearly 40x without changing a single line of code. That is exactly what WarpSpeed achieves by rewriting pandas' kernels from scratch, specifically optimized for modern hardware.

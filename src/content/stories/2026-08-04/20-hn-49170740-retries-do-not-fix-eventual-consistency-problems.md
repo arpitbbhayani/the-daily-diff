@@ -1,8 +1,15 @@
 ---
-title: Retries do not fix eventual consistency problems
-source: hn
-url: https://var0.xyz/posts/retries-dont-fix-eventual-consistency.html
+authors:
+- tuxie_
+comments: https://news.ycombinator.com/item?id=49170740
 date: '2026-08-04'
+depth_score: 8
+hn_id: '49170740'
+image: /infographics/20-hn-49170740.jpg
+interest_score: 8
+novelty_score: 7
+section: systems
+source: hn
 tags:
 - catchup
 - design-patterns
@@ -11,18 +18,12 @@ tags:
 - eventual-consistency
 - hn
 - retries
-section: systems
-interest_score: 8
-depth_score: 8
+title: Retries do not fix eventual consistency problems
+url: https://var0.xyz/posts/retries-dont-fix-eventual-consistency.html
 utility_score: 9
-novelty_score: 7
-hn_id: '49170740'
-comments: https://news.ycombinator.com/item?id=49170740
 why_read: This piece explains why retries are often misused in eventually consistent
   distributed systems. Readers will learn to distinguish temporary states from actual
   failures and design more appropriate solutions.
-authors:
-- tuxie_
 ---
 
 Retries are not a panacea, especially not in eventually consistent distributed systems. A common mistake is treating temporary data absence (due to propagation delays) as a true failure, leading to inefficient retry loops that just add load.

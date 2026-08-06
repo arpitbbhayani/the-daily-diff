@@ -1,8 +1,15 @@
 ---
-title: Minimalist coding harness Pi outperforms complex AI tools
-source: hn
-url: https://earendil.com/posts/pi-autoresearch-and-databricks/
+authors:
+- Earendil
+comments: https://news.ycombinator.com/item?id=49169025
 date: '2026-08-04'
+depth_score: 7
+hn_id: '49169025'
+image: /infographics/55-hn-49169025.jpg
+interest_score: 8
+novelty_score: 8
+section: ai
+source: hn
 tags:
 - benchmarking
 - catchup
@@ -12,18 +19,12 @@ tags:
 - minimalism
 - performance
 - pi
-section: ai
-interest_score: 8
-depth_score: 7
+title: Minimalist coding harness Pi outperforms complex AI tools
+url: https://earendil.com/posts/pi-autoresearch-and-databricks/
 utility_score: 8
-novelty_score: 8
-hn_id: '49169025'
-comments: https://news.ycombinator.com/item?id=49169025
 why_read: This text explains why a minimalist coding harness like Pi can achieve industry-leading
   performance at a lower cost. Readers will learn how simplicity in AI tool design
   can lead to better results, with supporting case studies from Databricks.
-authors:
-- Earendil
 ---
 
 The common wisdom in AI agent development often leans towards more: larger prompts, intricate orchestrations, and a vast array of tools. However, this article presents a compelling counter-narrative, arguing that minimalism can significantly outperform complexity, reducing both cost and improving results.

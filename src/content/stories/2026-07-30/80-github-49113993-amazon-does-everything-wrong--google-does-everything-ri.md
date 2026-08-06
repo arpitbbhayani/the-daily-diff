@@ -1,8 +1,15 @@
 ---
-title: Amazon does everything wrong, Google does everything right
-source: github
-url: https://gist.github.com/chitchcock/1281611
+authors:
+- Steve Yegge
+comments: https://news.ycombinator.com/item?id=49113993
 date: '2026-07-30'
+depth_score: 8
+hn_id: '49113993'
+image: /infographics/80-github-49113993.jpg
+interest_score: 8
+novelty_score: 7
+section: systems
+source: github
 tags:
 - amazon
 - catchup
@@ -10,18 +17,12 @@ tags:
 - github
 - google
 - platform-strategy
-section: systems
-interest_score: 8
-depth_score: 8
+title: Amazon does everything wrong, Google does everything right
+url: https://gist.github.com/chitchcock/1281611
 utility_score: 8
-novelty_score: 7
-hn_id: '49113993'
-comments: https://news.ycombinator.com/item?id=49113993
 why_read: Readers will gain a provocative, insider's perspective on the deep operational
   and cultural differences between Amazon and Google. It offers a strong argument
   for why Google's approach is superior in most aspects.
-authors:
-- Steve Yegge
 ---
 
 The legendary "Stevey's Google Platforms Rant" from 2011 is not just a historical artifact; it is a masterclass in platform strategy that remains incredibly relevant for senior engineers today. It unpacks the stark differences in how Amazon and Google approached internal services.

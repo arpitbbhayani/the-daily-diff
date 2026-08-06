@@ -1,8 +1,15 @@
 ---
-title: Diffusion models significantly accelerate data generation for computer vision
-source: hn
-url: http://stefano.petrilli.xyz/prompt-to-model/
+authors:
+- stefanopetrilli
+comments: https://news.ycombinator.com/item?id=49160980
 date: '2026-08-03'
+depth_score: 7
+hn_id: '49160980'
+image: /infographics/56-hn-49160980.jpg
+interest_score: 8
+novelty_score: 8
+section: ai
+source: hn
 tags:
 - catchup
 - computer-vision-datasets
@@ -10,19 +17,13 @@ tags:
 - diffusion-models
 - hn
 - knowledge-transfer
-section: ai
-interest_score: 8
-depth_score: 7
+title: Diffusion models significantly accelerate data generation for computer vision
+url: http://stefano.petrilli.xyz/prompt-to-model/
 utility_score: 8
-novelty_score: 8
-hn_id: '49160980'
-comments: https://news.ycombinator.com/item?id=49160980
 why_read: This article explains how diffusion models are making it easier to generate
   training data for computer vision applications, eroding the data moat of many companies.
   Readers will learn about the practical implications of this shift and its potential
   for consumer hardware.
-authors:
-- stefanopetrilli
 ---
 
 The 'data moat' in computer vision, where companies relied on vast, expensively labeled datasets, is rapidly eroding. We are surprisingly close to a 'prompt-to-model' paradigm, leveraging generative AI to streamline model development.

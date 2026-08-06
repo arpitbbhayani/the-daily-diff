@@ -1,8 +1,15 @@
 ---
-title: Kiro Crew automates engineering task coordination and context switching
-source: hn
-url: https://kiro.dev/blog/introducing-kiro-crew/
+authors:
+- LeTeutz
+comments: https://news.ycombinator.com/item?id=49173962
 date: '2026-08-04'
+depth_score: 7
+hn_id: '49173962'
+image: /infographics/22-hn-49173962.jpg
+interest_score: 8
+novelty_score: 8
+section: ai
+source: hn
 tags:
 - catchup
 - context-switching
@@ -11,19 +18,13 @@ tags:
 - incident-management
 - kiro-crew
 - task-coordination
-section: ai
-interest_score: 8
-depth_score: 7
+title: Kiro Crew automates engineering task coordination and context switching
+url: https://kiro.dev/blog/introducing-kiro-crew/
 utility_score: 8
-novelty_score: 8
-hn_id: '49173962'
-comments: https://news.ycombinator.com/item?id=49173962
 why_read: This post introduces Kiro Crew, an AI assistant designed to automate and
   coordinate complex engineering tasks across multiple tools and sessions. Readers
   will learn how this tool can alleviate the burden of constant context switching
   and manual workflow integration for engineers.
-authors:
-- LeTeutz
 ---
 
 The future of engineering workflows might just involve an AI crew. Kiro Crew introduces a multi-agent system designed to act as your personal project manager, coordinating complex tasks and context across disparate tools.

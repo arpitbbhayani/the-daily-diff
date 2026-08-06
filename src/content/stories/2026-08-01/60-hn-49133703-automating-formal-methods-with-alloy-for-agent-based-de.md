@@ -1,8 +1,15 @@
 ---
-title: Automating formal methods with Alloy for agent-based development
-source: hn
-url: https://alloytools.discourse.group/t/a-field-report-of-using-alloy-with-agent-based-development/555
+authors:
+- ohpauleez
+comments: https://news.ycombinator.com/item?id=49133703
 date: '2026-08-01'
+depth_score: 7
+hn_id: '49133703'
+image: /infographics/60-hn-49133703.jpg
+interest_score: 8
+novelty_score: 8
+section: ai
+source: hn
 tags:
 - agent-based-development
 - alloy
@@ -12,19 +19,13 @@ tags:
 - hn
 - invariants-first
 - spec-driven-development
-section: ai
-interest_score: 8
-depth_score: 7
+title: Automating formal methods with Alloy for agent-based development
+url: https://alloytools.discourse.group/t/a-field-report-of-using-alloy-with-agent-based-development/555
 utility_score: 8
-novelty_score: 8
-hn_id: '49133703'
-comments: https://news.ycombinator.com/item?id=49133703
 why_read: This field report details a practical approach to automating lightweight
   formal methods using Alloy and agent-based development for high-assurance systems.
   Readers will learn how to address SDLC bottlenecks and implement an invariants-first,
   spec-driven workflow.
-authors:
-- ohpauleez
 ---
 
 Applying formal methods like Alloy with AI agents might sound academic, but this field report showcases how it is making high-assurance, "never fail" distributed systems a reality. They are tackling the "barbell problem" of specification and verification by automating formal methods.

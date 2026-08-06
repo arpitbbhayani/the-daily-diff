@@ -1,8 +1,15 @@
 ---
-title: Sail unifies batch, stream, and AI workloads as Rust Spark replacement
-source: github
-url: https://github.com/lakehq/sail
+authors:
+- apwheele
+comments: https://news.ycombinator.com/item?id=49147357
 date: '2026-08-02'
+depth_score: 9
+hn_id: '49147357'
+image: /infographics/03-github-49147357.jpg
+interest_score: 9
+novelty_score: 8
+section: systems
+source: github
 tags:
 - apache-spark
 - batch-processing
@@ -11,19 +18,13 @@ tags:
 - github
 - rust
 - stream-processing
-section: systems
-interest_score: 9
-depth_score: 9
+title: Sail unifies batch, stream, and AI workloads as Rust Spark replacement
+url: https://github.com/lakehq/sail
 utility_score: 9
-novelty_score: 8
-hn_id: '49147357'
-comments: https://news.ycombinator.com/item?id=49147357
 why_read: This describes Sail, a Rust-native, distributed compute engine designed
   as a drop-in replacement for Apache Spark. Readers will learn how Sail unifies various
   data processing workloads and offers benefits like improved performance and memory
   safety without code rewrites.
-authors:
-- apwheele
 ---
 
 Imagine a world where your distributed data processing pipelines run 4-8x faster than Spark, with memory safety, instant startup, and zero JVM overhead. That is the promise of Sail, a new Rust-native engine directly challenging Apache Spark.

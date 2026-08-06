@@ -1,8 +1,15 @@
 ---
-title: Coupling is a multi-dimensional measure of independent variability
-source: hn
-url: https://www.enterpriseintegrationpatterns.com/ramblings/coupling_facets.html
+authors:
+- Gregor Hohpe
+comments: https://news.ycombinator.com/item?id=49175007
 date: '2026-08-04'
+depth_score: 8
+hn_id: '49175007'
+image: /infographics/64-hn-49175007.jpg
+interest_score: 8
+novelty_score: 7
+section: systems
+source: hn
 tags:
 - catchup
 - coupling
@@ -10,18 +17,12 @@ tags:
 - enterprise-integration-patterns
 - hn
 - independent-variability
-section: systems
-interest_score: 8
-depth_score: 8
+title: Coupling is a multi-dimensional measure of independent variability
+url: https://www.enterpriseintegrationpatterns.com/ramblings/coupling_facets.html
 utility_score: 9
-novelty_score: 7
-hn_id: '49175007'
-comments: https://news.ycombinator.com/item?id=49175007
 why_read: Readers will learn that coupling is a complex, multi-dimensional concept,
   not binary. They will gain a clearer understanding of coupling as the independent
   variability of connected systems, moving beyond simplistic views.
-authors:
-- Gregor Hohpe
 ---
 
 Coupling is often simplified to a binary concept, but this excellent piece reveals its intricate, multi-dimensional nature, a crucial insight for any architect building distributed systems. It challenges the common wisdom by dissecting coupling into various forms beyond mere dependency.

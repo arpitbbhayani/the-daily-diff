@@ -1,8 +1,15 @@
 ---
-title: Watchfire improves AI coding agents with automatic context management
-source: github
-url: https://github.com/watchfire-io/watchfire
+authors:
+- nunocoracao
+comments: https://news.ycombinator.com/item?id=49175040
 date: '2026-08-04'
+depth_score: 8
+hn_id: '49175040'
+image: /infographics/41-github-49175040.jpg
+interest_score: 8
+novelty_score: 8
+section: ai
+source: github
 tags:
 - ai-coding-agents
 - catchup
@@ -10,18 +17,12 @@ tags:
 - context-management
 - github
 - project-structure
-section: ai
-interest_score: 8
-depth_score: 8
+title: Watchfire improves AI coding agents with automatic context management
+url: https://github.com/watchfire-io/watchfire
 utility_score: 9
-novelty_score: 8
-hn_id: '49175040'
-comments: https://news.ycombinator.com/item?id=49175040
 why_read: This text introduces Watchfire, a tool designed to enhance the performance
   of AI coding agents. Readers will learn how Watchfire achieves better code quality
   by providing agents with comprehensive project context and managing tasks effectively.
-authors:
-- nunocoracao
 ---
 
 The biggest challenge with AI coding agents is often not the model itself, but how you manage their context and tasks. Watchfire, an open-source "control room," directly addresses this by letting you define project structure and orchestrate agents with full codebase awareness.

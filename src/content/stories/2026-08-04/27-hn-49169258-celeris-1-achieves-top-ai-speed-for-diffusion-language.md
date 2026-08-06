@@ -1,8 +1,15 @@
 ---
-title: Celeris-1 achieves top AI speed for diffusion language models
-source: hn
-url: https://runtimewire.com/article/celeris-1-tops-ai-speed-ranking-diffusion-model
+authors:
+- ryanmerket
+comments: https://news.ycombinator.com/item?id=49169258
 date: '2026-08-04'
+depth_score: 7
+hn_id: '49169258'
+image: /infographics/27-hn-49169258.jpg
+interest_score: 8
+novelty_score: 8
+section: ai
+source: hn
 tags:
 - ai-speed
 - benchmarking
@@ -12,19 +19,13 @@ tags:
 - hn
 - language-models
 - output-tokens
-section: ai
-interest_score: 8
-depth_score: 7
+title: Celeris-1 achieves top AI speed for diffusion language models
+url: https://runtimewire.com/article/celeris-1-tops-ai-speed-ranking-diffusion-model
 utility_score: 8
-novelty_score: 8
-hn_id: '49169258'
-comments: https://news.ycombinator.com/item?id=49169258
 why_read: This article highlights Celeris-1's leading performance in AI speed benchmarks,
   explaining how diffusion models can achieve high throughput for applications like
   voice interfaces and coding tools. Readers will learn about a significant development
   in AI model efficiency and its commercial implications.
-authors:
-- ryanmerket
 ---
 
 Celeris-1, a diffusion language model, has shattered AI speed records, clocking in at an astonishing 2,158 output tokens per second in recent benchmarks. This is not just a marginal improvement; it significantly outpaces competitors.

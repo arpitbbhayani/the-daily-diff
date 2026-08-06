@@ -1,8 +1,20 @@
 ---
-title: AAFLOW enables scalable agentic AI workflows with communication efficiency
-source: hn
-url: https://arxiv.org/abs/2605.02162
+authors:
+- Arup Kumar Sarker
+- Mills Staylor
+- Aymen Alsaadi
+- Gregor von Laszewski
+- Shantenu Jha
+- Geoffrey Fox
+comments: https://news.ycombinator.com/item?id=49174689
 date: '2026-08-04'
+depth_score: 8
+hn_id: '49174689'
+image: /infographics/66-hn-49174689.jpg
+interest_score: 8
+novelty_score: 8
+section: ai
+source: hn
 tags:
 - agentic-workflows
 - apache-arrow
@@ -14,25 +26,14 @@ tags:
 - large-language-models
 - scalability
 - zero-copy-data
-section: ai
-interest_score: 8
-depth_score: 8
+title: AAFLOW enables scalable agentic AI workflows with communication efficiency
+url: https://arxiv.org/abs/2605.02162
 utility_score: 7
-novelty_score: 8
-hn_id: '49174689'
-comments: https://news.ycombinator.com/item?id=49174689
 why_read: This paper introduces AAFLOW, a distributed runtime designed to overcome
   scalability and reproducibility limitations in agentic AI workflows. Readers will
   learn how AAFLOW achieves significant speedups and enhanced efficiency through a
   unified execution model and zero-copy data plane, offering insights into building
   high-performance LLM systems.
-authors:
-- Arup Kumar Sarker
-- Mills Staylor
-- Aymen Alsaadi
-- Gregor von Laszewski
-- Shantenu Jha
-- Geoffrey Fox
 ---
 
 Scaling agentic AI workflows is a critical challenge, often hampered by fragmented data orchestration and serialization overheads. AAFLOW introduces a powerful solution: a unified distributed runtime specifically engineered for high-performance agentic systems.

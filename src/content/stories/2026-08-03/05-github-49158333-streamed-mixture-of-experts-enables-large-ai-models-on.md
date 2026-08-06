@@ -1,8 +1,15 @@
 ---
-title: Streamed Mixture-of-Experts enables large AI models on iPhones
-source: github
-url: https://github.com/leonickson1/Swiftlet
+authors:
+- leonickson1
+comments: https://news.ycombinator.com/item?id=49158333
 date: '2026-08-03'
+depth_score: 8
+hn_id: '49158333'
+image: /infographics/05-github-49158333.jpg
+interest_score: 8
+novelty_score: 8
+section: ai
+source: github
 tags:
 - catchup
 - github
@@ -13,19 +20,13 @@ tags:
 - on-device-ai
 - streaming-weights
 - swiftlet
-section: ai
-interest_score: 8
-depth_score: 8
+title: Streamed Mixture-of-Experts enables large AI models on iPhones
+url: https://github.com/leonickson1/Swiftlet
 utility_score: 9
-novelty_score: 8
-hn_id: '49158333'
-comments: https://news.ycombinator.com/item?id=49158333
 why_read: Read this to understand how large Mixture-of-Experts language models can
   run on resource-constrained Apple devices, including iPhones, by streaming model
   weights. It demonstrates a practical approach for enabling sophisticated on-device
   AI applications.
-authors:
-- leonickson1
 ---
 
 Running 80B LLMs on a MacBook with just 4.3GB of RAM or a 35B model on an iPhone is no longer a pipe dream. Swiftlet achieves this impressive feat by streaming Mixture-of-Experts (MoE) weights from storage on demand, keeping only the small dense core of the model resident in memory.

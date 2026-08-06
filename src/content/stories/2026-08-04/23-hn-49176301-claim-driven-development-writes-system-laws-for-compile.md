@@ -1,8 +1,15 @@
 ---
-title: Claim-driven development writes system laws for compiler proof
-source: hn
-url: https://hale-lang.org/articles/claim-driven-development-in-hale/
+authors:
+- rrook
+comments: https://news.ycombinator.com/item?id=49176301
 date: '2026-08-04'
+depth_score: 8
+hn_id: '49176301'
+image: /infographics/23-hn-49176301.jpg
+interest_score: 8
+novelty_score: 7
+section: engineering
+source: hn
 tags:
 - catchup
 - claim-driven-development
@@ -11,19 +18,13 @@ tags:
 - hn
 - program-graph
 - system-laws
-section: engineering
-interest_score: 8
-depth_score: 8
+title: Claim-driven development writes system laws for compiler proof
+url: https://hale-lang.org/articles/claim-driven-development-in-hale/
 utility_score: 8
-novelty_score: 7
-hn_id: '49176301'
-comments: https://news.ycombinator.com/item?id=49176301
 why_read: This article introduces Claim-driven development, an approach where system
   laws are formally defined and enforced by a compiler. Readers will learn how this
   method reverses traditional architecture work to ensure system properties from the
   outset.
-authors:
-- rrook
 ---
 
 Imagine a compiler that not only checks your syntax but also validates your entire system's architecture against declared "laws." This is the core idea behind Claim-Driven Development in the Hale language.

@@ -1,8 +1,15 @@
 ---
-title: Boxpin avoids .boxed() dynamic dispatch overhead in Rust
-source: hn
-url: https://ae2.rs/post/boxed-vs-box-pin
+authors:
+- ae2
+comments: https://news.ycombinator.com/item?id=49134333
 date: '2026-08-01'
+depth_score: 8
+hn_id: '49134333'
+image: /infographics/59-hn-49134333.jpg
+interest_score: 8
+novelty_score: 7
+section: engineering
+source: hn
 tags:
 - boxed
 - boxpin
@@ -13,18 +20,12 @@ tags:
 - performance-optimization
 - rust-async
 - type-erasure
-section: engineering
-interest_score: 8
-depth_score: 8
+title: Boxpin avoids .boxed() dynamic dispatch overhead in Rust
+url: https://ae2.rs/post/boxed-vs-box-pin
 utility_score: 9
-novelty_score: 7
-hn_id: '49134333'
-comments: https://news.ycombinator.com/item?id=49134333
 why_read: This article explains the hidden performance cost of .boxed() in Rust async
   programming due to type erasure and dynamic dispatch, and introduces boxpin as an
   ergonomic, zero-cost alternative.
-authors:
-- ae2
 ---
 
 You are likely using `.boxed()` in your Rust async code without realizing its hidden performance costs. This seemingly convenient suffix method, while ergonomic, introduces type erasure and dynamic dispatch, leading to a measurable runtime overhead.
