@@ -113,6 +113,8 @@ const pageDescription = SITE_METADATA.longDescription;
 							<span>Archive</span>
 						</a>
 						<span class="masthead-eyebrow-sep">&middot;</span>
+									<a class="masthead-eyebrow-link" href="/bookmarks/">Bookmarks</a>
+									<span class="masthead-eyebrow-sep">&middot;</span>
 						<a class="masthead-eyebrow-link" href="/" rel="noopener noreferrer">tdd.cat</a>
 					</span>
 					<div class="masthead-eyebrow-center-group">
@@ -245,6 +247,10 @@ const pageDescription = SITE_METADATA.longDescription;
 										</span>
 									</span>
 								)}
+								<button class="story-bookmark" type="button" data-bookmark-key={story.url} aria-pressed="false" aria-label="Bookmark story" title="Bookmark story">
+									<svg class="story-bookmark-icon" xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1z"></path></svg>
+									<span class="story-bookmark-label">Bookmark</span>
+								</button>
 							</div>
 							<h2 class="story-headline">
 								<a href={story.url} target="_blank" rel="noopener noreferrer">{story.title}</a>
@@ -287,6 +293,42 @@ const pageDescription = SITE_METADATA.longDescription;
 
 	const prevBtn = document.getElementById('prev-day-btn') as HTMLButtonElement;
 	const nextBtn = document.getElementById('next-day-btn') as HTMLButtonElement;
+	const bookmarksStorageKey = 'tdd-bookmarks-v1';
+
+	function readBookmarks(): string[] {
+		try {
+			const saved = JSON.parse(localStorage.getItem(bookmarksStorageKey) || '[]');
+			return Array.isArray(saved) ? saved.filter((bookmark): bookmark is string => typeof bookmark === 'string') : [];
+		} catch {
+			return [];
+		}
+	}
+
+	function setBookmarkState(button: HTMLButtonElement, bookmarked: boolean) {
+		button.setAttribute('aria-pressed', String(bookmarked));
+		button.setAttribute('aria-label', bookmarked ? 'Remove bookmark' : 'Bookmark story');
+		button.setAttribute('title', bookmarked ? 'Remove bookmark' : 'Bookmark story');
+		button.classList.toggle('is-bookmarked', bookmarked);
+	}
+
+	const bookmarks = new Set(readBookmarks());
+	document.querySelectorAll<HTMLButtonElement>('.story-bookmark').forEach((button) => {
+		const bookmarkKey = button.dataset.bookmarkKey;
+		if (!bookmarkKey) return;
+
+		setBookmarkState(button, bookmarks.has(bookmarkKey));
+		button.addEventListener('click', () => {
+			if (bookmarks.has(bookmarkKey)) {
+				bookmarks.delete(bookmarkKey);
+			} else {
+				bookmarks.add(bookmarkKey);
+			}
+			setBookmarkState(button, bookmarks.has(bookmarkKey));
+			try {
+				localStorage.setItem(bookmarksStorageKey, JSON.stringify([...bookmarks]));
+			} catch {}
+		});
+	});
 
 	const imageModal = document.getElementById('image-modal') as HTMLElement;
 	const imageModalImg = document.getElementById('image-modal-img') as HTMLImageElement;
