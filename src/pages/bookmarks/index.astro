@@ -1,0 +1,101 @@
+---
+import { getCollection } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+import ThemeToggleButton from '../../components/ThemeToggleButton.astro';
+import Footer from '../../components/Footer.astro';
+import { SITE_METADATA } from '../../config';
+
+const entries = await getCollection('stories');
+const stories = entries.map((entry) => ({
+	title: entry.data.title,
+	url: entry.data.url,
+	source: entry.data.source,
+	day: entry.id.split('/')[0],
+}));
+---
+
+<Layout
+	title={`Bookmarks | ${SITE_METADATA.name}`}
+	description={`Your saved stories from ${SITE_METADATA.name}.`}
+>
+	<main class="page-container archive-page bookmarks-page">
+		<header class="archive-header">
+			<div class="archive-title-group">
+				<h1 class="archive-heading">Bookmarks</h1>
+				<span class="archive-count" id="bookmark-count">0 Stories</span>
+			</div>
+			<div class="archive-actions-group">
+				<a class="archive-latest-link" href="/archive/">Archive &rsaquo;</a>
+				<ThemeToggleButton />
+			</div>
+		</header>
+		<hr class="archive-rule-thin" />
+
+		<p class="archive-note">Stories you have saved in this browser.</p>
+
+		<div class="empty-state" id="bookmarks-empty">
+			<h3 class="empty-state-title">No Bookmarks Yet</h3>
+			<p class="empty-state-desc">Use the bookmark icon beside a story to save it here.</p>
+		</div>
+
+		<div class="archive-list bookmarks-list" id="bookmarks-list"></div>
+		<Footer />
+	</main>
+</Layout>
+
+<script define:vars={{ stories }}>
+	const bookmarksStorageKey = 'tdd-bookmarks-v1';
+	const bookmarkCount = document.getElementById('bookmark-count');
+	const bookmarksEmpty = document.getElementById('bookmarks-empty');
+	const bookmarksList = document.getElementById('bookmarks-list');
+
+	function readBookmarks() {
+		try {
+			const saved = JSON.parse(localStorage.getItem(bookmarksStorageKey) || '[]');
+			return new Set(Array.isArray(saved) ? saved.filter((bookmark) => typeof bookmark === 'string') : []);
+		} catch {
+			return new Set();
+		}
+	}
+
+	function renderBookmarks() {
+		const bookmarks = readBookmarks();
+		const savedStories = stories.filter((story) => bookmarks.has(story.url));
+		bookmarkCount.textContent = `${savedStories.length} ${savedStories.length === 1 ? 'Story' : 'Stories'}`;
+		bookmarksEmpty.style.display = savedStories.length === 0 ? 'block' : 'none';
+		bookmarksList.replaceChildren();
+
+		for (const story of savedStories) {
+			const item = document.createElement('div');
+			item.className = 'archive-item bookmark-item';
+
+			const day = document.createElement('span');
+			day.className = 'archive-item-num';
+			day.textContent = story.day;
+			const title = document.createElement('a');
+			title.className = 'archive-item-title';
+			title.href = story.url;
+			title.target = '_blank';
+			title.rel = 'noopener noreferrer';
+			title.textContent = story.title;
+			const source = document.createElement('span');
+			source.className = 'archive-item-meta';
+			source.textContent = story.source.toUpperCase();
+			const remove = document.createElement('button');
+            remove.className = 'bookmark-remove';
+            remove.type = 'button';
+            remove.ariaLabel = `Remove bookmark: ${story.title}`;
+            remove.title = 'Remove bookmark';
+            remove.innerHTML = `<span aria-hidden="true">X</span>`;
+			remove.addEventListener('click', () => {
+				bookmarks.delete(story.url);
+				localStorage.setItem(bookmarksStorageKey, JSON.stringify([...bookmarks]));
+				renderBookmarks();
+			});
+			item.append(day, title, source, remove);
+			bookmarksList.append(item);
+		}
+	}
+
+	renderBookmarks();
+</script>
