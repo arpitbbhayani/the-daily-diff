@@ -96,13 +96,74 @@ const lead = stories[0];
 const rest = stories.slice(1);
 
 const pageTitle = isHomepage 
-	? `${SITE_METADATA.name} | ${SITE_METADATA.tagline}` 
-	: `${label} | ${SITE_METADATA.name}`;
+	? `${SITE_METADATA.name} | Curated by ${SITE_METADATA.curator}` 
+	: `${label} — ${SITE_METADATA.name} | Curated by ${SITE_METADATA.curator}`;
 
-const pageDescription = SITE_METADATA.longDescription;
+const pageDescription = isHomepage
+	? SITE_METADATA.longDescription
+	: `Engineering Newspaper for ${label}: high-signal software engineering, architecture, and systems stories curated by ${SITE_METADATA.curator}.`;
+
+const issueSchema = {
+	"@type": "PublicationIssue",
+	"@id": `https://tdd.cat/${day}/#issue`,
+	"issueNumber": String(issue),
+	"datePublished": `${day}T00:00:00Z`,
+	"name": `${SITE_METADATA.name} — ${label}`,
+	"description": pageDescription,
+	"isPartOf": {
+		"@type": "Periodical",
+		"name": SITE_METADATA.name,
+		"url": "https://tdd.cat/",
+		"publisher": {
+			"@type": "Person",
+			"name": SITE_METADATA.curator,
+			"url": SITE_METADATA.curatorUrl
+		}
+	},
+	"hasPart": stories.slice(0, 10).map((s, idx) => ({
+		"@type": "TechArticle",
+		"position": idx + 1,
+		"headline": s.title,
+		"url": s.url,
+		...(s.authors && s.authors.length > 0 ? { "author": s.authors.map((a: string) => ({ "@type": "Person", "name": a })) } : {}),
+		...(s.why_read ? { "description": s.why_read } : {})
+	}))
+};
+
+const breadcrumbSchema = {
+	"@type": "BreadcrumbList",
+	"itemListElement": [
+		{
+			"@type": "ListItem",
+			"position": 1,
+			"name": SITE_METADATA.name,
+			"item": "https://tdd.cat/"
+		},
+		{
+			"@type": "ListItem",
+			"position": 2,
+			"name": "Archive",
+			"item": "https://tdd.cat/archive/"
+		},
+		{
+			"@type": "ListItem",
+			"position": 3,
+			"name": label,
+			"item": `https://tdd.cat/${day}/`
+		}
+	]
+};
 ---
 
-<Layout title={pageTitle} description={pageDescription} image={resolveImage(lead, day) || undefined}>
+<Layout
+	title={pageTitle}
+	description={pageDescription}
+	image={resolveImage(lead, day) || undefined}
+	type={isHomepage ? 'website' : 'article'}
+	publishedTime={`${day}T00:00:00Z`}
+	jsonLd={[issueSchema, breadcrumbSchema]}
+	markdownUrl={`/${day}.md`}
+>
 	<main class="page-container">
 		<article id="newspaper-sheet" class="newspaper-sheet" data-day={day} data-count={stories.length} data-prev={prevDay} data-next={nextDay}>
 			<header class="masthead">
@@ -120,7 +181,7 @@ const pageDescription = SITE_METADATA.longDescription;
 							<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg>
 						</button>
 						
-						<span class="masthead-eyebrow-center">{label}</span>
+						<time class="masthead-eyebrow-center" datetime={day}>{label}</time>
 						
 						<button id="next-day-btn" class="masthead-nav-btn" disabled={!nextDay} aria-label="Next edition" title="Next edition">
 							<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg>
@@ -131,8 +192,10 @@ const pageDescription = SITE_METADATA.longDescription;
 						<ThemeToggleButton />
 					</div>
 				</div>
-				<h1 class="masthead-name">{SITE_METADATA.name}</h1>
-				<p class="masthead-tagline">{SITE_METADATA.tagline}</p>
+				<h1 class="masthead-name"><a href="/" class="masthead-title-link">{SITE_METADATA.name}</a></h1>
+				<p class="masthead-tagline">
+					An Engineering Newspaper &middot; Curated by <a href={SITE_METADATA.curatorUrl} target="_blank" rel="noopener noreferrer" class="curator-link">{SITE_METADATA.curator}</a>
+				</p>
 				<pre class="masthead-cat masthead-cat--left">
   /\_/\
  (=^.^=)
@@ -223,7 +286,16 @@ const pageDescription = SITE_METADATA.longDescription;
 							data-interest={story.interest_score}
 							data-feature={isFeature ? 'true' : undefined}
 							data-feature-reverse={featureReverse ? 'true' : undefined}
+							itemscope
+							itemtype="https://schema.org/TechArticle"
+							itemprop="hasPart"
 						>
+							{story.authors && story.authors.length > 0 && (
+								<meta itemprop="author" content={story.authors.join(', ')} />
+							)}
+							{story.why_read && (
+								<meta itemprop="abstract" content={story.why_read} />
+							)}
 							<div class="story-byline">
 								{bylineFor(story) && <>{bylineFor(story)}<span class="story-source-sep">&middot;</span></>}
 								<a class="story-source-link" href={story.url} target="_blank" rel="noopener noreferrer">{sourceLabelFor(story)} &rsaquo;</a>
@@ -246,8 +318,8 @@ const pageDescription = SITE_METADATA.longDescription;
 									</span>
 								)}
 							</div>
-							<h2 class="story-headline">
-								<a href={story.url} target="_blank" rel="noopener noreferrer">{story.title}</a>
+							<h2 class="story-headline" itemprop="headline">
+								<a href={story.url} target="_blank" rel="noopener noreferrer" itemprop="url">{story.title}</a>
 							</h2>
 							{img && (
 								<div class="story-image-wrapper is-loading">
@@ -255,14 +327,17 @@ const pageDescription = SITE_METADATA.longDescription;
 										src={img}
 										alt={story.title}
 										class="story-featured-image loading"
-										loading="lazy"
+										loading={isLead ? "eager" : "lazy"}
+										fetchpriority={isLead ? "high" : "auto"}
+										decoding="async"
 										width="560"
 										height="418"
+										itemprop="image"
 										onload="this.classList.remove('loading'); this.parentElement.classList.remove('is-loading');"
 									/>
 								</div>
 							)}
-							<div class="story-body content blog-content">
+							<div class="story-body content blog-content" itemprop="articleBody">
 								<story.Content />
 							</div>
 						</article>

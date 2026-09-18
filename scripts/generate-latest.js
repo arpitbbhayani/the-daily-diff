@@ -50,12 +50,16 @@ if (!fs.existsSync(publicDir)) {
 const configContent = fs.readFileSync(path.join(process.cwd(), 'src/config.ts'), 'utf8');
 const nameMatch = configContent.match(/name:\s*['"]([^'"]+)['"]/);
 const descriptionMatch = configContent.match(/description:\s*['"]([^'"]+)['"]/);
+const curatorMatch = configContent.match(/curator:\s*['"]([^'"]+)['"]/);
+const curatorUrlMatch = configContent.match(/curatorUrl:\s*['"]([^'"]+)['"]/);
 
-const siteName = nameMatch ? nameMatch[1] : 'The Daily Diff';
-const siteDescription = descriptionMatch ? descriptionMatch[1] : 'A daily newspaper for software engineers who value depth over noise.';
+const siteName = nameMatch ? nameMatch[1] : 'Engineering Newspaper';
+const curator = curatorMatch ? curatorMatch[1] : 'Arpit Bhayani';
+const curatorUrl = curatorUrlMatch ? curatorUrlMatch[1] : 'https://arpitbhayani.me/';
+const siteDescription = descriptionMatch ? descriptionMatch[1] : 'A daily newspaper for software engineers who value depth over noise, curated by Arpit Bhayani.';
 
 const targetPathMD = path.join(publicDir, 'md');
-fs.writeFileSync(targetPathMD, `---\nname: ${siteName}\ndescription: ${siteDescription}\ndate: ` + latestDay + "\n--- \n\n" + '-'.repeat(80) + "\n\n" + concatenated + '\n', 'utf8');
+fs.writeFileSync(targetPathMD, `---\nname: ${siteName}\ncurator: ${curator}\ncurator_url: ${curatorUrl}\ndescription: ${siteDescription}\ndate: ` + latestDay + "\n--- \n\n" + '-'.repeat(80) + "\n\n" + concatenated + '\n', 'utf8');
 console.log(`Successfully generated ${targetPathMD}`);
 
 // Now generate the JSON version
@@ -163,6 +167,8 @@ const storiesJson = rawStories.map(story => {
 
 const jsonOutput = {
   name: siteName,
+  curator,
+  curator_url: curatorUrl,
   description: siteDescription,
   date: latestDay,
   stories: storiesJson

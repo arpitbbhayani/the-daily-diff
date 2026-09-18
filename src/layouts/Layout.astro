@@ -7,23 +7,76 @@ interface Props {
 	title?: string;
 	description?: string;
 	image?: string;
+	type?: 'website' | 'article';
+	publishedTime?: string;
+	jsonLd?: Record<string, any> | Record<string, any>[];
+	markdownUrl?: string;
 }
 
 const {
 	title = `${SITE_METADATA.name} | ${SITE_METADATA.tagline}`,
 	description = SITE_METADATA.description,
 	image = 'https://tdd.cat/the-daily-diff.png',
+	type = 'website',
+	publishedTime,
+	jsonLd,
+	markdownUrl,
 } = Astro.props;
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 const socialImageURL = image;
 
 const gaId = "G-D4HXVQC71F";
+
+const baseSchemaGraph: any[] = [
+	{
+		"@type": "WebSite",
+		"@id": `${Astro.site}#website`,
+		"url": String(Astro.site),
+		"name": SITE_METADATA.name,
+		"alternateName": "Engineering Newspaper",
+		"description": SITE_METADATA.description,
+		"publisher": {
+			"@id": `${Astro.site}#curator`
+		}
+	},
+	{
+		"@type": "Person",
+		"@id": `${Astro.site}#curator`,
+		"name": SITE_METADATA.curator,
+		"url": SITE_METADATA.curatorUrl,
+		"sameAs": [
+			"https://arpitbhayani.me/",
+			"https://twitter.com/arpit_bhayani",
+			"https://github.com/arpitbbhayani",
+			"https://www.linkedin.com/in/arpitbhayani/"
+		],
+		"jobTitle": "Curator & Software Engineer"
+	}
+];
+
+if (jsonLd) {
+	if (Array.isArray(jsonLd)) {
+		baseSchemaGraph.push(...jsonLd);
+	} else {
+		baseSchemaGraph.push(jsonLd);
+	}
+}
+
+const schemaMarkup = {
+	"@context": "https://schema.org",
+	"@graph": baseSchemaGraph
+};
 ---
 
 <!doctype html>
 <html lang="en">
 	<head>
+		<!-- Performance & Core Web Vitals Resource Hints -->
+		<link rel="preconnect" href="https://tdd-edge.b-cdn.net" crossorigin />
+		<link rel="dns-prefetch" href="https://tdd-edge.b-cdn.net" />
+		{gaId && <link rel="preconnect" href="https://www.googletagmanager.com" />}
+
 		{gaId && (
 			<>
 				<!-- Google tag (gtag.js) -->
@@ -55,11 +108,26 @@ const gaId = "G-D4HXVQC71F";
 		<meta name="msapplication-TileColor" content="#ffffff">
 		<meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
 		<meta name="theme-color" content="#ffffff">
+
+		<!-- Autodiscovery Feeds & Machine-Readable Endpoints -->
 		<link rel="alternate" type="application/rss+xml" title={SITE_METADATA.name} href="/rss.xml" />
+		<link rel="alternate" type="text/markdown" href="/md" title="Latest Edition (Markdown Feed for LLMs & Readers)" />
+		<link rel="alternate" type="application/json" href="/json" title="Latest Edition (JSON Feed for AI & APIs)" />
+		{markdownUrl && (
+			<link rel="alternate" type="text/markdown" href={markdownUrl} title="Edition Plaintext (Markdown for LLMs)" />
+		)}
+		<link rel="search" type="application/opensearchdescription+xml" title={SITE_METADATA.name} href="/opensearch.xml" />
+
 		<meta name="generator" content={Astro.generator} />
 		<title>{title}</title>
 		<meta name="description" content={description} />
 		<link rel="canonical" href={canonicalURL} />
+
+		<!-- Author, SEO & AI Engine (GEO) Directives -->
+		<meta name="author" content={SITE_METADATA.curator} />
+		<meta name="creator" content={SITE_METADATA.curator} />
+		<meta name="publisher" content={SITE_METADATA.name} />
+		<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
 
 		<!-- PWA Metadata and iOS support -->
 		<link rel="manifest" href="/manifest.webmanifest" />
@@ -67,20 +135,29 @@ const gaId = "G-D4HXVQC71F";
 		<meta name="apple-mobile-web-app-capable" content="yes" />
 		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
-		<meta property="og:type" content="website" />
+		<!-- OpenGraph / Facebook -->
+		<meta property="og:type" content={type} />
 		<meta property="og:site_name" content={SITE_METADATA.name} />
 		<meta property="og:title" content={title} />
 		<meta property="og:description" content={description} />
 		<meta property="og:url" content={canonicalURL} />
-		<meta property="og:image" content="https://tdd.cat/the-daily-diff.png" />
+		<meta property="og:image" content={socialImageURL} />
 		<meta property="og:image:width" content="1200" />
 		<meta property="og:image:height" content="628" />
+		{publishedTime && <meta property="article:published_time" content={publishedTime} />}
+		{publishedTime && <meta property="article:author" content={SITE_METADATA.curatorUrl} />}
 
+		<!-- Twitter -->
 		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:site" content={SITE_METADATA.curatorTwitter} />
+		<meta name="twitter:creator" content={SITE_METADATA.curatorTwitter} />
 		<meta name="twitter:title" content={title} />
 		<meta name="twitter:description" content={description} />
-		<meta name="twitter:image" content="https://tdd.cat/the-daily-diff.png" />
+		<meta name="twitter:image" content={socialImageURL} />
 		<meta name="twitter:image:alt" content={title} />
+
+		<!-- Schema.org JSON-LD for SEO & Generative Engine Optimization (GEO) -->
+		<script type="application/ld+json" is:inline set:html={JSON.stringify(schemaMarkup)} />
 		<script is:inline>
 			(function () {
 				const savedTheme = localStorage.getItem('theme');

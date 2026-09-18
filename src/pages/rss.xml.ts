@@ -41,12 +41,12 @@ export async function GET(context: APIContext) {
 
     const totalCount = dayEntries.length;
     const countText = `${totalCount} high-signal ${
-      totalCount === 1 ? 'paper, discussion, or insight' : 'papers, discussions, and insights'
+      totalCount === 1 ? 'engineering story and architectural breakdown' : 'engineering stories and architectural breakdowns'
     }`;
 
     const description = `<p><strong>Featured stories:</strong></p>` +
       `<ul>${storyBullets}</ul>` +
-      `<p>A curation of ${countText} for ${label}. ` +
+      `<p>A curation of ${countText} for ${label}, curated by ${SITE_METADATA.curator}. ` +
       `Built for software engineers who value depth over noise.</p>`;
 
     return {
@@ -54,11 +54,12 @@ export async function GET(context: APIContext) {
       pubDate: new Date(`${day}T00:00:00`),
       description,
       link: `/${day}/`,
+      author: SITE_METADATA.curator,
     };
   });
 
   return rss({
-    title: SITE_METADATA.name,
+    title: `${SITE_METADATA.name} | Curated by ${SITE_METADATA.curator}`,
     description: SITE_METADATA.description,
     site: context.site || 'https://tdd.cat',
     items,
