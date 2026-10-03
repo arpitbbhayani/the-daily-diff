@@ -55,7 +55,7 @@ if (!fs.existsSync(distDir)) {
 // Load Bunny credentials
 function getBunnyConfig() {
   let zone = process.env.BUNNY_STORAGE_ZONE;
-  let password = process.env.BUNNY_STORAGE_PASSWORD;
+  let password = process.env.BUNNY_STORAGE_PASSWORD || process.env.BUNNY_API_KEY;
 
   if (!zone || !password) {
     try {
@@ -354,7 +354,14 @@ async function run() {
 
   const browser = await puppeteer.launch({
     headless: true,
-    args: ['--no-sandbox', '--disable-setuid-sandbox', '--font-render-hinting=none'],
+    executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
+    args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-dev-shm-usage',
+      '--disable-gpu',
+      '--font-render-hinting=none',
+    ],
   });
 
   try {
