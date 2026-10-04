@@ -22,6 +22,7 @@ interface StoryProps {
 	comments?: string;
 	hn_id?: string;
 	section?: string;
+	isNews?: boolean;
 	depth_score?: number;
 	novelty_score?: number;
 	utility_score?: number;
@@ -223,7 +224,7 @@ const breadcrumbSchema = {
 				
 				<div class="filter-bar">
 					<div class="filter-group source-filter" id="source-filter-container">
-						<span class="filter-label">Source</span>
+						<span class="filter-label">Section</span>
 						<button class="filter-mobile-trigger" aria-haspopup="listbox" aria-expanded="false" id="source-filter-trigger">
 							<svg class="filter-trigger-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
 							<span class="filter-trigger-text" id="source-filter-text">HN</span>
@@ -233,7 +234,8 @@ const breadcrumbSchema = {
 						</button>
 						<div class="filter-options">
 							<button class="filter-btn active" data-filter="hn">HN</button>
-							<button class="filter-btn" data-filter="github">GitHub</button>
+							<button class="filter-btn" data-filter="news">NEWS</button>
+							<button class="filter-btn" data-filter="github">GITHUB</button>
 						</div>
 					</div>
 
@@ -297,6 +299,7 @@ const breadcrumbSchema = {
 							class={classes}
 							data-source={story.source}
 							data-interest={story.interest_score}
+							data-is-news={story.isNews ? 'true' : 'false'}
 							data-feature={isFeature ? 'true' : undefined}
 							data-feature-reverse={featureReverse ? 'true' : undefined}
 							itemscope
@@ -310,6 +313,12 @@ const breadcrumbSchema = {
 								<meta itemprop="abstract" content={story.why_read} />
 							)}
 							<div class="story-byline">
+								{story.isNews && (
+									<>
+										<span class="story-badge story-badge--news">NEWS</span>
+										<span class="story-source-sep">&middot;</span>
+									</>
+								)}
 								{bylineFor(story) && <>{bylineFor(story)}<span class="story-source-sep">&middot;</span></>}
 								<a class="story-source-link" href={story.url} target="_blank" rel="noopener noreferrer">{sourceLabelFor(story)} &rsaquo;</a>
 								{story.comments && (
@@ -431,7 +440,7 @@ const breadcrumbSchema = {
 		const activeSourceBtn = document.querySelector('#source-filter-container .filter-btn.active');
 		const activeInterestBtn = document.querySelector('#interest-filter-container .filter-btn.active');
 
-		const sourceFilter = activeSourceBtn ? activeSourceBtn.getAttribute('data-filter')! : 'all';
+		const sourceFilter = activeSourceBtn ? activeSourceBtn.getAttribute('data-filter')! : 'hn';
 		const interestFilter = activeInterestBtn ? activeInterestBtn.getAttribute('data-filter')! : 'all';
 
 		let visibleCount = 0;
@@ -439,15 +448,26 @@ const breadcrumbSchema = {
 
 		allStories.forEach((story) => {
 			const source = story.getAttribute('data-source');
+			const isNews = story.getAttribute('data-is-news') === 'true';
 			const interest = story.getAttribute('data-interest');
 
-			const sourceMatch = (sourceFilter === 'all' || source === sourceFilter);
+			let sectionMatch = false;
+			if (sourceFilter === 'news') {
+				sectionMatch = isNews;
+			} else if (sourceFilter === 'hn') {
+				sectionMatch = (source === 'hn' && !isNews);
+			} else if (sourceFilter === 'github') {
+				sectionMatch = (source === 'github' && !isNews);
+			} else if (sourceFilter === 'all') {
+				sectionMatch = true;
+			}
+
 			const interestMatch = (interestFilter === 'all' ||
 				(interestFilter === '9' ? (interest === '9' || interest === '10') : interest === interestFilter));
 
 			story.classList.remove('is-lead', 'is-feature', 'is-feature-reverse');
 
-			if (sourceMatch && interestMatch) {
+			if (sectionMatch && interestMatch) {
 				story.removeAttribute('data-hidden');
 				visibleStories.push(story);
 				visibleCount++;

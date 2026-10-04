@@ -1,19 +1,48 @@
-## Development
+# Agent Instructions & Conventions
 
-When starting the dev server, use background mode:
+This document outlines team-shared architecture, conventions, development commands, and workflows for The Daily Diff repository.
 
-```
+## Development Workflows
+
+When starting the Astro development server, use background mode:
+
+```bash
 astro dev --background
 ```
 
-Manage the background server with `astro dev stop`, `astro dev status`, and `astro dev logs`.
+Manage the background server with:
+- `astro dev status` — Check server status
+- `astro dev logs` — View dev server logs
+- `astro dev stop` — Stop background server
 
-## Documentation
+Common project scripts:
+- `npm run dev` — Launch the dev server
+- `npm run build` — Compile digest (`scripts/generate-latest.js`) and build the Astro site
+- `npm run preview` — Locally preview the production build
+- `npm run generate-pdf` — Generate printable A4 edition PDFs
 
-Full documentation: https://docs.astro.build
+## Pre-Commit Verification
 
-Consult these guides before working on related tasks:
+Verify that the build is functional before committing any changes:
 
+1. Run `npm run build` to verify there are no compilation, type, or content collection errors.
+2. Resolve any build errors that occur during the build process.
+3. If a build error is caused by a specific corrupted or invalid file in `src/content/stories/`, delete that file and its corresponding infographic image (if it exists).
+
+## Architecture & Conventions
+
+- **Astro Content Collections**: Daily editions are organized as Markdown content collections under `src/content/stories/YYYY-MM-DD/`.
+- **Classification & Sections**:
+  - Stories belong to distinct sections: **HN**, **GitHub**, and **NEWS**.
+  - Stories classified as **NEWS** include product launches, new model releases, library announcements, and technical breakthroughs.
+  - Tabs in the edition reader are mutually exclusive.
+- **Styling**: Styles are authored in SASS (`src/styles/main.scss`) utilizing newsprint typography and CSS custom properties for Day (light) and Night (dark) themes.
+
+## Documentation Reference
+
+Full Astro documentation: https://docs.astro.build
+
+Consult these guides when working on relevant tasks:
 - [Adding pages, dynamic routes, or middleware](https://docs.astro.build/en/guides/routing/)
 - [Working with Astro components](https://docs.astro.build/en/basics/astro-components/)
 - [Using React, Vue, Svelte, or other framework components](https://docs.astro.build/en/guides/framework-components/)
