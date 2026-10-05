@@ -34,8 +34,8 @@ Verify that the build is functional before committing any changes:
 - **Astro Content Collections**: Daily editions are organized as Markdown content collections under `src/content/stories/YYYY-MM-DD/`.
 - **Classification & Sections**:
   - Stories belong to distinct sections: **HN**, **GitHub**, and **NEWS**.
+  - Categorization is assigned directly in markdown frontmatter by the LLM metadata extraction pipeline (`tdd-workers`) via `section: 'hn' | 'github' | 'news'`.
   - Stories classified as **NEWS** include product launches, new model releases, library announcements, and technical breakthroughs.
-  - Categorization into **NEWS** is assigned directly in markdown frontmatter by the curation pipeline (via `section: news` or `is_news: true`), without build-time heuristics.
   - Tabs in the edition reader are mutually exclusive and ordered **HN**, **NEWS**, and **GITHUB**.
 - **Styling**: Styles are authored in SASS (`src/styles/main.scss`) utilizing newsprint typography and CSS custom properties for Day (light) and Night (dark) themes.
 
