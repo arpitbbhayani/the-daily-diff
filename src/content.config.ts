@@ -21,8 +21,6 @@ const stories = defineCollection({
     depth_score: z.number().optional(),
     novelty_score: z.number().optional(),
     utility_score: z.number().optional(),
-    is_news: z.boolean().optional(),
-    is_announcement: z.boolean().optional(),
   }),
 });
 

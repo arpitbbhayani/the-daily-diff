@@ -1,6 +1,6 @@
 ---
 title: Cloudflare Basin launches serverless data analytics on Apache Iceberg
-source: hn
+source: news
 url: https://blog.cloudflare.com/cloudflare-basin/
 date: '2026-10-02'
 tags:
@@ -11,7 +11,7 @@ tags:
 - r2-object-storage
 - serverless-analytics
 - sql-engine
-section: news
+section: databases
 interest_score: 8
 depth_score: 8
 utility_score: 8

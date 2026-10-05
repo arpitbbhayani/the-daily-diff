@@ -1,6 +1,6 @@
 ---
 title: Aleph Alpha releases Kolibri as a sovereign open-weight model
-source: hn
+source: news
 url: https://aleph-alpha.com/en/blog/kolibri-has-landed-a-sovereign-open-weight-model/
 date: '2026-10-03'
 tags:
@@ -11,7 +11,7 @@ tags:
 - mixture-of-experts
 - model-training-pipeline
 - open-weight-models
-section: news
+section: ai
 interest_score: 8
 depth_score: 8
 utility_score: 8

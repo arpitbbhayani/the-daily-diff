@@ -1,6 +1,6 @@
 ---
 title: Llama.cpp introduces decision models for single pass option scoring
-source: hn
+source: news
 url: https://huggingface.co/blog/ggml-org/decision-models-in-llamacpp
 date: '2026-10-03'
 tags:
@@ -11,7 +11,7 @@ tags:
 - inference-optimization
 - llama-cpp
 - system-one-api
-section: news
+section: ai
 interest_score: 8
 depth_score: 8
 utility_score: 8

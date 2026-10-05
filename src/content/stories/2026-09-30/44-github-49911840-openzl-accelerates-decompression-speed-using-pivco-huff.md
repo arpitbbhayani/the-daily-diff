@@ -1,6 +1,6 @@
 ---
 title: OpenZL accelerates decompression speed using PivCo Huffman decoding
-source: github
+source: news
 url: https://github.com/facebook/openzl/releases/tag/v0.3.0
 date: '2026-09-30'
 tags:
@@ -11,7 +11,7 @@ tags:
 - openzl
 - pivco-huffman
 - simd
-section: news
+section: systems
 interest_score: 8
 depth_score: 9
 utility_score: 8

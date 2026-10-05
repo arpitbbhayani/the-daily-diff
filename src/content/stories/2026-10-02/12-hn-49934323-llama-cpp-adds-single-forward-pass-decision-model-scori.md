@@ -1,6 +1,6 @@
 ---
 title: Llama.cpp adds single forward pass decision model scoring
-source: hn
+source: news
 url: https://huggingface.co/blog/ggml-org/decision-models-in-llamacpp
 date: '2026-10-02'
 tags:
@@ -11,7 +11,7 @@ tags:
 - inference-speed
 - llama-cpp
 - single-forward-pass
-section: news
+section: ai
 interest_score: 8
 depth_score: 8
 utility_score: 8

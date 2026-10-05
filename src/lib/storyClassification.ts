@@ -1,41 +1,32 @@
 export type StorySection = 'hn' | 'news' | 'github';
+export type StorySource = StorySection;
 
 export interface StoryMetadata {
-	section?: string;
-	is_news?: boolean;
-	is_announcement?: boolean;
 	source?: string;
+	section?: string;
 }
 
 /**
- * Resolves the canonical section ('hn' | 'news' | 'github') for a story.
- * Prioritizes explicit frontmatter section or is_news flags set by LLM metadata extraction,
- * with fallbacks for legacy stories.
+ * Resolves the canonical edition tab ('hn' | 'news' | 'github') for a story based on source.
+ * Defaults to 'hn' for legacy stories unless source is 'github' or 'news'.
  */
-export function getStorySection(story: StoryMetadata): StorySection {
-	const sec = story.section?.toLowerCase();
-	if (sec === 'news' || sec === 'announcements' || story.is_news === true || story.is_announcement === true || story.source?.toLowerCase() === 'news') {
+export function getStorySource(story: StoryMetadata): StorySection {
+	const src = story.source?.toLowerCase();
+	if (src === 'news') {
 		return 'news';
 	}
-	if (sec === 'github') {
-		return 'github';
-	}
-	if (sec === 'hn') {
-		return 'hn';
-	}
-	// Fallback for legacy stories where section was a topic (ai, systems, databases, etc.)
-	if (story.source?.toLowerCase() === 'github') {
+	if (src === 'github') {
 		return 'github';
 	}
 	return 'hn';
 }
 
+export const getStorySection = getStorySource;
+
 /**
- * Determines whether a story belongs to the "NEWS" section.
- * Relies directly on the categorization assigned in frontmatter by the LLM
- * (e.g. section: 'news', is_news: true, or source: 'news').
- * No build-time heuristics, regex, or keyword sniffing.
+ * Determines whether a story belongs to the "NEWS" section based on source.
  */
 export function isNewsStory(story: StoryMetadata): boolean {
-	return getStorySection(story) === 'news';
+	return getStorySource(story) === 'news';
 }
+

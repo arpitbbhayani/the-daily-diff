@@ -1,6 +1,6 @@
 ---
 title: Simdjson version 5.0 library is released
-source: hn
+source: news
 url: https://lemire.me/blog/2026/09/28/simdjson-5-0-is-out/
 date: '2026-09-28'
 tags:
@@ -8,7 +8,7 @@ tags:
 - hn
 - json-parsing
 - simdjson
-section: news
+section: engineering
 interest_score: 8
 depth_score: 8
 utility_score: 8
