@@ -11,7 +11,7 @@ tags:
 - openzl
 - pivco-huffman
 - simd
-section: systems
+section: news
 interest_score: 8
 depth_score: 9
 utility_score: 8

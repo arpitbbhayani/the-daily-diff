@@ -8,7 +8,7 @@ tags:
 - hn
 - json-parsing
 - simdjson
-section: engineering
+section: news
 interest_score: 8
 depth_score: 8
 utility_score: 8

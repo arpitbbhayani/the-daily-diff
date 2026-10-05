@@ -11,7 +11,7 @@ tags:
 - mixture-of-experts
 - model-training-pipeline
 - open-weight-models
-section: ai
+section: news
 interest_score: 8
 depth_score: 8
 utility_score: 8

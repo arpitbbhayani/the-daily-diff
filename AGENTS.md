@@ -35,7 +35,8 @@ Verify that the build is functional before committing any changes:
 - **Classification & Sections**:
   - Stories belong to distinct sections: **HN**, **GitHub**, and **NEWS**.
   - Stories classified as **NEWS** include product launches, new model releases, library announcements, and technical breakthroughs.
-  - Tabs in the edition reader are mutually exclusive.
+  - Categorization into **NEWS** is assigned directly in markdown frontmatter by the curation pipeline (via `section: news` or `is_news: true`), without build-time heuristics.
+  - Tabs in the edition reader are mutually exclusive and ordered **HN**, **NEWS**, and **GITHUB**.
 - **Styling**: Styles are authored in SASS (`src/styles/main.scss`) utilizing newsprint typography and CSS custom properties for Day (light) and Night (dark) themes.
 
 ## Documentation Reference
