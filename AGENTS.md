@@ -19,6 +19,8 @@ Common project scripts:
 - `npm run dev` — Launch the dev server
 - `npm run build` — Compile digest (`scripts/generate-latest.js`) and build the Astro site
 - `npm run preview` — Locally preview the production build
+- `npm run preview:cf` — Preview build output using Wrangler Cloudflare Pages simulator
+- `npm run deploy` — Deploy production build to Cloudflare Pages
 - `npm run generate-pdf` — Generate printable A4 edition PDFs
 
 ## Pre-Commit Verification

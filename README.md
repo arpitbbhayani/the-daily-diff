@@ -63,3 +63,23 @@ npm run generate-pdf
 - `npm run generate-pdf -- --day 2026-10-02`: Generates and uploads PDF for a specific date.
 - `npm run generate-pdf -- --all`: Backfills and uploads PDFs for all historical editions.
 - `npm run generate-pdf -- --no-upload`: Generates the PDF locally into `public/pdf/` and `dist/pdf/` without uploading to Bunny Storage.
+
+## Deployment (Cloudflare Pages)
+
+The project is configured for deployment on **Cloudflare Pages**.
+
+### Git Integration (Recommended)
+Connect your repository in the [Cloudflare Dashboard](https://dash.cloudflare.com/) under **Compute (Workers) > Pages**:
+- **Framework preset:** Astro
+- **Build command:** `npm run build`
+- **Build output directory:** `dist`
+
+### Wrangler CLI
+You can also preview and deploy using Wrangler:
+```bash
+# Preview build output with Cloudflare Pages local simulator
+npm run preview:cf
+
+# Deploy to Cloudflare Pages
+npm run deploy
+```
