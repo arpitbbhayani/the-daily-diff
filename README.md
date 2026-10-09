@@ -75,7 +75,9 @@ Connect your repository in the [Cloudflare Dashboard](https://dash.cloudflare.co
 - **Build output directory:** `dist`
 
 ### Wrangler CLI
+
 You can also preview and deploy using Wrangler:
+
 ```bash
 # Preview build output with Cloudflare Pages local simulator
 npm run preview:cf
