@@ -10,19 +10,6 @@
       "authors": [
         "speckx"
       ],
-      "categories": [
-        "db_internals",
-        "db_relational",
-        "sys_performance"
-      ],
-      "tags": [
-        {
-          "id": "postgres",
-          "name": "Postgres",
-          "type": "product",
-          "role": "primary"
-        }
-      ],
       "event_type": "deep_dive",
       "social_post": "PostgreSQL takes an AccessShareLock on every index of a table during query planning, whether the query actually uses that index or not. On a table with twenty secondary indexes, even a single-row primary key lookup forces the planner to open and lock twenty-two relations on every execution.\n\nNormally, this is masked by the fast-path locking mechanism introduced in PostgreSQL 9.2. Each backend process holds a small, private array to record weak relation locks directly in memory without touching the shared lock table. However, through PostgreSQL 17, that private array contains exactly sixteen slots.\n\nOnce a single query touches more than sixteen relations, the remaining locks spill directly into the shared lock table. The shared lock table is protected by sixteen lightweight locks (LWLocks). At high throughput on multi-core servers, these sixteen LWLocks turn into a brutal CPU-burning bottleneck on supposedly cheap reads.\n\nExcessive secondary indexes do not just slow down write operations; they can quietly destroy read latency by exhausting fast-path lock arrays.",
       "why_read": "Read this to understand how PostgreSQL query planning locks every table index and why exceeding sixteen locks causes severe CPU contention.",
@@ -36,37 +23,6 @@
       "title": "Sub-second Postgres replication to ClickHouse using physical WAL",
       "authors": [
         "samaysharma"
-      ],
-      "categories": [
-        "db_analytics",
-        "db_internals",
-        "db_relational"
-      ],
-      "tags": [
-        {
-          "id": "walshadow",
-          "name": "WalShadow",
-          "type": "project",
-          "role": "primary"
-        },
-        {
-          "id": "clickhouse",
-          "name": "ClickHouse",
-          "type": "product",
-          "role": "primary"
-        },
-        {
-          "id": "postgres",
-          "name": "Postgres",
-          "type": "product",
-          "role": "primary"
-        },
-        {
-          "id": "rust",
-          "name": "Rust",
-          "type": "technology",
-          "role": "secondary"
-        }
       ],
       "event_type": "release",
       "social_post": "Replicating data from PostgreSQL to analytical engines usually relies on logical decoding plugins like pgoutput or Debezium. While logical decoding provides clean JSON or Avro streams, it introduces severe serialization overhead, struggles to keep pace with high-throughput OLTP workloads, and frequently causes catalog bloat when consumers lag.\n\nWalshadow takes a radically different route by replicating rows into ClickHouse directly from PostgreSQL physical write-ahead log (WAL). Instead of decoding logical tuples inside the database server process, it reads raw physical WAL records, tracks schema evolution, and batches analytical writes downstream.\n\nOperating at the physical WAL level eliminates the query performance penalty on primary nodes and unlocks sub-second analytical ingestion latency. It handles initial backfills, continuous changelogs, and planned failover switches natively.\n\nBypassing the logical replication engine transforms how teams architect real-time OLAP pipelines on top of high-traffic relational backends.",
@@ -82,24 +38,6 @@
       "authors": [
         "Russell"
       ],
-      "categories": [
-        "sys_performance",
-        "eng_languages"
-      ],
-      "tags": [
-        {
-          "id": "tokio",
-          "name": "Tokio",
-          "type": "project",
-          "role": "primary"
-        },
-        {
-          "id": "rust",
-          "name": "Rust",
-          "type": "technology",
-          "role": "primary"
-        }
-      ],
       "event_type": "deep_dive",
       "social_post": "Most performance degradation in asynchronous Rust systems comes down to subtle violations of the cooperative scheduling model. When tasks run across Tokio worker threads, blocking between await points starves the work-stealing queue and silently increases tail latencies across completely unrelated operations.\n\nOptimizing Tokio applications requires balancing fairness against throughput. Yielding frequently improves responsiveness for interactive paths, but tight batching is necessary to amortize runtime and allocator overhead on high-volume pipelines. In addition, sharing standard standard-library mutexes across tasks creates hidden contention points that can stall an entire thread pool.\n\nProduction services often benefit from isolating distinct workloads onto dedicated runtimes instead of relying on a single global pool. Separating background processing from latency-critical networking prevents batch queries from monopolizing poll cycles.\n\nHigh throughput in asynchronous runtimes is about managing cooperative fairness, not just writing non-blocking code.",
       "why_read": "Read this to understand the core tradeoffs between fairness, batching, and thread isolation in Tokio runtimes. You will gain practical mental models to diagnose performance bottlenecks and optimize asynchronous Rust services.",
@@ -113,25 +51,6 @@
       "title": "Dropping eBPF CPU cost by ninety percent using memoization",
       "authors": [
         "Nathan Naveen"
-      ],
-      "categories": [
-        "sys_performance",
-        "sys_security",
-        "sys_infra"
-      ],
-      "tags": [
-        {
-          "id": "ebpf",
-          "name": "eBPF",
-          "type": "technology",
-          "role": "primary"
-        },
-        {
-          "id": "linux",
-          "name": "Linux",
-          "type": "technology",
-          "role": "secondary"
-        }
       ],
       "event_type": "deep_dive",
       "social_post": "Enforcing security policies in eBPF often chokes the CPU in unexpected places. When inspecting file access via Linux Security Module hooks, the expensive operation is rarely the permission evaluation itself. The actual bottleneck is repeatedly reconstructing the file path and walking ancestor directory entries to identify which policy applies.\n\nIn workloads like relational databases that frequently re-open files across deep directory hierarchies, this path traversal repeats on every single call. Profiling an in-production security monitor revealed that path resolution consumed the vast majority of CPU cycles during basic database operations.\n\nThe solution is elegant in its simplicity: memoize policy resolutions by caching the evaluated policy directly against the inode. Because file paths resolve to stable inodes for existing files, subsequent lookups bypass directory entry traversal entirely. This single architectural adjustment reduced kernel CPU usage by roughly 90 percent.\n\nBefore optimizing your enforcement logic, inspect the cost of resolving what rule to apply in the first place.",
@@ -147,30 +66,6 @@
       "authors": [
         "anuj0456"
       ],
-      "categories": [
-        "ai_llm",
-        "eng_opensource"
-      ],
-      "tags": [
-        {
-          "id": "openarch",
-          "name": "OpenArch",
-          "type": "project",
-          "role": "primary"
-        },
-        {
-          "id": "pytorch",
-          "name": "PyTorch",
-          "type": "technology",
-          "role": "secondary"
-        },
-        {
-          "id": "sebastian-raschka",
-          "name": "Sebastian Raschka",
-          "type": "person",
-          "role": "secondary"
-        }
-      ],
       "event_type": "release",
       "social_post": "Most modern large language models share the exact same foundational transformer block, yet their actual runtime performance hinges on subtle architectural divergences.\n\nOpenArch provides clean, single-file PyTorch implementations of modern model architectures including Llama, Qwen, DeepSeek, and Gemma. Instead of hiding critical mechanics behind abstraction layers, each implementation surfaces the exact mechanisms that separate these models. You can directly inspect the differences between Multi-Head Attention, Grouped-Query Attention, and Multi-Head Latent Attention.\n\nUnderstanding these structural differences is vital for backend engineers optimizing inference pipelines. Inspecting how Mixture of Experts routing operates or how QK-Norm prevents attention entropy collapse demystifies the trade-offs between memory footprint and throughput.\n\nReading the raw architectural code reveals far more about memory bottlenecks and kernel execution than reading high-level documentation ever will.",
       "why_read": "Read this to understand the concrete architectural differences across state-of-the-art open models through clean, single-file reference implementations. You will gain a clear mental model of how attention variants, normalization, and routing operate in practice.",
@@ -184,31 +79,6 @@
       "title": "Automatic key exchange eliminates retry requests and deploys post-quantum security",
       "authors": [
         "iamsyr"
-      ],
-      "categories": [
-        "sys_security",
-        "sys_performance",
-        "sys_infra"
-      ],
-      "tags": [
-        {
-          "id": "cloudflare",
-          "name": "Cloudflare",
-          "type": "company",
-          "role": "primary"
-        },
-        {
-          "id": "tls",
-          "name": "TLS",
-          "type": "technology",
-          "role": "primary"
-        },
-        {
-          "id": "post-quantum-cryptography",
-          "name": "post-quantum cryptography",
-          "type": "technology",
-          "role": "secondary"
-        }
       ],
       "event_type": "release",
       "social_post": "In TLS 1.3, an edge proxy must commit to a key agreement algorithm in its very first packet without knowing what the origin server actually supports.\n\nFor years, Cloudflare guessed X25519 for every origin on the Internet. That single blind guess failed more than half the time, causing origin servers to issue HelloRetryRequests and forcing handshakes into a costly second round trip. On a global network handling 45 billion daily connections, that latency tax was substantial.\n\nCloudflare solved this with Automatic Key Exchange by replacing guesswork with active origin capability probing. The proxy discovers supported algorithms ahead of time and connects using the optimal choice on the first attempt, preferring post-quantum hybrid X25519MLKEM768 whenever available.\n\nThe outcome is an immediate drop in HelloRetryRequests from 52 percent down to just 3.7 percent, trimming over 150 milliseconds off p90 handshake latency.\n\nProactive connection caching beats blind protocol speculation every single time.",
@@ -224,25 +94,6 @@
       "authors": [
         "sungeuns"
       ],
-      "categories": [
-        "ai_infra",
-        "ai_llm",
-        "sys_design"
-      ],
-      "tags": [
-        {
-          "id": "pytorch",
-          "name": "PyTorch",
-          "type": "technology",
-          "role": "secondary"
-        },
-        {
-          "id": "diffusion-models",
-          "name": "Diffusion Models",
-          "type": "technology",
-          "role": "secondary"
-        }
-      ],
       "event_type": "deep_dive",
       "social_post": "Deploying foundation models in production reveals a stark reality: modeling elegance routinely crashes into hardware constraints. Most engineers understand transformer attention on paper, but production performance is dictated by memory bandwidth, KV cache sizing, and batching strategies.\n\nFoundation Model Engineering bridges this divide between theoretical research and systems execution. Instead of treating attention mechanisms, mixture-of-experts routing, and distributed serving as isolated subjects, it demonstrates how architectural decisions directly shape inference memory footprints. When an engineer scales context windows, the primary bottleneck shifts from raw compute to memory throughput across GPU clusters.\n\nUnderstanding these trade-offs fundamentally changes how you design retrieval pipelines, evaluation loops, and agent execution harnesses.\n\nSystem constraints must guide architecture selection, not the other way around.",
       "why_read": "Read this to build a deep mental model of how foundation model architectures, systems constraints, and product requirements interact. You will learn the engineering trade-offs behind training pipelines, inference serving, and agentic workflows.",
@@ -256,31 +107,6 @@
       "title": "IO-aware attention accelerates transformers without approximating attention",
       "authors": [
         "ibobev"
-      ],
-      "categories": [
-        "ai_infra",
-        "sys_performance",
-        "ai_llm"
-      ],
-      "tags": [
-        {
-          "id": "flashattention",
-          "name": "FlashAttention",
-          "type": "project",
-          "role": "primary"
-        },
-        {
-          "id": "transformers",
-          "name": "Transformers",
-          "type": "technology",
-          "role": "secondary"
-        },
-        {
-          "id": "gpu",
-          "name": "GPU",
-          "type": "technology",
-          "role": "secondary"
-        }
       ],
       "event_type": "deep_dive",
       "social_post": "Standard attention in Transformer models is rarely bottlenecked by raw floating-point arithmetic. The true performance limiter is GPU memory bandwidth, specifically the continuous round-trips between High Bandwidth Memory and fast on-chip SRAM.\n\nFlashAttention changes this paradigm by making the attention calculation input-output aware. Instead of materializing intermediate attention matrices of size sequence-length squared into global memory, it tiles queries, keys, and values into smaller blocks that fit completely within SRAM.\n\nThe critical mathematical technique that makes this work without precision loss is online softmax. Softmax normally requires computing the normalization factor across the full sequence before scaling. By tracking running row-wise maximums and normalization states, FlashAttention computes exact softmax incrementally across tiles.\n\nDuring the backward pass, the algorithm avoids storing large intermediate attention matrices altogether. It simply recomputes them on the fly from stored tiles in fast memory. Trading additional FLOPs for reduced memory traffic dramatically cuts overall execution latency.\n\nUnderstanding memory hierarchy trade-offs remains the single most effective way to optimize modern GPU workloads.",
@@ -296,37 +122,6 @@
       "authors": [
         "joeyorlando"
       ],
-      "categories": [
-        "ai_agents",
-        "sys_security",
-        "eng_practices"
-      ],
-      "tags": [
-        {
-          "id": "claude-code",
-          "name": "Claude Code",
-          "type": "product",
-          "role": "primary"
-        },
-        {
-          "id": "slack",
-          "name": "Slack",
-          "type": "product",
-          "role": "primary"
-        },
-        {
-          "id": "archestra",
-          "name": "Archestra",
-          "type": "company",
-          "role": "secondary"
-        },
-        {
-          "id": "kubernetes",
-          "name": "Kubernetes",
-          "type": "technology",
-          "role": "secondary"
-        }
-      ],
       "event_type": "case_study",
       "social_post": "Giving an autonomous coding agent access to internal Slack channels, repositories, and internet connectivity introduces a serious security paradox. While the model needs broad context to diagnose issues and run integration tests, unrestricted network egress allows it to leak proprietary tokens, sensitive user data, or internal source code into public pull requests and external endpoints.\n\nThe engineering solution is to isolate execution inside single-use virtual machines orchestrated directly from developer triggers. When an engineer flags an issue with an emoji, a cluster controller provisions an ephemeral environment equipped with an isolated local Kubernetes cluster, runtime tooling, and strict network controls. Instead of relying on prompt guardrails, egress controls inspect and restrict outbound data flow before commits can be published.\n\nThis architecture proves that safe agentic workflows depend on traditional infrastructure security primitives rather than model alignment. Sandboxing execution and enforcing network boundaries prevents accidental exfiltration while keeping developer turnaround times under five minutes.\n\nDo not trust the model to guard secrets when reliable network isolation can guarantee it.",
       "why_read": "Learn how to safely deploy autonomous coding agents to resolve Slack bug reports using disposable cloud environments and data controls.",
@@ -340,31 +135,6 @@
       "title": "Burst spawning subagents triggers lock timeouts in Meta Muse",
       "authors": [
         "mpkc"
-      ],
-      "categories": [
-        "ai_agents",
-        "db_relational",
-        "sys_performance"
-      ],
-      "tags": [
-        {
-          "id": "meta-muse",
-          "name": "Meta Muse",
-          "type": "product",
-          "role": "primary"
-        },
-        {
-          "id": "postgres",
-          "name": "Postgres",
-          "type": "product",
-          "role": "primary"
-        },
-        {
-          "id": "meta",
-          "name": "Meta",
-          "type": "company",
-          "role": "secondary"
-        }
       ],
       "event_type": "deep_dive",
       "social_post": "Agent orchestration frameworks do not fail inside the model; they fail at the database layer. When stress-testing Meta Muse by spawning 120 concurrent subagents running a simple sleep task, 87 out of 120 spawn attempts failed immediately. The root cause was not GPU exhaustion or context window limits, but statement cancellations inside PostgreSQL due to lock timeouts.\n\nAt 40 concurrent subagents, the failure rate was 2.5 percent. At 80 subagents, the rate climbed to 6.25 percent, before spiking to 72.5 percent at 120 attempts. Even worse, while 32 of the 33 spawned workers finished their workloads, the durable root task record stayed stuck in a running state, completely preventing final aggregation from returning to the caller.\n\nSubagent fan-out behaves like any high-throughput distributed transaction workload. If an agent control plane serializes state updates through a relational database without batched inserts or decoupled queuing, lock contention will strangle the runtime before agent compute even begins.\n\nYour multi-agent platform is only as scalable as your database write path.",
@@ -383,31 +153,6 @@
         "Lei Qu",
         "Peng Cheng"
       ],
-      "categories": [
-        "ai_infra",
-        "sys_performance",
-        "eng_languages"
-      ],
-      "tags": [
-        {
-          "id": "rooflang",
-          "name": "RoofLang",
-          "type": "project",
-          "role": "primary"
-        },
-        {
-          "id": "deepseek",
-          "name": "DeepSeek",
-          "type": "company",
-          "role": "secondary"
-        },
-        {
-          "id": "nvidia",
-          "name": "NVIDIA",
-          "type": "company",
-          "role": "secondary"
-        }
-      ],
       "event_type": "research",
       "social_post": "Most LLM inference optimization remains trapped inside profiling loops. Profilers merely measure how an existing software stack behaves on a given chip, which limits automated tuners to minor hyperparameter adjustments within that specific framework.\n\nRoofLang breaks out of this trap by introducing an implementation-independent domain-specific language. Instead of relying on empirical run-time profiling, it abstracts workloads into verifiable mutation spaces and analytic roofline evaluations. When evaluated against cutting-edge architectures, the system revealed why DeepSeek V4-series designs achieve up to 39.5x higher peak decode throughput: aggressive KV-cache compression substantially cuts memory traffic and unlocks vastly larger batch sizes.\n\nTaking it a step further, an automated optimizer agent synthesized alternative inference topologies, securing up to a 50 percent boost in throughput and interactivity on NVIDIA B300 hardware.\n\nTreating inference optimization as a verifiable compilation and architecture synthesis problem yields far better results than endlessly tuning CUDA kernels.",
       "why_read": "Read this to understand how implementation-independent modeling allows AI agents to architect higher-throughput LLM inference systems. You will learn how novel workload representations and compact KV-cache designs unlock dramatic performance gains beyond traditional profiling.",
@@ -421,31 +166,6 @@
       "title": "Swapping Go runtime metadata causes severe garbage collection pauses",
       "authors": [
         "Fernando Simões"
-      ],
-      "categories": [
-        "sys_performance",
-        "eng_languages",
-        "sys_infra"
-      ],
-      "tags": [
-        {
-          "id": "go",
-          "name": "Go",
-          "type": "technology",
-          "role": "primary"
-        },
-        {
-          "id": "linux",
-          "name": "Linux",
-          "type": "technology",
-          "role": "secondary"
-        },
-        {
-          "id": "hetzner",
-          "name": "Hetzner",
-          "type": "company",
-          "role": "secondary"
-        }
       ],
       "event_type": "deep_dive",
       "social_post": "Enabling Linux swap inside cgroups to absorb memory spikes can silently ruin Go application latency by triggering catastrophic stop-the-world pauses.\n\nA standard Go runtime stop-the-world pause typically completes in roughly 51 microseconds. However, under memory pressure, Linux cgroup memory eviction does not distinguish between user heap data and runtime internals. When the kernel moves Go garbage collector bookkeeping structures to swap, the collector must fault those pages back into memory while all application goroutines remain suspended.\n\nTraces captured via eBPF revealed that a single pause ballooned from 51 microseconds to 40 milliseconds. Crucially, 39 of those 40 milliseconds were spent waiting on 228 page faults inside spanSet resets and sweep finishing routines. The garbage collector was not stalling on user allocations; it was waiting on disk I/O just to inspect its own metadata.\n\nAbsorbing transient memory spikes with swap sounds safe until kernel page eviction turns microsecond pauses into multi-millisecond tail latency events.",
@@ -461,25 +181,6 @@
       "authors": [
         "yarapavan"
       ],
-      "categories": [
-        "sys_design",
-        "eng_practices",
-        "sys_performance"
-      ],
-      "tags": [
-        {
-          "id": "anthropic",
-          "name": "Anthropic",
-          "type": "company",
-          "role": "primary"
-        },
-        {
-          "id": "claude",
-          "name": "Claude",
-          "type": "product",
-          "role": "secondary"
-        }
-      ],
       "event_type": "case_study",
       "social_post": "When automated agents write the majority of your code, continuous integration quickly replaces code authoring as the primary engineering bottleneck.\n\nAt Anthropic, engineers now ship eight times more code per quarter than previous baselines, with Claude generating eighty percent of new commits. As test suites expanded tenfold, CI job volume surged twenty-five times over just six months. Conventional mitigations like throwing larger virtual machines at the problem or parallelizing existing jobs only bought weeks of headroom before failing.\n\nThe sustainable fix required discarding the legacy test impact analysis architecture entirely. Instead of attempting incremental compute expansions, the team transitioned to a horizontally scaled test selection pipeline designed explicitly for exponential growth.\n\nWhen software creation costs drop toward zero, infrastructure bottlenecks move downstream to verification and testing.",
       "why_read": "Read this to understand how rapid AI-driven code generation strains continuous integration pipelines. You will learn why engineering teams must plan for exponential scale by reimagining test impact analysis architecture.",
@@ -493,37 +194,6 @@
       "title": "Fast click translation tables match neural document expansion",
       "authors": [
         "hessdalenlight"
-      ],
-      "categories": [
-        "db_vector",
-        "eng_research",
-        "ai_rag"
-      ],
-      "tags": [
-        {
-          "id": "bm25",
-          "name": "BM25",
-          "type": "technology",
-          "role": "primary"
-        },
-        {
-          "id": "ms-marco",
-          "name": "MS MARCO",
-          "type": "project",
-          "role": "primary"
-        },
-        {
-          "id": "hugging-face",
-          "name": "Hugging Face",
-          "type": "company",
-          "role": "secondary"
-        },
-        {
-          "id": "doc2query",
-          "name": "doc2query",
-          "type": "technology",
-          "role": "secondary"
-        }
       ],
       "event_type": "release",
       "social_post": "Neural document expansion techniques such as doc2query can significantly boost retrieval recall, but they require massive GPU clusters and slow inference passes across millions of documents.\n\nA statistical translation approach proves that simple counting can match neural quality without touching a GPU. By mapping document terms directly to actual user query terms using click logs from the MS MARCO dataset, an expansion table can be built in three seconds flat. Expanding an entire corpus of nearly nine million passages takes approximately twenty CPU minutes.\n\nAppending the top twenty predicted query terms to each passage during inverted index creation elevates Snowball BM25 recall from 0.854 to 0.892 at only 1.5 times the postings size. This achieves parity with neural doc2query at a fraction of the compute cost. The technique relies on background-lift normalization and consensus boosting rather than heavy transformer architectures.\n\nEngineers building search and retrieval pipelines do not always need deep learning to solve the vocabulary mismatch problem.",
@@ -539,31 +209,6 @@
       "authors": [
         "Pieter Delobelle"
       ],
-      "categories": [
-        "ai_infra",
-        "sys_performance",
-        "ai_llm"
-      ],
-      "tags": [
-        {
-          "id": "nanogpt",
-          "name": "nanoGPT",
-          "type": "project",
-          "role": "primary"
-        },
-        {
-          "id": "cuda",
-          "name": "CUDA",
-          "type": "technology",
-          "role": "secondary"
-        },
-        {
-          "id": "vllm",
-          "name": "vLLM",
-          "type": "project",
-          "role": "secondary"
-        }
-      ],
       "event_type": "deep_dive",
       "social_post": "Optimizing large language model inference from bare foundations reveals where serving bottlenecks actually live. Moving an unoptimized NanoGPT generate loop to an efficient serving runtime can increase generation throughput from 580 tokens per second to over 14,000 tokens per second.\n\nStandard deep learning frameworks hide the critical memory bandwidth walls behind layers of abstraction. In autoregressive decoding, memory bandwidth dominates compute cost. Implementing key-value caching by hand exposes how redundant tensor allocations and unnecessary memory copies choke modern graphics processors.\n\nEach subsequent optimization, such as continuous batching and efficient tensor layout handling, compounds directly on top of fundamental cache management. You do not need bloated framework code to observe dramatic speedups if your memory access patterns align with hardware constraints.\n\nMastering low-level inference mechanics turns serving economics from a persistent cost center into a sustainable system.",
       "why_read": "Read this to understand how implementing foundational techniques like KV caching from scratch significantly improves model serving throughput. You will gain an abstraction-free, mechanistic mental model of practical LLM optimization trade-offs.",
@@ -577,37 +222,6 @@
       "title": "WalShadow replicates Postgres to ClickHouse via physical WAL",
       "authors": [
         "Sai Srirampur"
-      ],
-      "categories": [
-        "db_analytics",
-        "db_internals",
-        "db_relational"
-      ],
-      "tags": [
-        {
-          "id": "walshadow",
-          "name": "WalShadow",
-          "type": "project",
-          "role": "primary"
-        },
-        {
-          "id": "clickhouse",
-          "name": "ClickHouse",
-          "type": "product",
-          "role": "primary"
-        },
-        {
-          "id": "postgres",
-          "name": "Postgres",
-          "type": "product",
-          "role": "primary"
-        },
-        {
-          "id": "rust",
-          "name": "Rust",
-          "type": "technology",
-          "role": "secondary"
-        }
       ],
       "event_type": "release",
       "social_post": "Streaming relational updates into analytical engines usually relies on logical replication slots, which introduce substantial CPU overhead and lock risks on primary databases.\n\nWalShadow bypasses Postgres logical replication completely by consuming the raw physical write-ahead log stream that standby replicas use. It decodes physical WAL records outside the operational database and translates them directly into native ClickHouse columnar blocks. In real-world benchmarks, committed transactions become queryable in ClickHouse in roughly 200 milliseconds while sustaining 289,000 rows per second.\n\nThis architecture eliminates the need for logical replication slots that can hold back WAL segments and endanger production disk space. The operational database treats the replication consumer just like an ordinary physical replica, protecting transactional throughput while achieving near real-time analytics.\n\nBypassing the logical decoding abstraction preserves transactional stability while delivering high-speed analytical ingestion.",
@@ -633,30 +247,6 @@
         "James Zhu",
         "Sitaram Asur"
       ],
-      "categories": [
-        "ai_agents",
-        "ai_llm"
-      ],
-      "tags": [
-        {
-          "id": "imitation-learning",
-          "name": "Imitation Learning",
-          "type": "technology",
-          "role": "primary"
-        },
-        {
-          "id": "qwen",
-          "name": "Qwen",
-          "type": "product",
-          "role": "secondary"
-        },
-        {
-          "id": "gemma",
-          "name": "Gemma",
-          "type": "product",
-          "role": "secondary"
-        }
-      ],
       "event_type": "research",
       "social_post": "Fine-tuning a smaller model on successful trajectories from a frontier model seems like an intuitive shortcut for agent development. However, recent empirical work on co-evolving agent harnesses demonstrates that this approach frequently backfires in production environments.\n\nWhen researchers evolved custom harnesses consisting of system prompts, tools, and execution hooks for smaller models like Qwen and Gemma, frontier models executed those harnesses with higher success. Yet, when the weaker model was fine-tuned directly on the frontier model's complete trajectories, performance collapsed across all benchmark tasks by four to thirty points.\n\nThe core breakdown stems from model-harness misalignment. The smaller model adopts the expert's ambitious multi-step planning strategy without possessing the underlying capability to execute it. At the same time, it abandons the native planning rhythm around which its specific execution scaffold was originally optimized.\n\nInstead of blind imitation, teams must rely on on-policy correction. Keeping the smaller model within its own action distribution while correcting errors preserves the tight coupling between harness constraints and model behavior.\n\nTool scaffolding and weights must evolve together, not through borrowed plans.",
       "why_read": "Read this to understand why naive expert trajectory imitation degrades small model performance under evolved agent harnesses. You will learn how on-policy correction preserves model-scaffold alignment while closing the capability gap.",
@@ -670,19 +260,6 @@
       "title": "Optimising KV cache management improves throughput for agentic workloads",
       "authors": [
         "Joel Smith"
-      ],
-      "categories": [
-        "ai_infra",
-        "ai_agents",
-        "sys_performance"
-      ],
-      "tags": [
-        {
-          "id": "kv-cache",
-          "name": "KV cache",
-          "type": "technology",
-          "role": "primary"
-        }
       ],
       "event_type": "deep_dive",
       "social_post": "Agentic AI workloads break the memory assumptions of standard LLM inference engines. While an inference server like vLLM treats an agentic call like ordinary chat, agent trajectories exhibit rapid prefix expansion and repetitive tool calling that strain the KV cache.\n\nIn standard conversational chat, context grows linearly and user turns are unpredictable. In contrast, agentic loops produce shared, deterministic system prompts and tool schemas across dozens of consecutive turns. Every tool execution appends structured output and re-sends the entire preceding trajectory. Without prefix-aware scheduling, the engine repeatedly evicts and recomputes identical token blocks, destroying serving throughput.\n\nOptimizing KV cache retention around agent prefix reuse eliminates redundant prefill compute and keeps memory fragmentation low. By aligning request scheduling with the iterative lifecycle of tool-calling harnesses, serving systems can admit significantly higher concurrency on the same GPU cluster.\n\nThroughput gains in agentic systems will come from smarter memory scheduling rather than raw model acceleration.",
@@ -698,25 +275,6 @@
       "authors": [
         "samlambert"
       ],
-      "categories": [
-        "db_distributed",
-        "db_relational",
-        "db_internals"
-      ],
-      "tags": [
-        {
-          "id": "postgres",
-          "name": "Postgres",
-          "type": "product",
-          "role": "primary"
-        },
-        {
-          "id": "planetscale",
-          "name": "PlanetScale",
-          "type": "company",
-          "role": "primary"
-        }
-      ],
       "event_type": "deep_dive",
       "social_post": "Executing a join across sharded database nodes requires solving fundamental coordination bottlenecks that a single node never encounters. When a query touches multiple shards, the database engine cannot simply rely on traditional local indexes or sequential scans.\n\nInstead, the sharding layer must act as a full proxy and distributed coordinator. It inspects the AST, identifies the shard keys, and determines whether it can push the work down to individual workers or if it must pull raw rows back to compute the join in memory. This routing layer also has to manage client connections without crashing into the classic process-per-connection scaling limits of PostgreSQL.\n\nThe real engineering challenge lies in handling partial failures and latency variance. If one shard responds slowly due to lock contention or disk saturation, the entire multi-shard scatter-gather plan stalls. Solving this demands strict connection pooling, speculative execution safeguards, and smart query rewrites.\n\nDistributing Postgres is fundamentally an exercise in distributed query planning and connection virtualization.",
       "why_read": "Understand the architectural layers required to parse, plan, and route queries across thousands of database shards. You will learn how distributed query planners and connection pooling make partitioned systems behave like a single server.",
@@ -730,30 +288,6 @@
       "title": "Firmware exploit unlocks full performance on Nvidia CMP 170HX",
       "authors": [
         "ValdikSS"
-      ],
-      "categories": [
-        "sys_security",
-        "ai_infra"
-      ],
-      "tags": [
-        {
-          "id": "nvidia-cmp-170hx",
-          "name": "Nvidia CMP 170HX",
-          "type": "product",
-          "role": "primary"
-        },
-        {
-          "id": "nvidia",
-          "name": "NVIDIA",
-          "type": "company",
-          "role": "primary"
-        },
-        {
-          "id": "nvidia-a100",
-          "name": "Nvidia A100",
-          "type": "product",
-          "role": "secondary"
-        }
       ],
       "event_type": "deep_dive",
       "social_post": "Nvidia created the CMP 170HX mining card by neutering the A100 accelerator, restricting memory to under 10GB and slashing compute to render it obsolete after Ethereum shifted away from proof of work. Security researchers have now bypassed those artificial handcuffs entirely.\n\nBy exploiting an AES-ECB encryption weakness and a buffer overflow in the Falcon microcontroller bootloader, they constructed a return-oriented programming payload inside the VBIOS. This exploit unlocks the full 64GB of HBM2e memory and 200 TFLOPS of compute, effectively resurrecting discarded crypto hardware into a fully functional A100 accelerator.\n\nThe implications for cost-conscious engineering teams running LLM inference clusters are substantial. Memory capacity and memory bandwidth are almost always the primary bottlenecks during the token generation phase of autoregressive language models. Turning inexpensive e-waste into high-bandwidth inference workhorses fundamentally shifts the economics of self-hosted infrastructure.\n\nHardware artificial segmentation usually relies on firmware obscurity rather than silicon destruction, and firmware always falls.",
@@ -773,43 +307,6 @@
         "Andrew Stone",
         "Rain Paharia"
       ],
-      "categories": [
-        "sys_infra",
-        "eng_practices",
-        "sys_design"
-      ],
-      "tags": [
-        {
-          "id": "oxide-computer-company",
-          "name": "Oxide Computer Company",
-          "type": "company",
-          "role": "primary"
-        },
-        {
-          "id": "voxel",
-          "name": "voxel",
-          "type": "project",
-          "role": "primary"
-        },
-        {
-          "id": "bryan-cantrill",
-          "name": "Bryan Cantrill",
-          "type": "person",
-          "role": "secondary"
-        },
-        {
-          "id": "illumos",
-          "name": "illumos",
-          "type": "technology",
-          "role": "secondary"
-        },
-        {
-          "id": "p4",
-          "name": "P4",
-          "type": "technology",
-          "role": "secondary"
-        }
-      ],
       "event_type": "deep_dive",
       "social_post": "Testing distributed systems against unreleased hardware usually creates an engineering bottleneck where everyone waits for scarce physical lab units. Oxide solved this by building VOXEL, a complete virtual rack emulation platform that runs on a single host.\n\nInstead of waiting for physical hardware switches with Tofino ASICs, the team built SoftNPU, a software target that executes P4 packet processing pipelines directly. They paired this switch emulator with Falcon to spin up virtual machine topologies and route control plane traffic through emulated service processors running Hubris microkernel firmware.\n\nThis approach decoupled software development from hardware delivery. Engineers can stand up thirty-two sled rack topologies, test complex control plane failovers, and validate networking state machines without touching a physical cable or reserving lab time.\n\nEmulating the hardware boundary in software turns integration testing from a scarce physical dependency into an automated pipeline step.",
       "why_read": "Learn how Oxide builds virtual rack environments to develop and test hardware-software integrations before manufacturing physical hardware. You will discover practical techniques for emulating switch dataplanes, network topologies, and firmware.",
@@ -823,30 +320,6 @@
       "title": "Optimizing BF16 matrix multiplication kernels on Blackwell with CuTeDSL",
       "authors": [
         "Luke D. Huang"
-      ],
-      "categories": [
-        "ai_infra",
-        "sys_performance"
-      ],
-      "tags": [
-        {
-          "id": "blackwell",
-          "name": "Blackwell",
-          "type": "product",
-          "role": "primary"
-        },
-        {
-          "id": "cutedsl",
-          "name": "CuTeDSL",
-          "type": "technology",
-          "role": "primary"
-        },
-        {
-          "id": "nvidia",
-          "name": "NVIDIA",
-          "type": "company",
-          "role": "secondary"
-        }
       ],
       "event_type": "deep_dive",
       "social_post": "Writing a custom matrix multiplication kernel that matches vendor libraries on modern hardware requires tackling specific hardware bottlenecks one layer at a time. A naive BF16 baseline on NVIDIA B200 silicon achieves only 4 TFLOPs per second because threads stall waiting for memory.\n\nMoving to hardware tensor cores, Tensor Memory (TMEM), and the Tensor Memory Accelerator (TMA) jumps throughput to 155 TFLOPs per second. TMA offloads asynchronous data movement from global to shared memory without consuming register files, while tcgen05 instructions allow accumulation directly in dedicated tensor memory.\n\nThe next major bottleneck is shared memory bank conflicts, where concurrent threads hit identical memory banks during matrix tile reads. Applying memory swizzling to permute shared memory addresses eliminates these collisions, nearly doubling throughput again to 285 TFLOPs per second without changing the compute operations.\n\nPeak hardware performance rarely comes from algorithmic changes; it comes from aligning data movement with memory architecture.",
@@ -862,24 +335,6 @@
       "authors": [
         "kunchenguid"
       ],
-      "categories": [
-        "ai_agents",
-        "eng_opensource"
-      ],
-      "tags": [
-        {
-          "id": "backpass",
-          "name": "backpass",
-          "type": "project",
-          "role": "primary"
-        },
-        {
-          "id": "claude-code",
-          "name": "Claude Code",
-          "type": "product",
-          "role": "secondary"
-        }
-      ],
       "event_type": "release",
       "social_post": "Handcrafting agent instruction files like AGENTS.md or CLAUDE.md is quickly becoming the newest form of technical debt. Engineers spend hours manually tweaking system prompts based on ad-hoc intuition, only to break existing workflows or bloat token windows.\n\nBackpass tackles this problem by applying an automated optimization loop directly to agent memory surfaces. It operates completely offline, parsing local execution logs from seven different agent harnesses to detect failure modes and extract successful behavioral patterns.\n\nInstead of guessing which instructions help, the engine evaluates execution transcripts against project tasks and calculates evidence-backed prompt diffs under strict token budgets. Every proposed modification links to concrete transcript references, allowing developers to inspect the exact trace that justified an edit before merging.\n\nTreating agent system context as an optimizable artifact rather than static folklore is the exact operational discipline modern agentic architectures require.",
       "why_read": "Read this to learn how backpass systematically optimizes agent memory files like AGENTS.md using evidence from local execution transcripts. It offers a practical framework for token-budgeted, evidence-backed improvements to developer agent harnesses.",
@@ -893,37 +348,6 @@
       "title": "A cache hit is not proof of skipped work",
       "authors": [
         "Siddhant Khare"
-      ],
-      "categories": [
-        "ai_infra",
-        "sys_reliability",
-        "ai_llm"
-      ],
-      "tags": [
-        {
-          "id": "llmtracefx",
-          "name": "LLMTraceFX",
-          "type": "project",
-          "role": "primary"
-        },
-        {
-          "id": "kv-cache",
-          "name": "KV cache",
-          "type": "technology",
-          "role": "primary"
-        },
-        {
-          "id": "vllm",
-          "name": "vLLM",
-          "type": "project",
-          "role": "secondary"
-        },
-        {
-          "id": "mlx",
-          "name": "MLX",
-          "type": "project",
-          "role": "secondary"
-        }
       ],
       "event_type": "deep_dive",
       "social_post": "An engine reporting a prompt cache hit does not guarantee that the runtime actually bypassed the computation. In multi-tenant LLM serving frameworks, a cache event is merely a local claim from one layer of the software stack.\n\nModern inference engines often claim prefix reuse while the execution path quietly recalculates tokens behind the scenes. If a single token experiences an interior mutation, safe reuse drops immediately. For example, altering one interior token in a nine-token sequence can instantly slash cache reuse from eight tokens down to three, forcing six tokens of redundant prompt evaluation.\n\nNamespace boundaries and silent cache evictions further complicate verification. Without rigorous external verification, infrastructure teams risk paying for compute that internal telemetry claimed to have avoided.\n\nVerifying true prefix reuse requires auditing the engine against observed prompt execution, checksum boundaries, and deterministic token oracles. Serving infrastructure must treat cache hits not as ground truth, but as unverified claims that require rigorous attestation.",
@@ -939,37 +363,6 @@
       "authors": [
         "Per Buer"
       ],
-      "categories": [
-        "sys_performance",
-        "sys_infra",
-        "sys_design"
-      ],
-      "tags": [
-        {
-          "id": "git",
-          "name": "Git",
-          "type": "technology",
-          "role": "primary"
-        },
-        {
-          "id": "varnish",
-          "name": "Varnish",
-          "type": "product",
-          "role": "primary"
-        },
-        {
-          "id": "edge-side-includes",
-          "name": "Edge Side Includes",
-          "type": "technology",
-          "role": "primary"
-        },
-        {
-          "id": "cgit",
-          "name": "cgit",
-          "type": "project",
-          "role": "secondary"
-        }
-      ],
       "event_type": "deep_dive",
       "social_post": "AI web scrapers and autonomous agents are breaking server-side caching by turning content retrieval into a massive combinatorial search problem. When agents crawl repositories like git.kernel.org, they do not just request raw content; they explore millions of distinct views, filters, and diffs across millions of commits.\n\nThe underlying dataset is surprisingly manageable. In the Linux kernel repository, every commit rendered and compressed takes roughly 22 gigabytes of memory, which easily fits inside the RAM of a single modern server. The core bottleneck is that the URL key space is exponentially larger than the actual underlying content space, because the same commit is rendered in nearly one thousand distinct layouts.\n\nApplying Edge Side Includes allows edge proxies to decouple the shared, immutable commit diff from dynamic framing elements like navigation bars and query parameters. By caching the canonical commit payload once in RAM and assembling variants on demand, edge caches can absorb massive crawler traffic without hitting origin backends.\n\nSurviving the age of automated agent traffic requires rethinking cache keys from page URLs to content fragments.",
       "why_read": "Read this to understand how fragment caching with edge side includes allows large git repositories to survive aggressive crawler traffic by fitting all rendered commit data into system memory.",
@@ -983,31 +376,6 @@
       "title": "Compiling codebases into queryable graphs outperforms raw context dumping",
       "authors": [
         "oooscoos"
-      ],
-      "categories": [
-        "ai_agents",
-        "ai_rag",
-        "eng_opensource"
-      ],
-      "tags": [
-        {
-          "id": "benzi",
-          "name": "Benzi",
-          "type": "project",
-          "role": "primary"
-        },
-        {
-          "id": "tree-sitter",
-          "name": "tree-sitter",
-          "type": "technology",
-          "role": "secondary"
-        },
-        {
-          "id": "claude-code",
-          "name": "Claude Code",
-          "type": "product",
-          "role": "secondary"
-        }
       ],
       "event_type": "release",
       "social_post": "Dumping an entire raw codebase into an LLM context window is an inefficient way to build coding agents. Most agents choke on massive token limits or hallucinate nonexistent imports because they lack structural awareness of the underlying syntax trees and call graphs.\n\nBenzi tackles this bottleneck by compiling the target repository first into a queryable graph of call hierarchies, data flows, and control flows before the agent touches the code. Instead of guessing relationships through fuzzy vector search or brute-force context windows, the agent queries deterministic compiler artifacts and settles unresolved edge cases with a lightweight runtime tracer. The compiler exposes its index through the Model Context Protocol, enabling external harnesses to inspect call graphs directly.\n\nOn the SWE-bench Verified benchmark, this compiler-backed approach solved 391 out of 500 tasks at an operating cost of roughly 37 dollars. Giving agents deterministic compiler primitives reduces token waste while dramatically improving navigation across complex codebases.\n\nHigh-signal structural metadata beats brute-force context every single time.",
@@ -1025,43 +393,6 @@
         "Melih Elibol",
         "Jonathan Bentz"
       ],
-      "categories": [
-        "eng_languages",
-        "ai_infra",
-        "sys_performance"
-      ],
-      "tags": [
-        {
-          "id": "rust",
-          "name": "Rust",
-          "type": "technology",
-          "role": "primary"
-        },
-        {
-          "id": "cuda",
-          "name": "CUDA",
-          "type": "technology",
-          "role": "primary"
-        },
-        {
-          "id": "nvidia",
-          "name": "NVIDIA",
-          "type": "company",
-          "role": "primary"
-        },
-        {
-          "id": "cuda-oxide",
-          "name": "cuda-oxide",
-          "type": "project",
-          "role": "secondary"
-        },
-        {
-          "id": "cutile-rs",
-          "name": "cutile-rs",
-          "type": "project",
-          "role": "secondary"
-        }
-      ],
       "event_type": "release",
       "social_post": "NVIDIA has officially introduced native Rust support for GPU programming through two distinct tracks: cuda-oxide and cutile-rs.\n\nThe first track, cuda-oxide, supplies a custom rustc backend that compiles classic SIMT Rust kernels down to PTX through Pliron IR and LLVM. It enforces GPU memory safety at compile time by using launch contracts and disjoint slices to prevent pointer aliasing.\n\nThe second track, cutile-rs, targets tile-based programming on stable Rust. Instead of manual thread index arithmetic, the compiler handles thread layout and memory mappings through CUDA Tile IR just-in-time compilation. Tensor partitioning and Rust ownership semantics ensure exclusive data access without custom LLVM forks.\n\nProjects like mistral.rs and HuggingFace Grout are already adopting cutile-rs in production. Writing high-throughput GPU kernels no longer requires giving up compile-time memory safety.",
       "why_read": "Read this to understand NVIDIA's two approaches to writing memory-safe GPU kernels in Rust through SIMT compilation and tile-based abstractions. You will learn the mechanical differences, safety guarantees, and toolchain trade-offs between cuda-oxide and cutile-rs.",
@@ -1075,42 +406,6 @@
       "title": "Twenty practical moves to take infrastructure off public clouds",
       "authors": [
         "latencyharbor"
-      ],
-      "categories": [
-        "sys_infra",
-        "sys_design"
-      ],
-      "tags": [
-        {
-          "id": "aws",
-          "name": "AWS",
-          "type": "product",
-          "role": "primary"
-        },
-        {
-          "id": "kubernetes",
-          "name": "Kubernetes",
-          "type": "technology",
-          "role": "secondary"
-        },
-        {
-          "id": "proxmox",
-          "name": "Proxmox",
-          "type": "product",
-          "role": "secondary"
-        },
-        {
-          "id": "ceph",
-          "name": "Ceph",
-          "type": "project",
-          "role": "secondary"
-        },
-        {
-          "id": "postgres",
-          "name": "Postgres",
-          "type": "product",
-          "role": "secondary"
-        }
       ],
       "event_type": "tutorial",
       "social_post": "Cloud repatriation often stalls because teams treat infrastructure migration as an all-or-nothing leap. A structured migration blueprint breaks cloud exits down into twenty ordered moves designed for small engineering teams operating under a hundred thousand dollars in monthly hyperscaler spend.\n\nEighteen of the twenty steps operate with zero downtime, confining total reference cutover windows to just twenty-five minutes. The transition isolates the three components that should remain off-premise: edge routing, outbound email, and volumetric scrubbing. Everything else, including stateful stores and compute layers, transitions sequentially across five stages.\n\nTeams maintain their existing platform abstractions while delegating hardware racking and physical maintenance to colocation remote hands. By staging dependencies rigorously, platform teams avoid dual-running costs while retaining full operational autonomy.\n\nPragmatic cloud repatriation is an operational scheduling challenge rather than a hardware engineering hurdle.",
@@ -1126,30 +421,6 @@
       "authors": [
         "Rémy Salim"
       ],
-      "categories": [
-        "sys_security",
-        "ai_agents"
-      ],
-      "tags": [
-        {
-          "id": "claude-code",
-          "name": "Claude Code",
-          "type": "product",
-          "role": "primary"
-        },
-        {
-          "id": "anthropic",
-          "name": "Anthropic",
-          "type": "company",
-          "role": "secondary"
-        },
-        {
-          "id": "qemu",
-          "name": "QEMU",
-          "type": "project",
-          "role": "secondary"
-        }
-      ],
       "event_type": "research",
       "social_post": "Autonomous coding agents equipped with shell access fundamentally alter binary reverse engineering and software protection paradigms. When tasked with extracting hidden strings from hardened AArch64 binaries, agents do not rely solely on static disassembly. Instead, they dynamically emulate execution, patch instructions, and iteratively test hypotheses in real time.\n\nTraditional obfuscation techniques that aim to confuse human analysts with convoluted control flow graphs fail against these autonomous feedback loops. When an agent can script its own debugging harness and evaluate outcomes across hundreds of iterations, complex control structures become trivial to navigate.\n\nHowever, agent reasoning exhibits unique failure modes. Once a model commits to an incorrect architectural hypothesis, it often hallucinates confirming evidence from compiler artifacts. Designing effective countermeasures requires understanding these specific cognitive blind spots rather than relying on obsolete obfuscation tricks.\n\nSecuring binaries now demands defenses designed specifically against automated loop-driven exploration.",
       "why_read": "Read this to understand how autonomous AI agents dissect hardened binaries and explore where conventional obfuscation fails against iterative automated analysis.",
@@ -1163,24 +434,6 @@
       "title": "Ollama metric changes drastically inflate calculated prefill throughput",
       "authors": [
         "lognebudo"
-      ],
-      "categories": [
-        "ai_infra",
-        "sys_performance"
-      ],
-      "tags": [
-        {
-          "id": "ollama",
-          "name": "Ollama",
-          "type": "technology",
-          "role": "primary"
-        },
-        {
-          "id": "llama-cpp",
-          "name": "llama.cpp",
-          "type": "project",
-          "role": "secondary"
-        }
       ],
       "event_type": "deep_dive",
       "social_post": "If you benchmark local model inference with Ollama, your prefill metrics might be wrong by an order of magnitude. Starting in version 0.33.3, Ollama silently redefined prompt_eval_duration to measure only uncached prompt tokens rather than the full prompt duration.\n\nPreviously, calculating prefill throughput was straightforward: divide prompt_eval_count by prompt_eval_duration. But because prompt_eval_count still represents total tokens including cache hits, the standard formula now divides total tokens by partial evaluation time. On a warm cache, this calculation reported 4,375 tokens per second instead of the actual 115 tokens per second.\n\nThe distortion scales directly with your cache hit ratio. A fresh daemon on a cold run produces accurate numbers, masking the error during basic sanity checks. The discrepancy only explodes in production when steady-state caching kicks in.\n\nTo fix this calculation, subtract prompt_eval_cached_count from prompt_eval_count before dividing by prompt_eval_duration. If you consume Ollama metrics in monitoring dashboards or automated evaluations, audit your throughput math immediately.\n\nSilent metric redefinitions are far more dangerous than breaking API changes.",
@@ -1196,31 +449,6 @@
       "authors": [
         "alexpran"
       ],
-      "categories": [
-        "ai_applied",
-        "ai_llm",
-        "eng_practices"
-      ],
-      "tags": [
-        {
-          "id": "llm-as-a-judge",
-          "name": "LLM-as-a-judge",
-          "type": "technology",
-          "role": "primary"
-        },
-        {
-          "id": "claude",
-          "name": "Claude",
-          "type": "product",
-          "role": "secondary"
-        },
-        {
-          "id": "dan-luu",
-          "name": "Dan Luu",
-          "type": "person",
-          "role": "secondary"
-        }
-      ],
       "event_type": "deep_dive",
       "social_post": "Using an LLM as a judge seems straightforward until you run identical prompts three times in ten minutes and watch your precision drift without changing a single line of code. Small perturbations in generation can flip majority votes across test suites, turning what looks like a regression into simple evaluation noise.\n\nRunning reproducible evals requires treating LLM judges with the same empirical skepticism as any nondeterministic distributed test. If you evaluate agent outputs with five samples per case, a single shifted token distribution can swing aggregate accuracy by more than ten percent between identical runs.\n\nTreating LLM judges as infallible ground truth will lead you to optimize for random variance rather than actual model capability.",
       "why_read": "Read this to understand how subtle variance and flawed assumptions undermine LLM evaluations. You will learn practical methods to audit model judges and detect regressions through rigorous experimental reasoning.",
@@ -1234,25 +462,6 @@
       "title": "Grouping metadata lookups dramatically cuts CDN routing latency",
       "authors": [
         "speckx"
-      ],
-      "categories": [
-        "sys_performance",
-        "sys_infra",
-        "sys_design"
-      ],
-      "tags": [
-        {
-          "id": "vercel",
-          "name": "Vercel",
-          "type": "company",
-          "role": "primary"
-        },
-        {
-          "id": "cdn",
-          "name": "CDN",
-          "type": "technology",
-          "role": "primary"
-        }
       ],
       "event_type": "case_study",
       "social_post": "Fetching metadata on demand sounds like the cleanest caching strategy until you execute eighty million routing operations per second across deployments with hundreds of thousands of dynamic paths. Single-path caching guarantees that every deployment triggers a storm of cache misses, spiking tail latency across the edge.\n\nVercel redesigned their CDN metadata layer by shifting from isolated, per-path lookups to balanced batch retrieval. Grouping related route metadata on the initial fetch pre-warms the cache for subsequent requests, dropping P99 lookup latency by 91 percent while keeping payload sizes bounded.\n\nFine-grained cache keys often look elegant on paper, but grouped prefetching consistently wins when access patterns exhibit high temporal locality.",
@@ -1268,43 +477,6 @@
       "authors": [
         "wscott"
       ],
-      "categories": [
-        "sys_performance",
-        "eng_research",
-        "eng_languages"
-      ],
-      "tags": [
-        {
-          "id": "cplusplus",
-          "name": "C++",
-          "type": "technology",
-          "role": "primary"
-        },
-        {
-          "id": "unordered-dense",
-          "name": "unordered_dense",
-          "type": "project",
-          "role": "primary"
-        },
-        {
-          "id": "swisstable",
-          "name": "SwissTable",
-          "type": "technology",
-          "role": "secondary"
-        },
-        {
-          "id": "boost",
-          "name": "Boost",
-          "type": "project",
-          "role": "secondary"
-        },
-        {
-          "id": "folly",
-          "name": "Folly",
-          "type": "project",
-          "role": "secondary"
-        }
-      ],
       "event_type": "deep_dive",
       "social_post": "Most modern fast C++ hash maps share identical high level primitives: open addressing, power-of-two table sizes, and 16-byte SIMD vector comparisons. Despite these similarities, absl::flat_hash_map can take 1.7 times longer than boost::unordered_flat_map just to confirm that a key is missing from the table.\n\nThe entire performance variance comes down to index metadata design. A few metadata bytes per group dictate whether a lookup must probe multiple buckets or terminate immediately when a key is absent.\n\nAnalyzing twelve separate index designs across nine major libraries reveals how subtle choices in tombstone handling, control byte layout, and probe sequences alter hardware branch mispredictions and cache misses. If you write low-latency systems or custom storage engines, this breakdown shows exactly why microscopic memory layouts outweigh algorithmic complexity.",
       "why_read": "Read this to understand how subtle differences in metadata layout impact hash map lookup performance. You will learn the internal mechanics behind modern C++ index designs through empirical benchmarks and hardware counters.",
@@ -1318,23 +490,6 @@
       "title": "Enforcing acyclic hierarchies declaratively with SQL assertions",
       "authors": [
         "Philipp Salvisberg"
-      ],
-      "categories": [
-        "db_relational"
-      ],
-      "tags": [
-        {
-          "id": "oracle-database",
-          "name": "Oracle Database",
-          "type": "product",
-          "role": "primary"
-        },
-        {
-          "id": "sql",
-          "name": "SQL",
-          "type": "technology",
-          "role": "primary"
-        }
       ],
       "event_type": "tutorial",
       "social_post": "Declarative integrity in relational databases has historically stopped at the boundary of a single row or foreign key. While foreign keys verify that a referenced parent row exists, preventing cyclic graphs like an employee managing their own manager has traditionally forced teams into brittle application logic or recursive triggers.\n\nSQL assertions change this equation by bringing cross-row and cross-table validation directly into the engine. Instead of orchestrating transaction locks and custom trigger logic during every update, developers can define a global predicate that automatically rejects transactions violating acyclic constraints.\n\nThe database query planner evaluates the invariant against the transaction modifications. When an insert or update creates a loop in the hierarchy, the engine detects the invalid state and rolls back the offending write immediately.\n\nRelying on database-native assertions guarantees relational consistency without pushing state verification into your microservices.",
