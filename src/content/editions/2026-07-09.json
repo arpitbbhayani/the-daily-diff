@@ -1,0 +1,173 @@
+{
+  "date": "2026-07-09",
+  "stories": [
+    {
+      "id": "8a70d410b1973fe6",
+      "url": "https://github.com/JustVugg/colibri",
+      "source": "github",
+      "hn_id": "48842459",
+      "title": "Streaming mixture of experts weights from disk enables consumer inference",
+      "authors": [
+        "JustVugg"
+      ],
+      "event_type": "release",
+      "social_post": "You do not need an array of high-end enterprise GPUs to run hundreds of billions of parameters locally. Mixture-of-experts architectures only activate a minor fraction of their total weights for any given token, making memory bandwidth the primary bottleneck rather than raw compute capacity.\n\nColibri exploits this structural property by keeping the active shared parameters in system RAM while streaming expert weights directly from an NVMe drive on demand. Built in clean C with zero external dependencies, the engine implements dedicated single-file drivers for modern architectures like GLM and DeepSeek.\n\nInstead of paying the steep memory tax of holding an entire five-hundred-billion parameter model in expensive VRAM, fast sequential NVMe reads fetch only the sparse parameters required per routing decision. This allows engineers to run frontier-scale models on commodity workstations with predictable latency and minimal overhead.\n\nSmart systems engineering often beats throwing more hardware at memory footprint bottlenecks.",
+      "why_read": "Understand how Colibri executes massive mixture-of-experts models on consumer machines by selectively streaming active parameters from disk rather than requiring immense RAM. You will learn an efficient architectural design for CPU-bound local model inference.",
+      "image": "/infographics/01-github-48842459.jpg"
+    },
+    {
+      "id": "eace382dee3c4400",
+      "url": "https://lamport.azurewebsites.net/pubs/paxos-simple.pdf",
+      "source": "hn",
+      "hn_id": "48850688",
+      "title": "Paxos consensus algorithm is simple when derived from core properties",
+      "authors": [
+        "Leslie Lamport"
+      ],
+      "event_type": "research",
+      "social_post": "Distributed consensus is often treated as an intractable puzzle, but Paxos derives its entire protocol from a single invariant: once a majority accepts a proposal, every subsequent proposal must adopt that same value.\n\nLeslie Lamport broke the problem down into two distinct phases. In phase one, a proposer asks a quorum of acceptors to promise not to accept proposals with lower sequence numbers. This guarantees that any value previously decided will be revealed by at least one node in that overlapping quorum.\n\nIn phase two, the proposer sends the value discovered in phase one, or its own value if none was returned. If a majority accepts this payload, the value is committed. Multi-Paxos extends this primitive to sequential log slots, turning isolated consensus instances into a resilient replicated state machine.\n\nUnderstanding this two-phase handshake demystifies how modern distributed databases ensure zero data loss during network partitions.",
+      "why_read": "Read this to understand how the Paxos consensus algorithm inevitably emerges from straightforward safety requirements. It demystifies distributed consensus by stripping away unnecessary complexity.",
+      "image": "/infographics/02-hn-48850688.jpg"
+    },
+    {
+      "id": "8c8dc47d5a3f91b0",
+      "url": "https://usewire.io/engineering/why-were-moving-wire-off-cloudflare-durable-objects/",
+      "source": "hn",
+      "hn_id": "48846757",
+      "title": "Why Wire moved context containers off Cloudflare Durable Objects",
+      "authors": [
+        "JP"
+      ],
+      "event_type": "case_study",
+      "social_post": "Building stateful context containers for AI agents on serverless edge primitives exposes severe architectural limits once latency and retrieval matter.\n\nRunning agent context inside Cloudflare Durable Objects seemed ideal for thousands of small, isolated stores. However, the vector index had to live in external services like Vectorize because Durable Object SQLite cannot load extensions. That introduced an extra network hop on the hottest critical path and split state across multiple systems.\n\nMulti-stage retrieval pipelines demand running hybrid candidate generation, query expansion, and reranking directly alongside the data. When AI agents execute iterative tool loops, every network hop adds latency variance directly to the user experience. Furthermore, fixed creation-time object placement meant containers could not migrate closer to agent clusters in other regions.\n\nCo-locating vector indexes with relational storage and compute is essential for keeping agentic retrieval latencies bounded.",
+      "why_read": "Learn about the concrete distributed systems trade-offs of Cloudflare Durable Objects when running stateful AI agent context retrieval.",
+      "image": "/infographics/03-hn-48846757.jpg"
+    },
+    {
+      "id": "fadf6b4045c426cc",
+      "url": "https://github.com/nasa/spacewasm",
+      "source": "github",
+      "hn_id": "48845993",
+      "title": "SpaceWasm brings standardized sandboxed execution to spacecraft software",
+      "authors": [
+        "NASA JPL"
+      ],
+      "event_type": "release",
+      "social_post": "Flight software verification is one of the most expensive bottlenecks in aerospace engineering. Because an error during a Mars rover sequence can permanently brick hardware, validating a single autonomous capability requires testing against entire flight systems.\n\nNASA JPL has released SpaceWasm, an implementation of the WebAssembly 1.0 specification engineered specifically for execution on spacecraft. Historically, activities like robotic arm manipulation or rover navigation were driven by proprietary, fragmented command sequencing formats across distinct missions.\n\nBy adopting WebAssembly as an onboard sequencing runtime, aerospace systems gain genuine sandboxing. The flight computer can execute low-trust autonomy routines while enforcing hard limits on compute time and memory access. Teams can deploy experimental autonomous software without triggering months of whole-system validation overhead.\n\nStandardizing on sandboxed bytecode turns out to be the cleanest path to onboard autonomy.",
+      "why_read": "Learn how NASA JPL uses a WebAssembly interpreter to isolate untrusted code and consolidate command sequencing on spacecraft. It demonstrates how sandboxing reduces verification overhead and accelerates the deployment of autonomous software.",
+      "image": null
+    },
+    {
+      "id": "590788fc9105482a",
+      "url": "https://malisper.me/the-four-horsemen-behind-thousands-of-postgres-outages/",
+      "source": "hn",
+      "hn_id": "48851069",
+      "title": "How vacuum and transaction wraparound trigger Postgres outages",
+      "authors": [
+        "malisper"
+      ],
+      "event_type": "deep_dive",
+      "social_post": "Postgres autovacuum failure remains the single most common culprit behind catastrophic production outages. When tables undergo heavy mutation, dead tuples accumulate rapidly under multiversion concurrency control, forcing the background vacuum worker to scan vast amounts of storage just to prune expired rows.\n\nThis operational dynamic creates a dangerous input-output feedback loop. If autovacuum throttle settings are too conservative, dead tuples accumulate faster than the cleaner can process them, leading to table bloat and degraded query performance. Conversely, if autovacuum runs too aggressively, background maintenance competes directly with hot analytical and transactional queries for disk bandwidth.\n\nThe risk escalates into an emergency when 32-bit transaction ID wraparound approaches. If a database fails to freeze historical transaction identifiers before the two-billion-transaction threshold, Postgres initiates an aggressive emergency vacuum. If that process cannot complete in time, the engine halts all write operations entirely to protect data integrity.\n\nTuning autovacuum thresholds and monitoring transaction age proactively is mandatory engineering hygiene for any scaling backend service. Reliable databases require balancing garbage collection against query latency long before reaching capacity limits.\n\nPreventing database failure requires respecting the mechanical realities of disk I/O and transaction wraparound.",
+      "why_read": "Read this to understand how Postgres vacuuming and transaction ID wraparound create subtle operational failure modes in production databases.",
+      "image": null
+    },
+    {
+      "id": "bd7d5735cd751ac6",
+      "url": "https://knock.app/blog/how-we-built-the-knock-agent-virtual-filesystem-and-bash",
+      "source": "hn",
+      "hn_id": "48845364",
+      "title": "Building agents with virtual file systems avoids tool bloat",
+      "authors": [
+        "cjbell"
+      ],
+      "event_type": "case_study",
+      "social_post": "Exposing individual API endpoints as dedicated LLM tools quickly collapses under schema bloat and context window limits. When building an agent harness to manage complex workflows, defining a distinct tool for every resource creates dozens of JSON schemas that consume thousands of prompt tokens before the model even processes user intent.\n\nThe Knock engineering team bypassed this bottleneck by mounting their management API as a virtual file system and providing the model with a single bash interface. Instead of serializing separate tool definitions for each mutation, the harness translates standard file operations like cat, ls, and tee into API calls against resources modeled as structured files.\n\nThis design dramatically reduces prompt overhead while giving the model standard Unix utilities like grep and jq to inspect and filter state directly. The agent inspects directory listings on demand, reading only the schemas and records relevant to the immediate task.\n\nTreating complex domain state as a virtual file hierarchy turns out to be far more scalable than maintaining dozens of bespoke tool signatures.",
+      "why_read": "Read this to understand why replacing discrete API tools with a virtual file system and bash creates a more scalable architecture for AI agents. You will learn how to overcome context bloat when managing complex resource domains.",
+      "image": null
+    },
+    {
+      "id": "82c318c5e1bdc708",
+      "url": "https://www.recall.ai/blog/postgres-locks-do-not-scale",
+      "source": "hn",
+      "hn_id": "48849079",
+      "title": "Postgres locks do not scale",
+      "authors": [
+        "Brendan Lockhart"
+      ],
+      "event_type": "incident",
+      "social_post": "Postgres lock manager overhead can silently bring high-throughput databases to an absolute standstill by consuming all available CPU in system time. During a sudden outage at Recall.ai, database CPU spiked to 100 percent entirely within kernel execution, locking out connections and rendering standard diagnostic queries unresponsive.\n\nThe root cause was not slow queries or unindexed scans, but severe spinlock contention inside the Postgres lock table. High concurrent write volumes against tables containing GIN indexes triggered intense contention on shared memory locks. Because Postgres uses a centralized lock table protected by partition-level lightweight locks, high concurrency across multiple backends attempting to acquire locks simultaneously causes extreme cache-line bouncing and CPU spinning.\n\nTraditional query profiling and index monitoring will not surface this failure mode because the work happens before statement execution begins. Mitigating the issue required throttling concurrency, minimizing lock acquisition density, and restructuring heavy write paths to avoid lock manager saturation.\n\nWhen transaction throughput increases, lock management itself can become your primary bottleneck before storage or query execution limits ever appear.",
+      "why_read": "Read this post to learn how unexpected lock contention in Postgres can cause massive system CPU spikes and bring down production databases. It offers a practical breakdown of database internals and scaling bottlenecks under real-world traffic.",
+      "image": null
+    },
+    {
+      "id": "5f3381153262f071",
+      "url": "https://blog.doubleword.ai/what-happens-when-you-checkpoint-a-cuda-process",
+      "source": "hn",
+      "hn_id": "48845518",
+      "title": "Reverse-engineering cuda-checkpoint for faster GPU cold starts",
+      "authors": [
+        "Doubleword"
+      ],
+      "event_type": "deep_dive",
+      "social_post": "Cold starting large language model inference servers often takes tens of seconds simply loading model weights into GPU memory. NVIDIA provides a little-known driver tool called cuda-checkpoint that freezes a running CUDA process and snapshots its state to host memory, cutting cold start times by up to seventy times.\n\nHowever, default cuda-checkpoint transfers fall far short of saturating available PCIe bandwidth. In complex inference engines like SGLang, serializing and restoring gigabytes of device memory creates massive I/O serialization bottlenecks instead of operating at bus line-rate speeds.\n\nBy reverse-engineering the undocumented driver interaction, engineers can identify how cuda-checkpoint manages host-device synchronization during snapshot restoration. Bypassing driver-level transfer bottlenecks allows clusters to recover frozen inference workers at true hardware wire speeds without modifying model application code.\n\nOptimizing system-level GPU memory restoration turns costly autoscaling cold starts into near-instantaneous process swaps.",
+      "why_read": "Read this to understand the mechanics behind NVIDIA's cuda-checkpoint tool and learn how to diagnose and optimize PCIe transfer bottlenecks during GPU process serialization.",
+      "image": null
+    },
+    {
+      "id": "2374cba520ea106a",
+      "url": "https://builders.cortex.io/blog/sandboxing-agents-part-1/",
+      "source": "hn",
+      "hn_id": "48848783",
+      "title": "Throwaway microvms contain the blast radius of untrusted agents",
+      "authors": [
+        "nikhilunni"
+      ],
+      "event_type": "tutorial",
+      "social_post": "Allowing autonomous coding agents to run shell commands inside traditional Docker containers is an operational hazard waiting to happen. Containers share the host Linux kernel, meaning a single privilege escalation exploit or misconfigured volume mount gives an untrusted prompt direct access to your infrastructure.\n\nRelying on command allowlists or interactive human approval collapses when scaling to thousands of concurrent agent workers. The search space of potentially malicious shell inputs is simply too vast for static analysis or pattern matching.\n\nThe only scalable architecture is hardware-level isolation through ephemeral microVMs. By giving each agent its own throwaway Linux environment with strict network egress policies, destructive commands such as deleting the root filesystem become non-events. The blast radius remains completely contained because the guest kernel cannot compromise the hypervisor or adjacent tenant instances.\n\nTrue security for autonomous execution requires treating every agent as hostile by default.",
+      "why_read": "Read this to understand why permission allowlists fail for autonomous coding agents and how throwaway microVMs safely isolate untrusted commands.",
+      "image": null
+    },
+    {
+      "id": "4098f545e16274ee",
+      "url": "https://hakibenita.com/postgresql-partition-pruning",
+      "source": "hn",
+      "hn_id": "48844476",
+      "title": "Achieving partition pruning using non-partitioned columns in PostgreSQL",
+      "authors": [
+        "Haki Benita"
+      ],
+      "event_type": "deep_dive",
+      "social_post": "PostgreSQL partition pruning usually fails when a query filters on any column other than the partition key. Most teams assume they must choose between slow sequential scans across all partitions or restructuring their primary partitioning strategy.\n\nThat assumption is wrong if your data exhibits natural correlations across columns. For example, auto-incrementing identifiers or session numbers often correlate tightly with event timestamps. By adding explicit check constraints to individual partitions that bound those non-partition columns, you provide the query planner with the exact invariants it needs.\n\nWhen constraint exclusion is enabled, the PostgreSQL planner evaluates query predicates against each partition constraint before generating a scan plan. If a query predicate contradicts a partition check constraint, the planner excludes that entire table partition from the execution plan.\n\nThis simple technique allows queries targeting secondary attributes to skip gigabytes of irrelevant partition data without maintaining heavy global indexing layers.",
+      "why_read": "Learn how to optimize PostgreSQL queries by triggering partition pruning on non-partition key columns using underlying data patterns.",
+      "image": null
+    },
+    {
+      "id": "0891e9e25d67465f",
+      "url": "https://slatedb.io/blog/segment-oriented-compaction/",
+      "source": "hn",
+      "hn_id": "48849087",
+      "title": "Segment-oriented compaction isolates data structures into separate trees",
+      "authors": [
+        "agavra"
+      ],
+      "event_type": "deep_dive",
+      "social_post": "Most Log-Structured Merge (LSM) trees pack all data into a single monolithic tree. This conventional design forces a painful compromise: high-churn index updates, immutable blob records, and ephemeral metadata must all share identical compaction schedules, causing severe write amplification.\n\nSlateDB approaches this problem with segment-oriented compaction. Instead of funneling all data into one structure, it splits the dataset into distinct, isolated trees based on access patterns, data lifetimes, and retention guarantees.\n\nSeparating index structures from primary records allows the compactor to rewrite frequently mutated indexes aggressively while leaving bulk raw data untouched. You no longer need to rewrite gigabytes of stable records just to garbage-collect short-lived auxiliary pointers.\n\nTailoring compaction strategies per segment allows storage engines on object storage to drastically cut I/O costs while optimizing read latency for critical paths.\n\nTreating database compaction as a modular policy across decoupled segments is a clean architectural shift for modern storage engines.",
+      "why_read": "Read this to understand how segment-oriented compaction separates workloads into distinct trees to optimize read and write amplification in SlateDB.",
+      "image": null
+    },
+    {
+      "id": "81206b721ddc0a25",
+      "url": "https://github.com/yeet-src/sqlitefeed",
+      "source": "github",
+      "hn_id": "48852853",
+      "title": "Streaming live SQLite statements across processes without instrumentation",
+      "authors": [
+        "zasc"
+      ],
+      "event_type": "release",
+      "social_post": "Tracing SQLite queries in production has always been surprisingly painful because SQLite runs as an in-process library rather than an independent database server with central query logs.\n\nMost teams resort to ad-hoc application wrappers, ORM debug logs, or forgotten PRAGMA flags. That approach fails the moment you need to inspect an untracked background cron job, a third-party daemon, or an ad-hoc script running on the same Linux host.\n\nA new utility named sqlitefeed solves this by acting like tail -f for libsqlite3 across the entire operating system. It passively captures every SQL query executed by any process without requiring application recompilation, runtime flags, or cooperative logging.\n\nThe tool decodes executed queries, concrete bound parameters, execution status codes, and per-step latency metrics before streaming them directly to your terminal. Observing internal database activity at the operating system boundary removes blind spots while debugging complex local workloads.\n\nZero-overhead query inspection changes how engineers troubleshoot embedded storage engines.",
+      "why_read": "Learn how sqlitefeed intercepts and streams active SQLite queries and bound parameters across all running system processes without requiring application code changes.",
+      "image": null
+    }
+  ]
+}

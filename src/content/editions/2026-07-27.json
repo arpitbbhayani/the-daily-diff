@@ -1,0 +1,79 @@
+{
+  "date": "2026-07-27",
+  "stories": [
+    {
+      "id": "9c7cfc77b84c5ee4",
+      "url": "https://pranitha.dev/posts/tokio-gives-progress-not-ordering/",
+      "source": "hn",
+      "hn_id": "49070805",
+      "title": "Tokio guarantees progress rather than task ordering",
+      "authors": [
+        "pranitha_m"
+      ],
+      "event_type": "deep_dive",
+      "social_post": "Many engineers assume that spawning async tasks in order means they will complete in roughly the same sequence. In Tokio, scheduling guarantees cooperative progress, but it provides zero guarantees regarding execution ordering. When services fan out thousands of subtasks per event without backpressure, memory usage explodes unexpectedly.\n\nConsider an event-driven pipeline processing messages with up to one thousand tokens each. Spawning one Tokio task per token inside an unbounded JoinSet appears harmless when individual outbound I/O calls resolve within milliseconds. However, if early tasks yield on socket reads, the runtime continues scheduling newly spawned tasks. Hundreds of thousands of partially completed task states accumulate on the heap simultaneously, preventing parent events from completing and retaining gigabytes of memory buffers.\n\nThroughput plummets not because of slow networks, but because excessive concurrency exhausts memory allocators through internal fragmentation. Limiting active tasks with semaphores or chunking JoinSet batches restores predictable memory profiles. Concurrency without backpressure is merely an unmanaged queue hidden in your runtime heap.",
+      "why_read": "Understand how the Tokio runtime prioritizes overall progress rather than strict task ordering when scheduling massive asynchronous workloads. Learn why assuming early tasks finish early can create hidden memory and concurrency pitfalls.",
+      "image": "/infographics/01-hn-49070805.jpg"
+    },
+    {
+      "id": "aabf17494fc249b7",
+      "url": "https://www.inkandswitch.com/livelymerge/notebook/lm-02/",
+      "source": "hn",
+      "hn_id": "49076945",
+      "title": "Convergence is not enough when merging live object heaps",
+      "authors": [
+        "Alex Warth",
+        "Dan Ingalls",
+        "Peter van Hardenberg"
+      ],
+      "event_type": "deep_dive",
+      "social_post": "Conflict-free Replicated Data Types guarantee eventual convergence, but convergence does not guarantee that your application state remains valid. When two distributed nodes merge their operational logs, the underlying mathematics ensure that both replicas end up in the exact same state. That shared state, however, can easily violate core domain invariants.\n\nThe Livelymerge project discovered this boundary while attempting to run an entire language runtime heap over Automerge. When concurrent clients perform valid localized operations, such as swapping adjacent nodes in a linked list, the standard CRDT register and pointer resolutions succeed mathematically. Yet the resulting merged structure can produce broken pointers, detached cycles, or orphaned nodes that immediately crash program execution.\n\nEvery distributed systems engineer must understand this distinction. Convergence only solves mechanical consistency across replicas. It does not understand business logic, relational integrity, or structural invariants. Relying on pure CRDTs for complex interconnected state without an explicit semantic arbitration layer will inevitably corrupt your system.",
+      "why_read": "Explore why standard CRDT convergence guarantees break down when merging pointer-rich object heaps in live systems, demonstrated through a concrete concurrent linked list failure.",
+      "image": null
+    },
+    {
+      "id": "b5d2b9662d6cadaf",
+      "url": "https://antithesis.com/blog/2026/finding-bugs-in-raft-implementations/",
+      "source": "hn",
+      "hn_id": "49071600",
+      "title": "Production Raft implementations consistently violate state machine safety",
+      "authors": [
+        "TW Lim",
+        "Rohan Padhye",
+        "Marco Primi"
+      ],
+      "event_type": "deep_dive",
+      "social_post": "Every production Raft implementation that Antithesis tested contained critical consensus bugs, including HashiCorp Raft, Aeron Cluster, and OpenRaft.\n\nRaft is celebrated for being understandable compared to Paxos. It has formal specifications in TLA+, an explicit guide, and rigorous unit test suites across the industry. Yet, when subjected to deterministic simulation testing with fault injection, every single codebase violated state machine safety. Nodes committed divergent log entries or lost committed data under unexpected network partitions and timing quirks.\n\nThe core problem is not the Raft paper itself. The issue lies in the translation from abstract mathematical specifications into real-world code. Edge cases around asynchronous input and output, disk writes, leadership handover, and error handling introduce subtle races that unit tests and code reviews fail to detect.\n\nFormal verification of a protocol design does not guarantee the correctness of its software implementation.",
+      "why_read": "Understand why real-world Raft implementations consistently break critical safety invariants despite extensive testing and formal specifications. This analysis details how subtle distributed consensus bugs arise and why traditional verification methods fall short.",
+      "image": null
+    },
+    {
+      "id": "5ed10ede4abacd52",
+      "url": "https://vllm.ai/blog/2026-07-27-k3",
+      "source": "hn",
+      "hn_id": "49071233",
+      "title": "vLLM enables efficient day-zero serving for Kimi K3",
+      "authors": [
+        "wskwon"
+      ],
+      "event_type": "release",
+      "social_post": "Serving a 2.8-trillion-parameter mixture-of-experts model requires rethinking standard attention kernels and cache management. The engineering behind bringing Moonshot AI's Kimi K3 to vLLM demonstrates how inference engines must adapt when models deviate from pure transformer designs.\n\nKimi K3 combines Kimi Delta Attention with Attention Residuals across 896 experts, activating only 16 per token. Supporting this architecture required building custom kernels for MXFP4 quantization alongside prefix caching designed specifically for recurrent attention state. Traditional KV cache management breaks when state becomes recurrent, meaning cache reusability demands entirely new state eviction and indexing strategies.\n\nTo hit 370 tokens per second across eight accelerators, the serving stack pairs prefill and decode disaggregation with speculative decoding via a dedicated draft model. Integrating these techniques into a unified engine shows that inference optimization is now as much about systems orchestration as it is about tensor operations.\n\nHardware constraints continue to shift inference bottlenecks from raw memory bandwidth toward complex runtime orchestration.",
+      "why_read": "Read this to understand how vLLM adapts its kernel and cache architecture to serve the 2.8-trillion-parameter Kimi K3 model efficiently. You will learn deployment configurations and runtime strategies including speculative decoding and prefix caching.",
+      "image": null
+    },
+    {
+      "id": "3ee9ad3df07a9284",
+      "url": "https://porffor.dev/",
+      "source": "hn",
+      "hn_id": "49064972",
+      "title": "Compiling javascript ahead of time cuts runtime memory overhead",
+      "authors": [
+        "goranmoomin"
+      ],
+      "event_type": "release",
+      "social_post": "JavaScript engines were built for dynamic web browsers, which is why shipping a backend Node service typically bundles a bloated ninety-megabyte runtime. Porffor fundamentally challenges this pattern by treating JavaScript like C or Rust through ahead-of-time compilation directly to native binaries and WebAssembly.\n\nThe performance profile changes drastically when you strip out runtime parsers and multi-tier JIT compilers. Node containers generally consume tens of megabytes per instance, whereas ahead-of-time compiled processes drop baseline memory overhead to under one megabyte. On a single gigabyte server, that allows running over one thousand isolated processes instead of twenty to forty.\n\nWhile peak execution throughput on compute-heavy loops still trails fully warmed JIT engines, cold start latency and memory density see order-of-magnitude improvements. For serverless workers, ephemeral background jobs, and edge functions, eliminating the startup overhead of V8 or JavaScriptCore changes the economic math entirely.\n\nPredictable memory footprints and instantaneous cold starts matter far more than theoretical peak JIT speed in multi-tenant cloud infrastructure.",
+      "why_read": "Understand how compiling JavaScript directly to native binaries eliminates interpreter overhead and drastically reduces per-process memory consumption. You will learn the architectural differences between traditional browser-derived runtimes and dedicated ahead-of-time compilation.",
+      "image": null
+    }
+  ]
+}

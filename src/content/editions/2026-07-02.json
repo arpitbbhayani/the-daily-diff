@@ -1,0 +1,62 @@
+{
+  "date": "2026-07-02",
+  "stories": [
+    {
+      "id": "2a7e0620e91e1ccd",
+      "url": "https://www.dbos.dev/blog/co-locating-workflow-state-with-your-data",
+      "source": "hn",
+      "hn_id": "48765639",
+      "title": "Co-locating workflow state with application data eliminates partial failures",
+      "authors": [
+        "Peter Kraft",
+        "Qian Li"
+      ],
+      "event_type": "deep_dive",
+      "social_post": "Co-locating your workflow engine state with application data in the same Postgres database eliminates one of the hardest failure modes in distributed systems.\n\nStandard architectural advice pushes teams to decouple workflow orchestrators from business databases. However, this separation introduces an unavoidable dual-write problem. A durable workflow engine typically checkpoints step progress after execution. If a process crashes right after committing application records but before persisting the checkpoint, the engine assumes the step failed and replays it, breaking idempotency.\n\nWhen workflow metadata lives alongside business tables in Postgres, step execution and checkpoint recording execute inside a single local database transaction. The write either commits entirely or rolls back completely. You no longer need distributed two-phase commits, outbox tables, or complex distributed saga mechanics to guarantee exactly-once business effects.\n\nACID guarantees inside a single mature database often solve distributed consensus problems faster than another microservice cluster ever could.",
+      "why_read": "Read this to understand how co-locating workflow metadata with application data inside Postgres simplifies edge-case handling. You will learn how shared transactions eliminate partial failures and solve tough idempotency challenges.",
+      "image": "/infographics/01-hn-48765639.jpg"
+    },
+    {
+      "id": "63ecc4b592af423e",
+      "url": "https://www.zerofs.net/",
+      "source": "hn",
+      "hn_id": "48761493",
+      "title": "Serving S3 buckets as POSIX filesystems and block devices",
+      "authors": [
+        "Eikon"
+      ],
+      "event_type": "release",
+      "social_post": "Bridging object storage with POSIX semantics has long been an exercise in awkward compromises. S3 is designed around immutable objects and high-latency HTTP round trips, which directly conflict with typical file system operations like random overwrites and fast metadata updates.\n\nZeroFS tackles this mismatch by implementing a log-structured filesystem directly on top of S3-compatible storage. Instead of mutating objects in place, all writes are batched into immutable, compressed, and encrypted segments before being uploaded. Reads are served from an aggressive local cache, while the server runs as a single userspace process exposing NFS, 9P, and raw block devices through NBD.\n\nThe architectural trade-offs here are intentional and practical. For example, NFS commit semantics allow fsync calls to return before data reaches S3, while the 9P interface provides strict remote durability guarantees. The project validates this approach against rigorous real-world suites, passing thousands of pjdfstest cases and compiling the complete Linux kernel concurrently under heavy dentry churn.\n\nLog-structured designs remain one of the most effective strategies for adapting high-latency append-only storage to general-purpose computing workloads.",
+      "why_read": "Read this to understand how ZeroFS exposes S3-compatible object storage as local filesystems and raw block devices using a single-process log-structured architecture.",
+      "image": null
+    },
+    {
+      "id": "6c04c4eb5eac54f6",
+      "url": "http://www.lmdb.tech/doc/",
+      "source": "hn",
+      "hn_id": "48766598",
+      "title": "Memory mapping enables zero-copy reads without caching layers",
+      "authors": [
+        "radiator"
+      ],
+      "event_type": "deep_dive",
+      "social_post": "Traditional database engines rely on a complex buffer pool and write-ahead logging to balance throughput and durability. LMDB takes the opposite path by exposing the entire B-tree directly through a memory map, eliminating page cache layers, memory copies, and heap allocations during lookups.\n\nBecause fetches return direct pointers to mapped memory, read operations run entirely lock-free without blocking writers. Writes are strictly serialized to prevent deadlocks and utilize an append-free, copy-on-write page strategy. When a transaction modifies a page, the engine writes to new space rather than overwriting existing data. If the process crashes mid-transaction, integrity remains intact because the root pointer never advanced, removing the need for recovery checkpoints or compaction.\n\nThis architecture sacrifices concurrent write throughput in exchange for near-hardware-speed reads and bulletproof crash resilience.",
+      "why_read": "Read this to understand how LMDB leverages memory maps and copy-on-write trees to achieve zero-copy data access without a dedicated caching layer. You will learn the architectural mechanics behind its lock-free concurrency and crash-resistant storage model.",
+      "image": null
+    },
+    {
+      "id": "25f366eacde3aaf4",
+      "url": "https://github.com/pranav-walimbe/PyCanopy",
+      "source": "github",
+      "hn_id": "48757223",
+      "title": "PyCanopy brings relational database query optimizations to spatial Polars",
+      "authors": [
+        "Pranav Walimbe"
+      ],
+      "event_type": "release",
+      "social_post": "Spatial data processing in Python has long suffered from an awkward divide between dataframe ergonomics and relational database indexing.\n\nPyCanopy addresses this divide by implementing an in-memory spatial query engine directly on top of Polars. Written with a Rust core, the library introduces cost-based query planning that evaluates whether to build an index or execute a direct scan based on dataset size and filter selectivity.\n\nRather than relying on naive bounding box scans across memory buffers, PyCanopy accelerates spatial joins and range queries with automated index construction. Benchmark results against Apache SpatialBench show it outpacing specialized spatial database engines like DuckDB and SedonaDB across nearly half of evaluated test cases.\n\nFor data infrastructure teams handling geospatial coordinates, bringing cost-aware optimizer internals directly into Polars eliminates unnecessary serialization boundaries between analytical code and database servers.\n\nPushing relational query planning into columnar dataframes changes how in-memory analytical pipelines should be designed.",
+      "why_read": "Read this to understand how PyCanopy implements relational database optimizations, including cost-based query planning and indexing, directly on top of Polars DataFrames for fast spatial analytics.",
+      "image": null
+    }
+  ]
+}

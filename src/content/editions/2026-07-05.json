@@ -1,0 +1,103 @@
+{
+  "date": "2026-07-05",
+  "stories": [
+    {
+      "id": "146fbd2a6d8effba",
+      "url": "https://arxiv.org/abs/2605.21997",
+      "source": "hn",
+      "hn_id": "48790912",
+      "title": "Event-sourced reactive graphs enable auditable and forkable agent systems",
+      "authors": [
+        "Yohei Nakajima"
+      ],
+      "event_type": "research",
+      "social_post": "Traditional agent frameworks suffer from a foundational flaw: they prioritize conversational loops and treat execution history as an afterthought.\n\nActiveGraph flips this architecture by implementing event sourcing. Instead of building memory around transient context windows or vector search summaries, the runtime treats an append-only event log as the absolute source of truth. The active state graph is merely a deterministic projection derived from that log, while tools and language model tasks react to graph state transitions.\n\nThis separation of state mutations from execution delivers massive operational advantages for distributed systems. First, you obtain deterministic replay across complex multi-step workflows. Second, you can fork an execution branch at any arbitrary event without having to rerun the expensive shared prefix. Third, the system preserves complete causal lineage from high-level objectives down to the individual model calls.\n\nTreating logs as the primary substrate brings distributed systems rigor to agent engineering.\n\nReliable agent architectures require event sourcing rather than unstructured conversational memory.",
+      "why_read": "Read this to understand how structuring agent runtimes around append-only event logs enables deterministic replay, cheap branching, and full causal lineage. It provides a robust architecture for designing auditable and reproducible agentic workflows.",
+      "image": "/infographics/01-hn-48790912.jpg"
+    },
+    {
+      "id": "c7b8225f588a387a",
+      "url": "https://questdb.com/blog/jvm-jit-known-bits/",
+      "source": "hn",
+      "hn_id": "48798566",
+      "title": "How HotSpot C2 compiler optimizes redundant bitwise masks",
+      "authors": [
+        "rowbin"
+      ],
+      "event_type": "deep_dive",
+      "social_post": "Optimizing compilers can quietly eliminate redundant bitwise logic, but the mechanics behind this optimization are far more sophisticated than simple constant folding.\n\nConsider an expression like (x << 2) & -4. Because shifting an integer left by two positions guarantees that the lowest two bits will always be zero, masking it against -4 (1111 1100 in two's complement) is completely redundant. However, for most of HotSpot's history, the C2 compiler represented variables using basic signed ranges [lo, hi]. While ranges work well to eliminate array bounds checks, a range cannot cleanly capture the fact that specific interior bits are guaranteed to be zero or one.\n\nTo solve this, modern compilers introduce a known-bits analysis abstraction. Instead of merely tracking a min and max value, the compiler tracks bitmasks of bits that are proven zero and bits that are proven one. Propagating these masks through abstract interpretation allows C2 to prove that the bitwise AND adds no new information, completely deleting the operation from machine code.\n\nUnderstanding how compilers track value constraints helps engineers write idiomatic code without fear of artificial abstraction penalties.",
+      "why_read": "Read this to understand how HotSpot's C2 compiler tracks numeric constraints and bit patterns to eliminate redundant bitwise operations.",
+      "image": "/infographics/02-hn-48798566.jpg"
+    },
+    {
+      "id": "9b885b3af3edd168",
+      "url": "https://segflow.github.io/post/zero-copy-sendfile-splice/",
+      "source": "hn",
+      "hn_id": "48797655",
+      "title": "Wrapping an io.Reader quietly disables sendfile in Go",
+      "authors": [
+        "Assel Meher"
+      ],
+      "event_type": "deep_dive",
+      "social_post": "An innocent wrapper around an io.Reader can silently cut your network throughput in half and double CPU utilization.\n\nWhen transferring files over a TCP connection in Go, io.Copy checks whether the destination implements io.ReaderFrom. Under Linux, net.TCPConn uses this path to invoke the sendfile system call. Instead of bouncing pages from the page cache into a 32 KiB userspace buffer and back down into the socket buffer, the kernel transfers data directly between descriptors without userspace context switches.\n\nThe trap appears when well-intentioned middleware wraps an os.File in a custom struct to monitor transfer metrics or count bytes. The moment your wrapper hides the underlying file descriptor, Go falls back to standard read and write loops in userspace. Suddenly, your service is executing thousands of additional syscalls and churning CPU cycles on redundant memory copies.\n\nHigh-performance Go abstractions often depend on dynamic interface assertions that vanish the second you decorate a stream.",
+      "why_read": "Read this to understand how Go optimizes I/O using kernel zero-copy mechanisms and how trivial wrappers can inadvertently destroy throughput.",
+      "image": null
+    },
+    {
+      "id": "9e59ffd42db156f8",
+      "url": "https://www.theregister.com/security/2026/07/04/confidential-computings-core-trust-mechanism-is-broken-the-fix-may-not-exist/5266056",
+      "source": "hn",
+      "hn_id": "48793110",
+      "title": "Attested TLS cannot reliably verify confidential computing environments",
+      "authors": [
+        "Kim Loohuis"
+      ],
+      "event_type": "research",
+      "social_post": "Remote attestation is supposed to guarantee that sensitive cloud workloads run inside an untampered Trusted Execution Environment before decrypting sensitive data. Formal verification of Attested TLS reveals that this foundational trust model suffers from a critical protocol defect.\n\nResearchers analyzing Attested TLS with the ProVerif protocol verification tool demonstrated that the handshake fails to cryptographically bind the identity of the communicating peer to the hardware measurement. An attacker can intercept and relay attestation quotes, convincing a client that it is communicating with an isolated enclave when data is actually terminating elsewhere.\n\nThis protocol disconnect undermines the core premise of confidential computing in multitenant clouds. Hardware isolation cannot protect sensitive state if the network authentication layer cannot definitively prove which entity holds the corresponding private key inside that enclave.\n\nHardware protection rings cannot compensate for logical flaws in cryptographic handshake protocols.",
+      "why_read": "Read this to understand the architectural flaws in attested TLS and why remote attestation cannot guarantee identity.",
+      "image": null
+    },
+    {
+      "id": "4cca0d37e5f00800",
+      "url": "https://pranitha.dev/posts/rust-and-memory-allocators/",
+      "source": "hn",
+      "hn_id": "48795822",
+      "title": "Rust memory retention under load may stem from allocators",
+      "authors": [
+        "abhirag"
+      ],
+      "event_type": "deep_dive",
+      "social_post": "Memory usage in an event-driven service that stays stubbornly high after a traffic burst is often not a leak at all. In asynchronous runtimes like Tokio, handling thousands of bursty tasks creates a distinct allocation profile that standard system allocators handle poorly.\n\nWhen an async pipeline spins up short-lived tasks with frequent heap allocations, the default glibc allocator reserves memory arenas across multiple threads. Memory gets freed at the application level, but glibc retains those pages because fragmentation prevents returning them to the operating system. In Kubernetes containers with strict cgroup limits, the resident set size remains pinned near the threshold.\n\nThe problem comes down to memory fragmentation rather than uncollected objects. When each event clones buffers and spawns parallel network calls, allocations scatter across different arena chunks. Even after drops run, isolated living allocations keep whole pages mapped.\n\nReplacing the default system allocator with jemalloc or mimalloc often resolves this behavior immediately. These allocators divide allocations into size classes and manage dirty page decay much more aggressively.\n\nBefore spending days hunting phantom memory leaks in heap dumps, test your workload against a modern allocator.",
+      "why_read": "Read this to understand why Rust services retain high memory usage after traffic bursts without having a genuine leak. You will learn how allocator fragmentation and concurrent task behavior impact resident memory.",
+      "image": null
+    },
+    {
+      "id": "a1f95a75c7d23727",
+      "url": "https://projects.eclipse.org/projects/ecd.enclave",
+      "source": "hn",
+      "hn_id": "48797288",
+      "title": "Sandboxed runtimes safely isolate and govern autonomous coding agents",
+      "authors": [
+        "Tomte"
+      ],
+      "event_type": "release",
+      "social_post": "Granting autonomous AI agents unrestricted terminal and filesystem access on a host machine creates severe operational and security liabilities. A coding agent running arbitrary bash scripts can easily overwrite critical files, leak credentials, or execute untrusted code prompted by prompt injection attacks.\n\nEclipse Enclave isolates agentic execution inside containerized environments and microVMs equipped with dedicated filesystems and process trees. Outbound network traffic routes through an egress sidecar gateway that enforces strict domain allowlists and logs every outbound request.\n\nTo support parallel agent execution without race conditions, the platform provisions isolated Git worktrees against the same repository. This isolation architecture produces verifiable audit trails and network access logs, providing the operational boundaries required for continuous autonomous coding workflows.\n\nAutonomy without strict containment is an operational hazard that infrastructure engineers must contain at the virtualization layer.",
+      "why_read": "Read this to understand how Eclipse Enclave isolates autonomous developer agents using containers and network filtering. You will learn how dedicated execution sandboxes prevent security risks while supporting regulatory compliance.",
+      "image": null
+    },
+    {
+      "id": "577b999aaba5f6dd",
+      "url": "https://github.com/vgnapuga/meon",
+      "source": "github",
+      "hn_id": "48796191",
+      "title": "Flat parsing engines replace syntax trees with span tables",
+      "authors": [
+        "vgnapuga"
+      ],
+      "event_type": "release",
+      "social_post": "Traditional parsers generate deeply nested Abstract Syntax Trees that wreak havoc on modern CPU cache hierarchies. Every pointer hop across tree nodes incurs cache misses, while dynamic node allocation places heavy pressure on memory allocators.\n\nMeon abandons pointer-heavy syntax trees in favor of a Structure of Arrays layout. The parser flattens the output into contiguous vectors of thirty-two-bit byte offsets for each token category, combined with SIMD and SWAR scanning routines.\n\nThis tabular design transforms tree walks into linear scans over contiguous memory buffers. Retrieving every link or heading in a document becomes an O(1) field lookup rather than a recursive traversal across thousands of heap-allocated objects.\n\nCache-friendly data layouts consistently outperform recursive pointer trees when parsing high-throughput data streams.",
+      "why_read": "Learn how flat parsing engines avoid abstract syntax trees in favor of contiguous span tables to eliminate allocator pressure and tree traversals.",
+      "image": null
+    }
+  ]
+}

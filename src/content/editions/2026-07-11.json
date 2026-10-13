@@ -1,0 +1,117 @@
+{
+  "date": "2026-07-11",
+  "stories": [
+    {
+      "id": "b6751349536eec88",
+      "url": "https://clickhouse.com/blog/pgbouncer-clickhouse-managed-postgres",
+      "source": "hn",
+      "hn_id": "48872874",
+      "title": "Scaling PgBouncer across CPU cores using socket reuse and peering",
+      "authors": [
+        "Kaushik Iska"
+      ],
+      "event_type": "case_study",
+      "social_post": "PgBouncer is fundamentally single-threaded, meaning a single process leaves all but one CPU core idle on multi-core servers. On a 16-core machine, connection pooling saturates throughput on one core while the remaining fifteen cores sit completely unused.\n\nThe standard workaround is binding multiple PgBouncer processes to the same port using the SO_REUSEPORT socket option. This allows the Linux kernel to distribute incoming connections across the worker fleet. However, scaling out this way creates a subtle and dangerous failure mode: query cancellation stops working reliably.\n\nIn Postgres, a query cancellation request arrives over a completely separate connection carrying a cancellation key. When using SO_REUSEPORT, the operating system kernel can route that new cancel connection to an entirely different process than the one holding the client session. That target process has no memory of the running query, causing the cancellation attempt to silently do nothing.\n\nClickHouse solved this failure mode by implementing an inter-process peering layer across the PgBouncer fleet. When a cancellation packet lands on an arbitrary process, it immediately checks the fleet, locates the process that owns the actual session, and forwards the command directly.\n\nThis architecture scales pooling throughput cleanly by four times without breaking client protocol expectations.",
+      "why_read": "Read this to understand how to overcome PgBouncer's single-threaded limitation across multi-core systems using SO_REUSEPORT. You will learn the mechanics of handling query cancellations across independent pooling processes.",
+      "image": "/infographics/01-hn-48872874.jpg"
+    },
+    {
+      "id": "b4a8388b818b1bd9",
+      "url": "https://www.zerofs.net/blog/zerofs-vs-aws-s3-files/",
+      "source": "hn",
+      "hn_id": "48874297",
+      "title": "How ZeroFS and S3 Files trade off storage layouts",
+      "authors": [
+        "Pierre Barre"
+      ],
+      "event_type": "deep_dive",
+      "social_post": "Bridging POSIX filesystems and object storage involves a fundamental architectural dilemma: preserve the native object key mapping, or treat the bucket as an opaque block storage pool. A deep comparison between Amazon S3 Files and ZeroFS details why the chosen storage format dictates your system performance and consistency.\n\nAmazon S3 Files enforces a strict one-to-one mapping where a filesystem path directly mirrors a single S3 object key. This preserves direct access via standard S3 clients, but limits how you can pack, compress, or encrypt small files without introducing significant latency and API call overhead.\n\nIn contrast, ZeroFS decouples metadata from raw payload storage entirely. Filesystem metadata resides in an LSM tree with 32-byte extent pointers, while file payloads are compressed, client-side encrypted, and aggregated into immutable segment objects. This design trades direct bucket readability for dramatic reductions in metadata operations and storage footprint.\n\nWhen designing distributed storage layers, preserving external system compatibility almost always comes at the expense of write amplification and compression efficiency.",
+      "why_read": "Read this to understand the architectural trade-offs between 1-to-1 object mapping in Amazon S3 Files and packed, encrypted segment storage in ZeroFS.",
+      "image": "/infographics/02-hn-48874297.jpg"
+    },
+    {
+      "id": "2e587ea1fe58acd5",
+      "url": "https://mrzk.io/posts/qmlx-maximising-ai-psychosis-minmaxing-mac-studio/",
+      "source": "hn",
+      "hn_id": "48876619",
+      "title": "Overcoming long-context prefill latency on Mac Studio",
+      "authors": [
+        "MRZK"
+      ],
+      "event_type": "deep_dive",
+      "social_post": "Running a 122-billion-parameter model locally sounds viable on unified memory until long-context agentic workflows introduce crippling prefill latency. In a 50,000-token coding session, waiting three to five minutes just for the first token turns an interactive pair programmer into an agonizing batch job.\n\nThe root issue often lies not in the raw model weights, but in serving stack inefficiencies and silent cache leaks. Profiling memory allocation and cache eviction in Apple Silicon serving frameworks reveals how naive attention caching repeatedly recomputes prefill states instead of reusing valid key-value blocks.\n\nFixing memory leaks and eliminating unnecessary context recompilation restores responsiveness, dropping time-to-first-token back into an interactive window. Large models can run reliably on workstation hardware when the runtime treats context management as an explicit cache invalidation problem.\n\nLocal inference does not bottleneck on model parameters alone; it bottlenecks on memory cache management.",
+      "why_read": "Learn how to diagnose and resolve severe prefill latency bottlenecks when running large local models for long-context workflows.",
+      "image": null
+    },
+    {
+      "id": "9d3d62f24575ed8f",
+      "url": "https://github.com/swellweb/reame",
+      "source": "github",
+      "hn_id": "48873417",
+      "title": "Ternary language models run efficiently on budget cloud cpus",
+      "authors": [
+        "swellweb"
+      ],
+      "event_type": "release",
+      "social_post": "Running large language models on cheap central processing units usually results in painful latency or heavy quantization degradation. Reame approaches this constraint from an alternative angle by focusing on ternary models where weights are strictly negative one, zero, or positive one.\n\nBy targeting ternary representations like Bonsai-8B, the engine squeezes an eight billion parameter model into just 2.2 gigabytes of memory. This allows it to run smoothly on free-tier cloud ARM virtual machines without discrete hardware accelerators.\n\nThe performance gains come from specialized kernels designed specifically around ternary mathematics rather than generic floating-point routines. In back-to-back testing against existing runtimes on two ARM cores, prompt processing jumps from 2.77 to 4.3 tokens per second, representing a 55 percent speedup, while decode throughput improves by 22 percent.\n\nOptimizing memory layout for restricted weight spaces often beats throwing larger compute clusters at unquantized tensors.",
+      "why_read": "Read this to understand how ternary weight quantization enables running multi-billion-parameter language models on low-power cloud CPUs. You will discover practical benchmarks demonstrating how custom engine design outperforms vendor-provided runtimes.",
+      "image": null
+    },
+    {
+      "id": "45f9a06af6252172",
+      "url": "https://github.com/sqlsure/sqlsure",
+      "source": "github",
+      "hn_id": "48875342",
+      "title": "Semantic inspection catches silent SQL bugs before query execution",
+      "authors": [
+        "tejusarora"
+      ],
+      "event_type": "release",
+      "social_post": "Large language models writing SQL fail most dangerously when queries run cleanly but return silent mathematical nonsense. A query can compile without syntax issues, pass database validation, and yet produce numbers distorted by an eightfold margin due to accidental join fan-out or invalid aggregation across non-additive metrics.\n\nStandard linters only check syntax, while asking the language model to review its own SQL repeatedly misses these subtle domain violations. Deterministic semantic validation approaches this problem from the opposite direction by evaluating queries against schema constraints in less than one millisecond before dispatch.\n\nRunning these checks against 2,568 gold benchmark queries in Spider and BIRD surfaced dozens of legitimate bugs in the reference datasets themselves, including revenue double-counting caused by bad join keys.\n\nThe most resilient applied artificial intelligence systems do not trust generative models to police themselves. Hard deterministic boundaries at the database boundary remain mandatory.",
+      "why_read": "Learn how pre-execution semantic checks catch silent logical errors and fan-out double-counting that databases, linters, and LLMs miss.",
+      "image": null
+    },
+    {
+      "id": "56ace88a0b7be68c",
+      "url": "https://www.lucebox.com/blog/laguna-xs21",
+      "source": "hn",
+      "hn_id": "48872288",
+      "title": "Ring caches decouple model decode speed from context length",
+      "authors": [
+        "Davide Ciffa"
+      ],
+      "event_type": "deep_dive",
+      "social_post": "Scaling transformer context to 256K tokens typically causes memory exhaustion or collapses token generation throughput. A new optimization benchmark demonstrates Laguna XS 2.1 33B running on a single consumer RTX 3090, sustaining 152 tokens per second even at 256K context length.\n\nWithout these optimizations, the same hardware and context dropped to 22 tokens per second. The leap relies on three complementary techniques: a dedicated KV ring cache for the speculative decoding drafter, sliding-window ring caches for specific layers, and KVFlash paging. Because sliding-window layers only attend to a 2K position ring rather than the entire context history, verify step latency drops from 19.4 to 13.7 milliseconds while freeing 1 GB of VRAM.\n\nCritically, the speculative decoding technique remains verify-exact, ensuring that output quality matches the original model without approximation artifacts. The drafting step latency remains constant at 2.4 milliseconds regardless of sequence length, maintaining a 56 percent drafter acceptance rate on real-world code.\n\nOptimizing memory layout and cache reuse unlocks remarkable throughput on resource-constrained consumer GPUs.",
+      "why_read": "Learn how ring cache optimizations and speculative decoding enable a 33B parameter model to sustain high inference throughput across 256K context windows on a single consumer GPU.",
+      "image": null
+    },
+    {
+      "id": "3c2476eb142989f1",
+      "url": "https://blog.nfsensei.org/the-packet-filter-reborn.html",
+      "source": "hn",
+      "hn_id": "48871758",
+      "title": "Lowering pf firewall semantics to an eBPF and XDP dataplane",
+      "authors": [
+        "882542F3884314B"
+      ],
+      "event_type": "deep_dive",
+      "social_post": "Running stateful packet inspection inside the Linux kernel netfilter stack incurs massive socket buffer overhead long before routing decisions occur.\n\nThe PFL project shifts the OpenBSD packet filter language into Linux eBPF and XDP, moving policy execution directly into the network driver. By compiling pf configuration rules into BPF maps in user space, packet decisions execute before allocating a single socket buffer in kernel space.\n\nFitting stateful inspection into XDP is notoriously hard because the verifier imposes bounded execution limits and a rigid 512-byte stack limit. The architecture works around this by orchestrating a tail-called pipeline of Rust programs that parse headers and lookup states across dedicated maps.\n\nBridging the gap between declarative firewall syntax and sub-microsecond driver-level packet filtering is finally becoming viable.",
+      "why_read": "Read this to understand how the constraints of eBPF and XDP shape the implementation of stateful firewall semantics outside of netfilter.",
+      "image": null
+    },
+    {
+      "id": "590788fc9105482a",
+      "url": "https://malisper.me/the-four-horsemen-behind-thousands-of-postgres-outages/",
+      "source": "hn",
+      "hn_id": "48873837",
+      "title": "Postgres vacuuming and transaction wraparound trigger production outages",
+      "authors": [
+        "tosh"
+      ],
+      "event_type": "deep_dive",
+      "social_post": "Most catastrophic PostgreSQL outages in production do not stem from complex query plans or network partitions. They stem directly from multiversion concurrency control housekeeping.\n\nWhen a row is updated or deleted, PostgreSQL leaves dead tuples behind on disk. The vacuum process must sweep these dead rows, which generates massive input and output contention against operational traffic. If engineers throttle the vacuum to save disk throughput, cleanup lags behind write volume.\n\nThis delay creates a fatal trap: transaction identifier wraparound. Because transaction identifiers are thirty-two bit counters, exhausting two billion transactions forces PostgreSQL into an emergency read-only shutdown to prevent data corruption. Once the database enters that state, clearing it requires a single-threaded full-table scan that can take hours or days to complete.\n\nRunning high-throughput relational databases requires treating vacuum metrics and freeze age with the same urgency as memory saturation.\n\nPreventing database outages requires tuning storage mechanics before operational traffic forces a hard halt.",
+      "why_read": "Read this to understand the mechanistic tradeoffs and failure modes of Postgres vacuuming and transaction ID allocation. It explains how vacuum I/O competition and wraparound issues routinely trigger severe production database outages.",
+      "image": null
+    }
+  ]
+}

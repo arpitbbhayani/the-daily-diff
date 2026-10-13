@@ -1,0 +1,61 @@
+{
+  "date": "2026-07-01",
+  "stories": [
+    {
+      "id": "0893765cbdef3017",
+      "url": "https://www.databricks.com/blog/lakebase-ltap-rethinking-database-storage",
+      "source": "hn",
+      "hn_id": "48745855",
+      "title": "Externalizing database storage solves transactional bottlenecks and unifies analytics",
+      "authors": [
+        "andrenotgiant"
+      ],
+      "event_type": "deep_dive",
+      "social_post": "Decoupling compute from storage in transactional databases usually forces an awkward compromise between write latency and analytical query performance. Databricks tackles this dilemma in Lakebase by disaggregating Postgres storage into independent SafeKeeper and PageServer cloud services while writing operational data directly to Parquet on S3.\n\nTraditional architectures bind the write-ahead log and relational tables to local block storage on a single instance. Running heavy analytics requires brittle change data capture pipelines, asynchronous replication, and redundant copies that lag behind operational writes. By externalizing the log stream to quorum-based SafeKeeper nodes, Lakebase makes the Postgres compute tier stateless without adding noticeable write latency.\n\nThe architectural shift here is what they call LTAP: Lakehouse Transactional and Analytical Processing. Rather than forcing a single execution engine to handle both point writes and massive table scans, the platform unifies them strictly at the storage layer. Analytical engines like Apache Spark read the immutable columnar Parquet files directly alongside transactional updates.\n\nYou eliminate the overhead of ETL pipelines and keep the exact right query engine for each specific workload.",
+      "why_read": "Read this to understand why traditional databases couple storage with compute and how externalizing storage creates a scalable, unified architecture for transactions and analytics.",
+      "image": "/infographics/01-hn-48745855.jpg"
+    },
+    {
+      "id": "c7e4294f5764b7b9",
+      "url": "https://explainanalyze.com/p/designing-partitioning-you-dont-have-to-babysit/",
+      "source": "hn",
+      "hn_id": "48746090",
+      "title": "Partition tables by primary key instead of creation date",
+      "authors": [
+        "rtolkachev"
+      ],
+      "event_type": "deep_dive",
+      "social_post": "Partitioning by date columns like created_at frequently breaks query performance instead of helping it. Because PostgreSQL and MySQL require partition keys to reside within unique constraints, compound keys force every simple primary key lookup to scan every partition unless engineers manually inject arbitrary date boundaries.\n\nA cleaner architectural pattern is to partition directly on the primary key and delegate partition boundaries to an autonomous background coordinator. By tracking observed ID growth, the background worker creates new boundary tables ahead of demand and updates partition catalogs without altering query contracts.\n\nThis approach keeps application code decoupled from storage mechanics. Standard primary key queries hit exactly one partition through automatic pruning, and developers never have to contaminate audit, admin, or dashboard filters with artificial date ranges.\n\nStorage partitioning should remain an operational concern rather than an application-level contract.",
+      "why_read": "Read this to understand why partitioning tables by creation date pollutes application queries. You will learn how partitioning by primary key preserves index lookups and automated pruning without leaky abstractions.",
+      "image": null
+    },
+    {
+      "id": "d4b9ba1c48e5fcee",
+      "url": "https://engineering.zalando.com/posts/2026/06/client-side-load-balancing.html?v=2](https://engineering.zalando.com/posts/2026/06/client-side-load-balancing.html",
+      "source": "hn",
+      "hn_id": "48745118",
+      "title": "Replacing shared edge routers with client-side load balancing",
+      "authors": [
+        "cjbooms"
+      ],
+      "event_type": "case_study",
+      "social_post": "Routing high-volume internal microservice traffic through an ingress load balancer creates hidden latency amplifiers and obscures failure domains. A single batch request fanning out to one hundred downstream calls turns a minor edge router hiccup into severe service degradation.\n\nZalando addressed this architectural bottleneck on their core read API, which serves millions of requests per second with single-digit millisecond latency across twenty-five markets. While their ingress controller excelled at external edge routing, funneling internal service-to-service calls through it introduced an unnecessary intermediate hop and made incident attribution nearly impossible.\n\nBy moving to client-side load balancing, the calling service now computes consistent hash routing locally. Requests bypass the intermediate proxy entirely and travel straight to target pods, maintaining high pod-local cache hit rates while producing clear client-side telemetry.\n\nRemoving the shared proxy hop eliminates blast radius confusion and turns mystery latency spikes into actionable metrics.",
+      "why_read": "Read this to understand why reusing shared edge routers for high-throughput internal microservice traffic creates severe latency attribution problems. You will learn how client-side load balancing decouples routing and provides direct observability into downstream performance.",
+      "image": null
+    },
+    {
+      "id": "c00533e0861478cc",
+      "url": "https://cerebrium.ai/blog/reducing-gpu-cold-starts-with-memory-snapshots-restoring-cuda-workloads-in-second",
+      "source": "hn",
+      "hn_id": "48749313",
+      "title": "Memory snapshots restore initialized CUDA workloads in seconds",
+      "authors": [
+        "jono_irwin"
+      ],
+      "event_type": "deep_dive",
+      "social_post": "Cold start latency for large model inference often forces teams to over-provision expensive GPU capacity. When a container requires multiple minutes to import dependencies, load model weights, and compile CUDA kernels, auto-scaling cannot react quickly enough to absorb unpredictable traffic spikes.\n\nCerebrium tackles this bottleneck by taking memory snapshots of warmed containers running under gVisor. Rather than re-executing initialization routines on every scale event, the system snapshots both host RAM and GPU VRAM alongside CUDA execution states, restoring warm workloads in seconds and cutting cold starts by more than 80 percent.\n\nThis technique transforms GPU infrastructure economics. Platforms can safely scale GPU replicas down to zero during idle periods, knowing that subsequent requests can restore complete memory states without triggering repetitive weight transfers over the PCIe bus or re-compiling custom kernels.\n\nInstant state restoration turns unpredictable inference scaling into a solved engineering problem.",
+      "why_read": "Learn how snapshotting fully initialized CPU and GPU states bypasses redundant runtime setup to drastically reduce AI cold starts.",
+      "image": null
+    }
+  ]
+}
