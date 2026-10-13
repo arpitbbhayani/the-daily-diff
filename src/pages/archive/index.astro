@@ -9,21 +9,39 @@ const editions = await getCollection('editions');
 
 const chronological = [...editions].sort((a, b) => a.data.date.localeCompare(b.data.date));
 
-const days = chronological
-	.map((edition, index) => ({
+const days = chronological.map((edition, index) => {
+	const dateObj = new Date(`${edition.data.date}T00:00:00`);
+	return {
 		day: edition.data.date,
 		count: edition.data.stories.length,
 		issue: index + 1,
-		label: new Date(`${edition.data.date}T00:00:00`).toLocaleDateString('en-US', {
+		year: dateObj.getFullYear(),
+		month: dateObj.getMonth(), // 0-indexed
+		date: dateObj.getDate(),
+		dayOfWeek: dateObj.getDay(), // 0 = Sunday
+		label: dateObj.toLocaleDateString('en-US', {
 			weekday: 'short',
 			year: 'numeric',
 			month: 'short',
 			day: 'numeric',
 		}),
-	}))
-	.reverse();
+	};
+});
 
-const latestDay = days[0]?.day;
+// Group by Year -> Month -> Array of days
+const groupedByYearAndMonth = days.reduce((acc, day) => {
+	if (!acc[day.year]) acc[day.year] = {};
+	if (!acc[day.year][day.month]) acc[day.year][day.month] = [];
+	acc[day.year][day.month].push(day);
+	return acc;
+}, {} as Record<number, Record<number, typeof days>>);
+
+const years = Object.keys(groupedByYearAndMonth)
+	.map(Number)
+	.sort((a, b) => b - a);
+
+const latestDay = days.at(-1)?.day;
+
 const archiveSchema = {
 	"@type": "CollectionPage",
 	"@id": "https://tdd.cat/archive/#collection",
@@ -59,13 +77,16 @@ const itemListSchema = {
 	"@type": "ItemList",
 	"name": "Past Editions of The Daily Diff",
 	"numberOfItems": days.length,
-	"itemListElement": days.slice(0, 30).map((d, index) => ({
+	"itemListElement": days.slice(-30).reverse().map((d, index) => ({
 		"@type": "ListItem",
 		"position": index + 1,
 		"name": `Issue #${d.issue}: ${d.label}`,
 		"url": `https://tdd.cat/${d.day}/`
 	}))
 };
+
+const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+const dayNames = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 ---
 
 <Layout
@@ -86,9 +107,7 @@ const itemListSchema = {
 		</header>
 		<hr class="archive-rule-thin" />
 
-		<p class="archive-note">
-			Editions are published with a 2-day settling window so the highest-signal discussions and insights surface.
-		</p>
+
 
 		{
 			days.length === 0 ? (
@@ -97,17 +116,61 @@ const itemListSchema = {
 					<p class="empty-state-desc">Drop an edition JSON document into <code>src/content/editions/</code> to print the first issue.</p>
 				</div>
 			) : (
-				<div class="archive-list">
-					{days.map(({ day, count, issue, label }) => (
-						<a class="archive-item" href={`/${day}/`}>
-							<span class="archive-item-num">{String(issue).padStart(3, '0')}</span>
-							<span class="archive-item-title">{label}</span>
-							<span class="archive-item-meta">{count} {count === 1 ? 'Story' : 'Stories'}</span>
-						</a>
+				<div class="archive-calendar-list">
+					{years.map((year) => (
+						<div class="archive-year-section">
+							<h2 class="archive-year-heading">{year}</h2>
+							<div class="archive-months-grid">
+								{Object.keys(groupedByYearAndMonth[year])
+									.map(Number)
+									.sort((a, b) => b - a)
+									.map((month) => {
+										const monthDays = groupedByYearAndMonth[year][month];
+										// To render a proper calendar grid, we need the first day of the month
+										const firstDayOfMonth = new Date(year, month, 1).getDay();
+										const daysInMonth = new Date(year, month + 1, 0).getDate();
+										
+										// Create an array for the grid cells
+										const gridCells = Array(firstDayOfMonth + daysInMonth).fill(null);
+										monthDays.forEach(dayInfo => {
+											// dayInfo.date is 1-indexed. We want 0-indexed offset + firstDayOfMonth
+											gridCells[firstDayOfMonth + dayInfo.date - 1] = dayInfo;
+										});
+
+										return (
+											<div class="archive-month-block">
+												<h3 class="archive-month-heading">{monthNames[month]}</h3>
+												<div class="archive-calendar-grid">
+													{dayNames.map(dayName => (
+														<div class="archive-calendar-day-header">{dayName}</div>
+													))}
+													{gridCells.map((cell, index) => {
+														if (index < firstDayOfMonth) {
+															return <div class="archive-calendar-cell empty"></div>;
+														}
+														const dateNum = index - firstDayOfMonth + 1;
+														if (cell) {
+															return (
+																<a href={`/${cell.day}/`} class="archive-calendar-cell active" title={`${cell.count} stories`}>
+																	<span class="cal-date">{dateNum}</span>
+																	<span class="cal-count">{cell.count}</span>
+																</a>
+															);
+														} else {
+															return <div class="archive-calendar-cell inactive"><span class="cal-date">{dateNum}</span></div>;
+														}
+													})}
+												</div>
+											</div>
+										);
+									})
+								}
+							</div>
+						</div>
 					))}
 				</div>
 			)
 		}
-		<Footer />
+		<Footer showDelayNote={false} />
 	</main>
 </Layout>
