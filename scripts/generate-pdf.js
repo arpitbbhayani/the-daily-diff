@@ -24,16 +24,22 @@ for (let i = 0; i < args.length; i++) {
   }
 }
 
-// Locate story days
+// Locate edition days
+const editionsDir = path.join(process.cwd(), 'src/content/editions');
 const storiesDir = path.join(process.cwd(), 'src/content/stories');
-if (!fs.existsSync(storiesDir)) {
-  console.error(`Stories directory not found at ${storiesDir}`);
-  process.exit(1);
-}
 
-const allDays = fs.readdirSync(storiesDir)
-  .filter(file => fs.statSync(path.join(storiesDir, file)).isDirectory())
-  .sort();
+let allDays = [];
+if (fs.existsSync(editionsDir)) {
+  allDays = fs.readdirSync(editionsDir)
+    .filter(file => file.endsWith('.json'))
+    .map(file => file.replace('.json', ''))
+    .sort();
+}
+if (allDays.length === 0 && fs.existsSync(storiesDir)) {
+  allDays = fs.readdirSync(storiesDir)
+    .filter(file => fs.statSync(path.join(storiesDir, file)).isDirectory())
+    .sort();
+}
 
 if (allDays.length === 0) {
   console.error('No story editions found.');

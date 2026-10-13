@@ -33,7 +33,7 @@ Verify that the build is functional before committing any changes:
 
 ## Architecture & Conventions
 
-- **Astro Content Collections**: Daily editions are organized as Markdown content collections under `src/content/stories/YYYY-MM-DD/`.
+- **Astro Content Collections**: Daily editions are organized as JSON content collections under `src/content/editions/YYYY-MM-DD.json`.
 - **Classification & Sections**:
   - Stories belong to distinct tabs/sources: **HN**, **NEWS**, and **GITHUB**, specified via frontmatter `source: 'hn' | 'github' | 'news'`.
   - The `section` frontmatter attribute is preserved for engineering topic classification (e.g. `ai`, `databases`, `systems`, `engineering`).

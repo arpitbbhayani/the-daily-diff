@@ -1,23 +1,16 @@
 ---
-import { getCollection, render } from 'astro:content';
+import { getCollection } from 'astro:content';
+import { marked } from 'marked';
 import EditionPage from '../../components/EditionPage.astro';
 import { isNewsStory } from '../../lib/storyClassification';
 
 export async function getStaticPaths() {
-	const entries = await getCollection('stories');
-	const byDay = new Map<string, typeof entries>();
-	for (const entry of entries) {
-		const day = entry.id.split('/')[0];
-		const list = byDay.get(day) ?? [];
-		list.push(entry);
-		byDay.set(day, list);
-	}
+	const editions = await getCollection('editions');
+	const chronological = [...editions].sort((a, b) => a.data.date.localeCompare(b.data.date));
 
-	const chronological = [...byDay.keys()].sort((a, b) => a.localeCompare(b));
-
-	const allDays = chronological.map((day) => ({
-		day,
-		label: new Date(`${day}T00:00:00`).toLocaleDateString('en-US', {
+	const allDays = chronological.map((edition) => ({
+		day: edition.data.date,
+		label: new Date(`${edition.data.date}T00:00:00`).toLocaleDateString('en-US', {
 			weekday: 'short',
 			year: 'numeric',
 			month: 'short',
@@ -25,49 +18,44 @@ export async function getStaticPaths() {
 		}),
 	}));
 
-	return Promise.all(
-		chronological.map(async (day, index) => {
-			const dayEntries = byDay.get(day)!;
-			const sorted = [...dayEntries].sort(
-				(a, b) => (b.data.interest_score ?? 0) - (a.data.interest_score ?? 0)
-			);
-			const stories = await Promise.all(
-				sorted.map(async (entry) => {
-					const { Content } = await render(entry);
-					return {
-						slug: entry.id.split('/')[1],
-						title: entry.data.title,
-						source: entry.data.source,
-						url: entry.data.url,
-						why_read: entry.data.why_read,
-						authors: entry.data.authors,
-						image: entry.data.image,
-						interest_score: entry.data.interest_score,
-						comments: entry.data.comments,
-						hn_id: entry.data.hn_id,
-						section: entry.data.section,
-						isNews: isNewsStory(entry.data),
-						depth_score: entry.data.depth_score,
-						novelty_score: entry.data.novelty_score,
-						utility_score: entry.data.utility_score,
-						Content,
-					};
-				})
-			);
+	return chronological.map((edition, index) => {
+		const day = edition.data.date;
+		const stories = edition.data.stories.map((story) => {
+			const comments = story.comments || (story.hn_id ? `https://news.ycombinator.com/item?id=${story.hn_id}` : undefined);
+			const bodyHtml = story.social_post ? (marked.parse(story.social_post) as string) : '';
 			return {
-				params: { day },
-				props: {
-					day,
-					stories,
-					issue: index + 1,
-					totalIssues: chronological.length,
-					prevDay: chronological[index - 1] ?? null,
-					nextDay: chronological[index + 1] ?? null,
-					allDays: [...allDays].reverse(),
-				},
+				slug: story.id,
+				title: story.title,
+				source: story.source,
+				url: story.url,
+				why_read: story.why_read,
+				authors: story.authors || [],
+				image: story.image || undefined,
+				interest_score: story.interest_score,
+				comments,
+				hn_id: story.hn_id,
+				section: story.section,
+				isNews: isNewsStory(story),
+				depth_score: story.depth_score,
+				novelty_score: story.novelty_score,
+				utility_score: story.utility_score,
+				bodyHtml,
 			};
-		})
-	);
+		});
+
+		return {
+			params: { day },
+			props: {
+				day,
+				stories,
+				issue: index + 1,
+				totalIssues: chronological.length,
+				prevDay: chronological[index - 1]?.data.date ?? null,
+				nextDay: chronological[index + 1]?.data.date ?? null,
+				allDays: [...allDays].reverse(),
+			},
+		};
+	});
 }
 
 const props = Astro.props;

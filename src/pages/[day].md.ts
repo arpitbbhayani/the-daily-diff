@@ -3,29 +3,16 @@ import type { APIRoute } from 'astro';
 import { SITE_METADATA } from '../config';
 
 export async function getStaticPaths() {
-	const entries = await getCollection('stories');
-	const byDay = new Map<string, typeof entries>();
-	for (const entry of entries) {
-		const day = entry.id.split('/')[0];
-		const list = byDay.get(day) ?? [];
-		list.push(entry);
-		byDay.set(day, list);
-	}
-
-	return [...byDay.keys()].map((day) => {
-		const dayEntries = byDay.get(day)!;
-		const sorted = [...dayEntries].sort(
-			(a, b) => (b.data.interest_score ?? 0) - (a.data.interest_score ?? 0)
-		);
-		return {
-			params: { day },
-			props: { day, entries: sorted },
-		};
-	});
+	const editions = await getCollection('editions');
+	return editions.map((edition) => ({
+		params: { day: edition.data.date },
+		props: { edition: edition.data },
+	}));
 }
 
 export const GET: APIRoute = async ({ props }) => {
-	const { day, entries } = props as { day: string; entries: any[] };
+	const { edition } = props as { edition: any };
+	const day = edition.date;
 
 	const label = new Date(`${day}T00:00:00`).toLocaleDateString('en-US', {
 		weekday: 'long',
@@ -48,22 +35,22 @@ export const GET: APIRoute = async ({ props }) => {
 	output += `> An Engineering Newspaper curated by [${SITE_METADATA.curator}](${SITE_METADATA.curatorUrl})\n\n`;
 	output += `--------------------------------------------------------------------------------\n\n`;
 
-	for (const entry of entries) {
-		const data = entry.data;
-		output += `## [${data.title}](${data.url})\n\n`;
-		if (data.authors && data.authors.length > 0) {
-			output += `**By:** ${data.authors.join(', ')}  \n`;
+	for (const story of edition.stories) {
+		output += `## [${story.title}](${story.url})\n\n`;
+		if (story.authors && story.authors.length > 0) {
+			output += `**By:** ${story.authors.join(', ')}  \n`;
 		}
-		if (data.why_read) {
-			output += `**Why read:** ${data.why_read}  \n`;
+		if (story.why_read) {
+			output += `**Why read:** ${story.why_read}  \n`;
 		}
-		if (data.comments) {
-			output += `**Discussion:** [HN Thread](${data.comments})  \n`;
+		const comments = story.comments || (story.hn_id ? `https://news.ycombinator.com/item?id=${story.hn_id}` : undefined);
+		if (comments) {
+			output += `**Discussion:** [HN Thread](${comments})  \n`;
 		}
 		output += `\n`;
 
-		if (entry.body) {
-			output += `${entry.body.trim()}\n\n`;
+		if (story.social_post) {
+			output += `${story.social_post.trim()}\n\n`;
 		}
 		output += `---\n\n`;
 	}

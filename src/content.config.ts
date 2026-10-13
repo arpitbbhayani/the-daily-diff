@@ -1,27 +1,32 @@
 import { defineCollection, z } from 'astro:content';
 import { glob } from 'astro/loaders';
 
-const stories = defineCollection({
-  loader: glob({ pattern: '*/*.md', base: './src/content/stories' }),
+const editionStorySchema = z.object({
+  id: z.string(),
+  url: z.string(),
+  source: z.string(),
+  hn_id: z.string().optional(),
+  title: z.string(),
+  authors: z.array(z.string()).default([]),
+  event_type: z.string().optional(),
+  social_post: z.string().default(''),
+  why_read: z.string().optional(),
+  image: z.string().nullable().optional(),
+  section: z.string().optional(),
+  interest_score: z.number().optional(),
+  comments: z.string().url().optional(),
+  depth_score: z.number().optional(),
+  novelty_score: z.number().optional(),
+  utility_score: z.number().optional(),
+}).passthrough();
+
+const editions = defineCollection({
+  loader: glob({ pattern: '*.json', base: './src/content/editions' }),
   schema: z.object({
-    title: z.string(),
-    source: z.string(),
-    url: z.string().url(),
     date: z.string(),
-    tags: z.array(z.string()).default([]),
-    arxiv_id: z.string().optional(),
-    hn_id: z.string().optional(),
-    categories: z.string().optional(),
-    why_read: z.string().optional(),
-    authors: z.array(z.string()).default([]),
-    interest_score: z.number().optional(),
-    image: z.string().optional(),
-    comments: z.string().url().optional(),
-    section: z.string().optional(),
-    depth_score: z.number().optional(),
-    novelty_score: z.number().optional(),
-    utility_score: z.number().optional(),
-  }),
+    stories: z.array(editionStorySchema),
+  }).passthrough(),
 });
 
-export const collections = { stories };
+export const collections = { editions, edition: editions };
+

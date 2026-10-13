@@ -4,28 +4,15 @@ import type { APIContext } from 'astro';
 import { SITE_METADATA } from '../config';
 
 export async function GET(context: APIContext) {
-  const entries = await getCollection('stories');
-  
-  // Group entries by day
-  const byDay = new Map<string, typeof entries>();
-  for (const entry of entries) {
-    const day = entry.id.split('/')[0];
-    const list = byDay.get(day) ?? [];
-    list.push(entry);
-    byDay.set(day, list);
-  }
+  const editions = await getCollection('editions');
 
   // Sort days in descending order (newest first)
-  const chronological = [...byDay.keys()].sort((a, b) => b.localeCompare(a));
+  const chronological = [...editions].sort((a, b) => b.data.date.localeCompare(a.data.date));
 
-  const items = chronological.map((day) => {
-    const dayEntries = byDay.get(day)!;
-    
-    // Sort stories by interest score to find top stories
-    const sorted = [...dayEntries].sort(
-      (a, b) => (b.data.interest_score ?? 0) - (a.data.interest_score ?? 0)
-    );
-    
+  const items = chronological.map((edition) => {
+    const day = edition.data.date;
+    const stories = edition.data.stories;
+
     const label = new Date(`${day}T00:00:00`).toLocaleDateString('en-US', {
       weekday: 'long',
       year: 'numeric',
@@ -34,12 +21,12 @@ export async function GET(context: APIContext) {
     });
 
     // Get up to top 5 stories
-    const topStories = sorted.slice(0, 5);
+    const topStories = stories.slice(0, 5);
     const storyBullets = topStories
-      .map((entry) => `<li>${entry.data.title}</li>`)
+      .map((story) => `<li>${story.title}</li>`)
       .join('');
 
-    const totalCount = dayEntries.length;
+    const totalCount = stories.length;
     const countText = `${totalCount} high-signal ${
       totalCount === 1 ? 'engineering story and architectural breakdown' : 'engineering stories and architectural breakdowns'
     }`;
