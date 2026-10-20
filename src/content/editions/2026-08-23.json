@@ -41,7 +41,7 @@
       "event_type": "deep_dive",
       "social_post": "LLVM 23 achieved a 6.75 percent compile-time reduction across release builds through fundamental improvements to core data structures rather than broad compiler architecture rewrites.\n\nThe biggest gains came from refactoring internal hash tables and sets. Replacing quadratic probing with linear probing and eliminating tombstone keys inside DenseMap reduced build times by more than one percent. Moving table occupancy tracking to a compact bit array eliminated in-band sentinel keys, cutting cache misses and branch mispredictions across hot lookup loops.\n\nVector handling received a similar overhaul. Moving the cold grow path of push_back out of line for trivially copyable types enabled tail call optimization. This simple change narrowed register live ranges, trimmed fast-path instruction counts, and gave the compiler more opportunities for shrink wrapping and function inlining.\n\nHardware efficiency at scale almost always comes down to clean cache lines and compact data layouts.",
       "why_read": "Read this to explore the low-level data structure refinements that significantly reduced compile times in LLVM 23. You will gain concrete insight into how cache locality, compact bit arrays, and inlining heuristics drive measurable performance gains.",
-      "image": null
+      "image": "/infographics/03-hn-49406138.jpg"
     },
     {
       "id": "db4e66cc511973cf",
@@ -83,6 +83,104 @@
       "event_type": "deep_dive",
       "social_post": "Early-return optimizations inside hot parser loops frequently backfire on modern CPUs. When validating ASCII strings or URL characters, checking byte-by-byte with early exits introduces branches that cause pipeline flushes on mispredictions, especially when input is overwhelmingly valid.\n\nShort-circuit evaluations with logical OR and AND make this worse because each sub-expression acts as an independent branch. By replacing short-circuit exits with full-buffer scans and branchless lookup tables, you remove unpredictable branches entirely.\n\nEliminating early returns also enables compilers to autovectorize the loop using SIMD instructions, processing sixteen bytes at a time instead of inspecting single characters. What looks less optimal in algorithmic pseudocode ends up significantly faster on modern hardware.\n\nWriting fast backend parsers requires designing for CPU branch predictors rather than optimizing for theoretical cycle counts.",
       "why_read": "Learn how replacing early-return validation loops with branchless scanning avoids expensive CPU branch mispredictions and enables automatic vectorization.",
+      "image": null
+    },
+    {
+      "id": "c6927bdb3ec146a9",
+      "url": "https://telem.ai/blog/latency-research",
+      "source": "hn",
+      "hn_id": "49408642",
+      "title": "AI agents pay highly variable web search latency",
+      "authors": [
+        "TelemAI Research"
+      ],
+      "event_type": "research",
+      "social_post": "Benchmarking web search APIs for autonomous agents exposes a brutal tail latency reality that synthetic tests often hide. A query answered from provider cache might complete in 105 milliseconds, whereas the exact same call issued without a warm cache can take nearly four seconds.\n\nWhen an agent decomposes a research goal into dozens of parallel sub-queries, overall execution speed is bound to the slowest response. Provider tail latencies compound quickly. Serpapi displays a p95 latency of 13.6 seconds, which is over three times its median response time.\n\nPayload choices also introduce hidden processing bottlenecks. Requesting model-generated summaries from Exa incurs a latency of 6.8 seconds and costs 1.7 cents per call. In contrast, retrieving raw extractive highlights takes only 1.3 seconds at less than half the financial cost. Downstream reasoning models rarely need pre-digested text.\n\nFan-out agent architectures do not just multiply API bills; they multiply tail latency vulnerabilities.",
+      "why_read": "Learn why agent web search calls suffer severe p95 tail latencies and how provider caching dynamics impact fan-out workflows.",
+      "image": null
+    },
+    {
+      "id": "057c16fc5505a999",
+      "url": "https://benzi.fly.dev/about",
+      "source": "hn",
+      "hn_id": "49407493",
+      "title": "Benzi builds a resolved code map for precise AI code navigation",
+      "authors": [
+        "showhz"
+      ],
+      "event_type": "release",
+      "social_post": "Feeding an entire repository into an LLM context window is an inefficient way to navigate code. Benzi shifts the heavy lifting away from token consumption by compiling codebases into an explicit semantic graph before the model ever inspects a file.\n\nThe framework maps call graphs, data flow, and control structures ahead of time, exposing thirty purpose-built navigation tools to the agent. When static analysis cannot resolve dynamic dispatch or registry lookups, an integrated runtime tracer observes actual execution values to confirm relationships. On SWE-bench Verified, this approach reaches 78.2 percent accuracy while reading up to six times less source text.\n\nBetter context engineering starts with deterministic compiler facts rather than raw text search.\n\nCode structure belongs in an indexed graph, not an overloaded context window.",
+      "why_read": "This explains Benzi's unique architecture for AI coding agents, demonstrating how it builds a precise, resolved code map and uses runtime tracing for accurate code understanding. Readers will learn how this approach avoids guesswork and maintains persistent knowledge across sessions.",
+      "image": "/infographics/01-hn-49226627.jpg"
+    },
+    {
+      "id": "dd391a41fdf4d3ff",
+      "url": "https://arxiv.org/abs/2608.19760",
+      "source": "hn",
+      "hn_id": "49405591",
+      "title": "Step credit signals fail to reflect counterfactual contribution",
+      "authors": [
+        "Haiyue Zhang"
+      ],
+      "event_type": "research",
+      "social_post": "Most process supervision metrics for AI agents measure step fluency rather than actual causal impact. When auditing step-level credit signals against real executed counterfactual rollouts in tool environments, popular evaluation signals fail to outperform shuffled baseline controls.\n\nMany agent harnesses rely on LLM judges, outcome-conditioned log probabilities, or raw model confidence to score intermediate steps. However, counterfactual replays reveal that these scores track step plausibility instead of true causal contributions to task success. In fact, outcome conditioning showed virtually zero partial correlation with actual trajectory changes.\n\nA decision point only matters if alternate choices change the final execution result. In benchmark environments, less than a third of decision points actually produce a nonzero replay contrast. The rest of the trajectory consists of neutral operations where intermediate evaluation scores provide illusory signal.\n\nBuilding reliable multi-agent systems and verifiers requires evaluating decisions by counterfactual execution rather than cosmetic correctness.\n\nProcess rewards are meaningless when they simply reward confident prose instead of productive state changes.",
+      "why_read": "Read this paper to understand why popular step-level credit signals fail to measure actual causal contribution compared to executed replays. It offers a rigorous mechanistic look at the gap between perceived step correctness and genuine outcome impact in agentic workflows.",
+      "image": null
+    },
+    {
+      "id": "1ca8defb77a1e79e",
+      "url": "https://github.com/lbrndnr/beeper",
+      "source": "github",
+      "hn_id": "49409378",
+      "title": "Beeper accelerates user-space applications via eBPF application-layer parsing",
+      "authors": [
+        "lbrndnr"
+      ],
+      "event_type": "release",
+      "social_post": "Processing application layer traffic inside the Linux kernel has traditionally failed due to strict eBPF verification constraints. Beeper solves this barrier by pre-compiling an Aho-Corasick deterministic finite automaton in user space, mapping Layer 7 protocol parsing into an eBPF-compatible state machine.\n\nBy embedding HTTP/1.1 and HTTP/2 stream inspection directly in the kernel, network packets avoid unnecessary context switches and socket buffer copies into user space. This enables systems to inspect path headers, evaluate content lengths, and route or respond to traffic immediately at the network interface level.\n\nProduction benchmarks demonstrate real architectural upside for high-throughput edge nodes. Serving static assets entirely through the kernel fast path yields up to a 4.5 times throughput increase compared to conventional user space reverse proxies.\n\nShifting Layer 7 protocol intelligence into the kernel fundamentally alters the performance economics of modern ingress gateways.",
+      "why_read": "Discover how to parse HTTP/1.1 and HTTP/2 payloads in the Linux kernel with eBPF to cut user-space overhead.",
+      "image": null
+    },
+    {
+      "id": "c4223c6d150cf678",
+      "url": "https://github.com/xhall-beep/ApexYX-Sovereign/blob/main/docs/termux-tutorial.md",
+      "source": "github",
+      "hn_id": "49408883",
+      "title": "Engineering decisions enable agent mesh on Termux without throttling",
+      "authors": [
+        "xhall-beep"
+      ],
+      "event_type": "case_study",
+      "social_post": "Running autonomous agent swarms on commodity mobile hardware exposes operating system boundaries that cloud containers completely hide. A passively cooled mobile system on a chip throttles clock speeds within minutes of continuous compute, while the Android 12 phantom process killer caps background executions at 32 child processes before silently dispatching termination signals.\n\nSolving this required rearchitecting a ten-tier agent mesh around SQLite and event-driven wakeups instead of polling loops. Every tier, spanning the message bus, scheduler, executor, and state store, operates under strict cooperative scheduling to prevent thermal accumulation.\n\nBy replacing continuous polling loops with zero-allocation interrupt handlers and batching SQLite transactions, the system eliminates thermal runaway on a stock Pixel device. The entire stack passes 421 hermetic self-tests without requiring root access or external cloud orchestration.\n\nEfficiency at the edge is never about raw compute power, it is about respecting hardware constraints.",
+      "why_read": "Discover how to navigate mobile kernel throttling and process killer budgets to execute complex agent workloads on edge hardware.",
+      "image": null
+    },
+    {
+      "id": "854f2587499ff58c",
+      "url": "https://www.gojiberries.io/cache-control-for-llms/",
+      "source": "hn",
+      "hn_id": "49406466",
+      "title": "LLM caching needs a richer control vocabulary like HTTP Cache-Control",
+      "authors": [
+        "neehao"
+      ],
+      "event_type": "opinion",
+      "social_post": "Prompt caching pricing has created an architectural mismatch between provider infrastructure and client controls. Anthropic charges two dollars per million fresh input tokens but cuts read rates by ninety percent for cached prefixes, yet callers only get coarse boundaries and rigid time-to-live expirations.\n\nLower-level execution engines like vLLM, SGLang, and LMCache already implement sophisticated radix tree lookups and multi-tier KV cache eviction across GPU memory and NVMe storage. However, they operate blind because client requests provide no contextual value hints. A static system prompt receives the exact same eviction priority as an ephemeral user query that will never repeat.\n\nThe web resolved this identical problem decades ago by defining RFC 2068. The HTTP specification separated caching policy from identity through Cache-Control directives, ETags, and Vary headers. LLM interfaces require an equivalent standard protocol so clients can declare cache priority, sharing boundaries, and invalidation rules directly.\n\nWithout expressive cache control semantics, engineers will continue wasting GPU memory on disposable context.",
+      "why_read": "Understand why current LLM prompt caching APIs are inadequate and how RFC-style cache semantics can optimize KV cache reuse.",
+      "image": null
+    },
+    {
+      "id": "dbf9b2de6be6514d",
+      "url": "https://www.pagerduty.com/eng/evidence-over-anecdotes-running-a-b-tests-on-ai-agent-tooling/",
+      "source": "hn",
+      "hn_id": "49407872",
+      "title": "Splitting agent skills causes silent failures without improving quality",
+      "authors": [
+        "Sarah Martinelli Benedetti"
+      ],
+      "event_type": "case_study",
+      "social_post": "Evaluating artificial intelligence agent tooling on isolated manual runs is a recipe for shipping silent failures to production. Because large language models are inherently stochastic, a prompt tweak or plugin change that succeeds twice can easily fail under statistical scrutiny.\n\nWhen engineering teams at PagerDuty ran formal A/B tests on modular agent skills, they discovered something counterintuitive. Splitting internal standards into specialized, domain-specific plugins did not improve code generation quality at all. Whenever the agent selected the proper skill, modular plugins performed exactly the same as a single unified context window.\n\nWorse, modularity introduced an insidious edge case. In several trials, the agent failed to select any plugin at all, quietly executing complex tasks with zero operational guidelines. The core bottleneck was not context window size, but rather tool selection reliability.\n\nIf you do not test agent workflows across dozens of repeated trials, your team is tuning architecture based on noise rather than signal.",
+      "why_read": "Read this to understand why anecdotal evaluations fail when testing non-deterministic AI agents. You will learn how empirical A/B testing revealed unexpected selection failures when modularizing agent skills.",
       "image": null
     }
   ]
