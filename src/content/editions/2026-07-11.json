@@ -41,7 +41,7 @@
       "event_type": "deep_dive",
       "social_post": "Running a 122-billion-parameter model locally sounds viable on unified memory until long-context agentic workflows introduce crippling prefill latency. In a 50,000-token coding session, waiting three to five minutes just for the first token turns an interactive pair programmer into an agonizing batch job.\n\nThe root issue often lies not in the raw model weights, but in serving stack inefficiencies and silent cache leaks. Profiling memory allocation and cache eviction in Apple Silicon serving frameworks reveals how naive attention caching repeatedly recomputes prefill states instead of reusing valid key-value blocks.\n\nFixing memory leaks and eliminating unnecessary context recompilation restores responsiveness, dropping time-to-first-token back into an interactive window. Large models can run reliably on workstation hardware when the runtime treats context management as an explicit cache invalidation problem.\n\nLocal inference does not bottleneck on model parameters alone; it bottlenecks on memory cache management.",
       "why_read": "Learn how to diagnose and resolve severe prefill latency bottlenecks when running large local models for long-context workflows.",
-      "image": null
+      "image": "/infographics/03-hn-48876619.jpg"
     },
     {
       "id": "9d3d62f24575ed8f",
@@ -111,6 +111,91 @@
       "event_type": "deep_dive",
       "social_post": "Most catastrophic PostgreSQL outages in production do not stem from complex query plans or network partitions. They stem directly from multiversion concurrency control housekeeping.\n\nWhen a row is updated or deleted, PostgreSQL leaves dead tuples behind on disk. The vacuum process must sweep these dead rows, which generates massive input and output contention against operational traffic. If engineers throttle the vacuum to save disk throughput, cleanup lags behind write volume.\n\nThis delay creates a fatal trap: transaction identifier wraparound. Because transaction identifiers are thirty-two bit counters, exhausting two billion transactions forces PostgreSQL into an emergency read-only shutdown to prevent data corruption. Once the database enters that state, clearing it requires a single-threaded full-table scan that can take hours or days to complete.\n\nRunning high-throughput relational databases requires treating vacuum metrics and freeze age with the same urgency as memory saturation.\n\nPreventing database outages requires tuning storage mechanics before operational traffic forces a hard halt.",
       "why_read": "Read this to understand the mechanistic tradeoffs and failure modes of Postgres vacuuming and transaction ID allocation. It explains how vacuum I/O competition and wraparound issues routinely trigger severe production database outages.",
+      "image": "/infographics/05-hn-48851069.jpg"
+    },
+    {
+      "id": "a97b57d1fc81dc50",
+      "url": "https://brandur.org/postgres-atomicity",
+      "source": "hn",
+      "hn_id": "48876066",
+      "title": "How Postgres makes database transactions truly atomic",
+      "authors": [
+        "Brandur"
+      ],
+      "event_type": "deep_dive",
+      "social_post": "Most developers take transaction atomicity in relational databases for granted. When a transaction succeeds, its mutations become visible; when it aborts, they disappear without leaving corrupted rows behind. But under the hood, PostgreSQL does not actually perform in-place rollbacks or clean up aborted rows immediately.\n\nPostgres implements atomicity through multi-version concurrency control (MVCC) paired with an append-only transaction status mechanism. Every physical tuple header contains metadata fields like xmin and xmax to track creation and deletion transaction identifiers. When you execute an update, the database does not overwrite existing disk blocks. It writes a brand new tuple with the current transaction identifier as its xmin, while recording that same identifier as xmax on the old tuple.\n\nThe real secret to instantaneous commits is the commit log (clog). Committing a transaction does not require rewriting dirty table pages across your storage layer. Postgres simply flushes the Write-Ahead Log (WAL) to disk and flips a two-bit status flag in the clog from in-progress to committed. Every subsequent query determines tuple visibility by comparing its snapshot against the clog status of those xmin and xmax markers.\n\nUnderstanding these underlying primitives helps backend engineers write cleaner queries and design schemas that avoid bloat and transaction wraparound surprises.",
+      "why_read": "Read this to understand the low-level mechanics behind atomic transactions in Postgres, including snapshots, write-ahead logging, and commit status tracking.",
+      "image": null
+    },
+    {
+      "id": "2e089d0de0000744",
+      "url": "https://github.com/yandex/odyssey",
+      "source": "github",
+      "hn_id": "48873687",
+      "title": "Scaling PostgreSQL performance with multithreaded connection pooling architecture",
+      "authors": [
+        "tosh"
+      ],
+      "event_type": "release",
+      "social_post": "Standard single-process connection poolers like PgBouncer often hit CPU bottlenecks on multi-core database servers under heavy TLS workloads. Odyssey addresses this constraint with an advanced multi-threaded architecture that scales worker threads across available processor cores while sharing global server connection pools.\n\nEach worker thread handles authentication, SSL/TLS handshake offloading, and client request proxying. The engine tracks PostgreSQL transaction state machines at wire level. If a client disconnects unexpectedly mid-stream, Odyssey can automatically issue rollbacks and reclaim backend connections without corrupting pool state or leaking database processes.\n\nWhen scaling PostgreSQL past tens of thousands of concurrent clients, multithreaded connection proxying provides massive throughput gains with minimal overhead.",
+      "why_read": "Understand how Odyssey uses a multi-threaded architecture to scale PostgreSQL connection pooling and improve transaction management under high concurrency.",
+      "image": null
+    },
+    {
+      "id": "140e4b300e63c2f1",
+      "url": "https://firstsynth.dev/monist",
+      "source": "hn",
+      "hn_id": "48873359",
+      "title": "Compiling structural typestates directly into lock-free interaction nets",
+      "authors": [
+        "thingltd"
+      ],
+      "event_type": "deep_dive",
+      "social_post": "Traditional parsers and compilers bind logic to named variables, traversing abstract syntax trees and navigating runtime lookups that bottleneck memory bandwidth. The Monist Engine explores an alternative design: compiling structural typestates directly into lock-free WebGPU interaction nets.\n\nRather than executing standard pushdown automata, the CPU-bound geometry solver uses Kosaraju and Tarjan strongly connected component algorithms to collapse semantic equality cycles in system memory. Logical expressions are treated as spatial constraint problems analyzed via Bellman-Ford and Minimum Cycle Mean bounds to prevent negative-weight cycles.\n\nAt the compiler tier, the lexical environment is eliminated entirely. Variables are replaced with De Bruijn indices and packed into 64-bit memory words residing in contiguous GPU arena allocations. This approach trades conventional call stacks for massively parallel, point-free graph reduction directly on the graphics card.\n\nThis architecture shows how rethinking fundamental compiler theory for modern hardware primitives can bypass decades of inherited runtime inefficiencies.",
+      "why_read": "Read this to understand how logic can be compiled into GPU-accelerated interaction nets without abstract syntax trees or variable environments. You will learn how graph algorithms and topological matrices optimize logical constraint checking.",
+      "image": null
+    },
+    {
+      "id": "489004af7bfd4907",
+      "url": "https://www.bleepingcomputer.com/news/security/ghostcommit-hides-prompt-injection-in-images-to-fool-ai-agents-steal-secrets/",
+      "source": "hn",
+      "hn_id": "48872201",
+      "title": "Hiding prompt injection in images tricks coding agents into stealing secrets",
+      "authors": [
+        "Ax Sharma"
+      ],
+      "event_type": "research",
+      "social_post": "Automated pull request reviewers are blind to multimodal prompt injection, creating an invisible exfiltration path in agent-driven development workflows.\n\nResearchers demonstrated this vulnerability with Ghostcommit, an attack vector that hides malicious instructions inside an image file rather than raw text. While code review bots skip binary image files by default, autonomous coding agents read configuration guidelines such as AGENTS.md and subsequently process the embedded documentation images.\n\nThe image instructs the agent to read local environment secrets byte by byte, encode them into innocuous integer arrays, and commit them directly into source files. In an audit of thousands of active repositories, over seventy percent of merged pull requests received zero human or automated review, leaving this vector wide open.\n\nHardening agent permissions requires treating multi-modal inputs with the same zero-trust isolation applied to unvalidated network payloads.",
+      "why_read": "Read this to understand how attackers can exploit multimodal AI agents using malicious images to bypass code reviews and exfiltrate secrets. You will learn about the mechanics of the Ghostcommit attack and the security gaps in automated pull request workflows.",
+      "image": null
+    },
+    {
+      "id": "ac1c51d512530bcc",
+      "url": "https://www.lesswrong.com/posts/d8xDGzCEYE639qqEv/a-mechanistic-explanation-of-prompt-injection-and-why-you",
+      "source": "hn",
+      "hn_id": "48874947",
+      "title": "Prompt injection attacks exploit how language models interpret chat roles",
+      "authors": [
+        "charles_ye",
+        "Jasmine C."
+      ],
+      "event_type": "research",
+      "social_post": "Prompt injection is fundamentally an architectural flaw in how language models process role delimiters. Because transformer models treat conversations as a single flat string of tokens, chat template boundaries exist only as semantic hints rather than strict security boundaries.\n\nRecent mechanistic interpretability research demonstrates that language models do not naturally separate their own prior thoughts, user directives, and tool outputs into isolated security contexts. Instead, internal attention heads dynamically track role state representations across the sequence. When an adversary injects text that mimics system role markers or manipulates turn-taking tokens, the attention heads redirect instruction priority to the attacker.\n\nThis explains why simple prompt engineering or outer defensive prompts consistently fail under pressure. Hardening agentic architectures against injection requires rethinking how models represent roles internally rather than merely adding more wrapper instructions.\n\nSecurity in LLM applications cannot rely on formatting rules that the underlying model views as optional context.",
+      "why_read": "Read this to understand the underlying mechanics of prompt injections and how model perception of chat template tags enables attacks.",
+      "image": null
+    },
+    {
+      "id": "01bbba5370d57ab1",
+      "url": "https://github.com/lesovsky/noisia",
+      "source": "github",
+      "hn_id": "48868782",
+      "title": "Noisia generates harmful workloads for PostgreSQL stress testing",
+      "authors": [
+        "lesovsky"
+      ],
+      "event_type": "release",
+      "social_post": "Production PostgreSQL outages rarely stem from clean, predictable failures. Instead, they occur when slow queries lock critical catalog tables, abandoned transactions pin the xmin horizon, or connection storms exhaust max_connections before connection pools can shed load.\n\nNoisia is a dedicated chaos workload generator that reproduces these pathological database states on demand. Rather than running generic synthetics, it triggers specific production failure modes such as checkpoint storms, slot bloat, WAL flooding, and cascading ACCESS EXCLUSIVE lock queues.\n\nTesting replication failover and monitoring alerts usually requires simulating edge cases that are difficult to coordinate by hand. Running targeted workloads like persistent idle-in-transaction states lets you verify whether auto-vacuum stalling alerts fire and whether your pgbouncer configurations cleanly isolate backend contention.\n\nIf you rely on PostgreSQL for critical workloads, you should break your staging clusters before production breaks itself.",
+      "why_read": "Read this to understand how Noisia simulates realistic failure conditions like deadlocks, idle transactions, and connection exhaustion. It helps engineers rigorously test PostgreSQL resilience and monitoring systems against adverse production workloads.",
       "image": null
     }
   ]
