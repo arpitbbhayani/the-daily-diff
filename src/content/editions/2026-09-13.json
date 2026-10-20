@@ -27,7 +27,21 @@
       "event_type": "tutorial",
       "social_post": "Writing device drivers forces you to confront hardware quirks that modern high-level runtimes intentionally hide from view. In this deep dive into PCI and VirtIO, the implementation details illuminate how virtual machines pass I/O buffers down to the host kernel without burning CPU cycles on continuous polling.\n\nVirtIO achieves high throughput by pairing circular descriptor rings with shared memory handoffs. When your driver submits a request, it places descriptors into an available ring, triggers an MSI-X interrupt or notification register, and reclaims memory only after the device updates the used ring. In languages like Rust, handling these raw structures reveals subtle traps, such as the inherent unsafety of using standard typed enums across unvalidated memory buffers.\n\nUnderstanding these low-level mechanisms clarifies how modern storage engines and network virtualization stacks squeeze maximum throughput out of virtual hardware. Building a working VirtIO driver from scratch remains one of the best exercises for demystifying hypervisor I/O architecture.",
       "why_read": "This guide explains how to interface directly with PCI and VirtIO hardware at the register and memory levels. Readers will gain a clear mental model of device enumeration, virtqueue lifecycle, and driver implementation.",
-      "image": null
+      "image": "/infographics/02-hn-49686503.jpg"
+    },
+    {
+      "id": "20bd8db74bfd31ea",
+      "url": "https://theconsensus.dev/p/2026/09/06/data-races-and-the-limits-of-threadsanitizer-in-c-and-go.html",
+      "source": "hn",
+      "hn_id": "49679949",
+      "title": "How ThreadSanitizer detects data races and its limitations",
+      "authors": [
+        "Phil Eaton"
+      ],
+      "event_type": "deep_dive",
+      "social_post": "Data race detectors like ThreadSanitizer do not catch synchronization bugs by magic, they rely on shadow memory tracking and vector clocks. When concurrent threads access shared state without mutual exclusion, detecting violations at runtime requires tracking the logical clock history of every memory location alongside the active thread state.\n\nThreadSanitizer implements principles derived from the FastTrack algorithm to avoid the massive memory overhead of recording full vector clocks for every read and write. FastTrack recognizes that read-shared data is common while concurrent writes are errors, allowing the detector to compress the metadata of most memory accesses down to a single epoch representation instead of a complete vector clock.\n\nHowever, ThreadSanitizer has fundamental physical limits. It cannot detect a race on a code path that was never executed during a particular run, and shadow memory state is bounded to prevent unbounded memory growth, causing older access records to be evicted. Understanding these algorithmic constraints helps systems engineers design fuzzing and integration test suites that reliably trigger concurrent interleavings rather than relying on sanitizers as catch-all verification.\n\nSanitizers verify execution paths, not program completeness.",
+      "why_read": "Read this to understand what a data race is and how race detectors like ThreadSanitizer work. You will gain insight into the mechanisms of race detection, including algorithms like FastTrack, and learn about the inherent limitations of these tools.",
+      "image": "/infographics/03-hn-49679949.jpg"
     },
     {
       "id": "abef0b94fd37171a",
@@ -41,7 +55,7 @@
       "event_type": "deep_dive",
       "social_post": "Query federation usually collapses when a remote database has gigabytes of data but the query only needs an aggregated summary. Historically, connectors stream millions of raw records over the wire for local processing, flooding the network and turning analytics into a bandwidth bottleneck.\n\nDuckDB 2.0 tackles this with whole-query pushdown across Arrow Database Connectivity (ADBC). By dispatching the complete query AST directly into PostgreSQL, the remote engine computes the join or aggregate and returns only the final Arrow stream.\n\nIn recent benchmarks on AWS Graviton, pushing down grouped aggregates reduced execution latency from 3702 milliseconds to 369 milliseconds. Selective join workloads saw an 11.4 times speedup, dropping from 2131 milliseconds to 187 milliseconds. Because the data transfers as native columnar Arrow memory, serialization tax drops to near zero.\n\nThe best data pipeline optimization is running the compute where the data already lives.",
       "why_read": "Learn how DuckDB uses whole-query pushdown through ADBC to execute queries directly inside remote PostgreSQL databases, dramatically reducing network transfer overhead.",
-      "image": null
+      "image": "/infographics/04-hn-49688767.jpg"
     },
     {
       "id": "24c10beee5798181",
@@ -58,7 +72,7 @@
       "event_type": "research",
       "social_post": "Most agentic workflows hit a hard ceiling when attempting recursive self-improvement because self-modifying prompts quickly destabilize the system. Typical setups either tweak final answers or cap meta-prompting at two layers to avoid catastrophic drift.\n\nA new architecture called Meta^n solves this by holding the meta-operator fixed while recursing entirely on its inputs. The fixed operator reads execution traces alongside solver code, then writes subsequent layers as strategic pre-processors and callable tool libraries.\n\nBecause the core transformation never alters itself, the stack stays completely stable as context grows. On ARC-AGI-2, a benchmark intentionally designed to resist pattern memorization, this recursive approach was the only tested system to score above zero across multiple model backbones.\n\nThe practical lesson for building production agents is clear: freeze your meta-reasoning logic and let the solver traces drive architectural expansion.",
       "why_read": "Read this to understand how recursing on solver traces with a fixed meta-operation achieves deep self-improvement without destabilizing the system. You will learn how emergent layering enables agents to solve challenging reasoning tasks like ARC-AGI-2.",
-      "image": null
+      "image": "/infographics/05-hn-49689348.jpg"
     },
     {
       "id": "fe5e89083f7108c9",
@@ -72,6 +86,235 @@
       "event_type": "deep_dive",
       "social_post": "Enabling swap in Linux production environments to smooth out container memory spikes can introduce catastrophic latency spikes in Go applications.\n\nA deep dive into Go garbage collection behavior revealed a scenario where median stop-the-world pauses jumped from 51 microseconds to 40 milliseconds. The culprit was not scanning the heap itself, but page faults occurring during the collection phase.\n\nUnder memory pressure inside a cgroup, the Linux kernel evicted Go runtime bookkeeping metadata outside the heap to swap on NVMe. When the collector initiated a pause, runtime methods such as spanSet.reset and finishsweep triggered 228 page faults while the world was stopped. Tracing with extended Berkeley Packet Filters confirmed that 39 milliseconds of the 40 millisecond pause were spent waiting on disk retrieval for that runtime metadata.\n\nEngineers often assume that swap acts as an inexpensive buffer against out-of-memory terminations.\n\nIf your runtime requires synchronous access to internal metadata during stop-the-world pauses, kernel paging will silently destroy your tail latency.",
       "why_read": "Read this to understand how Linux swap interacts with Go runtime bookkeeping to cause massive stop-the-world latency spikes. You will learn why page faults during garbage collection pauses degrade performance under memory pressure.",
+      "image": null
+    },
+    {
+      "id": "9437c29d4511485c",
+      "url": "https://github.com/MakazhanAlpamys/soup-connectome",
+      "source": "github",
+      "hn_id": "49683117",
+      "title": "Executing portable sparse connectomes with deterministic LIF semantics",
+      "authors": [
+        "Makazhan Alpamys"
+      ],
+      "event_type": "release",
+      "social_post": "Executing massive biological graphs efficiently across heterogeneous hardware requires treating connectomes as streaming sparse systems rather than monolithic matrices.\n\nThe soup-connectome project implements a portable runtime for executing the full male fruit-fly central nervous system, spanning over 211,000 neurons and 24 million connections. Instead of relying on conventional deep learning frameworks that struggle with biological sparsity, it compiles the network into a compact, deterministic artifact executed with fixed-point leaky integrate-and-fire semantics.\n\nWhat makes the design compelling for systems engineers is its execution architecture. The runtime provides exact parity across CPU, CUDA, WebGPU, and WASM by decoupling memory streaming from hardware-specific compute kernels. By streaming edges rather than caching the full adjacency graph in active device memory, it avoids high memory footprints on constrained environments like browser runtimes.\n\nSparse streaming runtimes offer clean blueprints for managing large-scale, non-uniform graph processing outside typical machine learning abstractions.",
+      "why_read": "Learn how soup-connectome translates massive biological neural graphs into compact artifacts that run deterministically across diverse hardware backends.",
+      "image": null
+    },
+    {
+      "id": "16cd9bab7b3f45d7",
+      "url": "https://rusty.today/blog/duckdb-at-clause-lateral-temporal-tables/",
+      "source": "hn",
+      "hn_id": "49686781",
+      "title": "DuckDB implements subquery lookups for historical table versions",
+      "authors": [
+        "Rusty Conover"
+      ],
+      "event_type": "deep_dive",
+      "social_post": "Querying historical table versions in lakehouses usually forces developers into an uncomfortable roundtrip. When snapshot identifiers or timestamps live in catalog metadata, you must run one query to fetch the version, extract it inside application code, and construct a second query with the static identifier.\n\nDuckDB now eliminates this friction by supporting scalar subqueries directly within the temporal AT clause. The engine parses the uncorrelated subquery, evaluates the metadata lookup once at the planning boundary, and supplies the resulting snapshot directly to the table scan.\n\nThis change allows engineers to compose dynamic snapshot lookups cleanly. You can write single statements that target the latest snapshot matching a specific schema or pipeline run without string formatting or quoting boundaries in your service layer.\n\nPushing temporal catalog resolution into the relational engine makes data lake queries truly composable.",
+      "why_read": "Learn how DuckDB evaluates scalar subqueries inside temporal AT clauses to compose dynamic snapshot lookups cleanly without application-level workarounds.",
+      "image": null
+    },
+    {
+      "id": "abf91acd70f15fa4",
+      "url": "https://percentes.ai/writing/2026/one-event-five-status-codes-and-a-class/",
+      "source": "hn",
+      "hn_id": "49687134",
+      "title": "Inference providers signal capacity exhaustion with inconsistent status codes",
+      "authors": [
+        "Varun Mahadkar"
+      ],
+      "event_type": "deep_dive",
+      "social_post": "Production AI infrastructure has a quiet error-handling bug: major inference providers cannot agree on what HTTP status code to return when they run out of compute.\n\nA systematic audit across seven major inference providers reveals that capacity exhaustion is mapped across five distinct status codes: 429, 498, 500, 503, and 529. Even worse, platforms like OpenAI Flex, DeepInfra, and Google Cloud use 429 for both client-side quota exhaustion and internal infrastructure capacity limits. When your system receives a 429, your client backoff logic cannot reliably determine whether you should slow down your request rate or fail over to a secondary provider.\n\nThis ambiguity breaks standard resilience patterns. A 429 caused by local concurrency limits demands exponential backoff, whereas a 429 caused by upstream capacity exhaustion requires circuit breaking and instant routing to an alternate vendor. Treating both identical HTTP responses with the same retry policy degrades availability during traffic spikes.\n\nRobust LLM client harnesses cannot rely on HTTP status codes alone and must parse response bodies to make failover decisions.",
+      "why_read": "Read this to understand how major AI inference providers inconsistently map server capacity limits and client quota breaches across different HTTP status codes. It provides practical clarity for designing robust API error handling and retry mechanisms.",
+      "image": null
+    },
+    {
+      "id": "b5520bd5d277db49",
+      "url": "https://aeroscissorz.github.io/aeroscissorz/posts/knowledge-catalog/",
+      "source": "hn",
+      "hn_id": "49687242",
+      "title": "AI agents need data catalogs instead of larger prompts",
+      "authors": [
+        "Shubham Sharma"
+      ],
+      "event_type": "case_study",
+      "social_post": "Giving an AI agent raw database schemas and a larger system prompt will not fix incorrect text-to-SQL generation.\n\nA database schema provides types, table structures, and foreign keys, but it provides zero business semantics. When an agent queries a revenue column, it cannot infer whether the calculation excludes refunds, accounts for trial subscriptions, or defines active customers based on initial signup dates. The generated SQL executes successfully, but the business metric returned is completely wrong.\n\nThe solution is integrating a formal data catalog as an active context layer rather than stuffing schema descriptions into prompts. By querying metadata services that index column definitions, data freshness, upstream lineage, and domain ownership, the agent retrieves exact organizational rules before drafting SQL.\n\nReliable agentic data systems depend far more on the quality of your semantic metadata architecture than on the size of your model context window.",
+      "why_read": "Read this to understand why SQL-generating AI agents produce inaccurate business answers and how a data catalog provides the semantic context prompts cannot.",
+      "image": null
+    },
+    {
+      "id": "9897ab5f1cb14930",
+      "url": "https://www.usenix.org/conference/osdi26/presentation/xie-yizheng",
+      "source": "hn",
+      "hn_id": "49687712",
+      "title": "Incr system delivers faster re-execution via bolt-on incrementalization",
+      "authors": [
+        "Yizheng Xie",
+        "Evangelos Lamprou",
+        "Jerry Xia",
+        "Nikos Vasilakis"
+      ],
+      "event_type": "research",
+      "social_post": "Re-running complex developer workflows or build scripts after small code changes usually forces the entire pipeline to execute from scratch. Incremental builds typically require specialized tools, explicit build graphs, or manual caching logic that developers rarely write for ad-hoc scripts.\n\nThe Incr system solves this by introducing transparent incrementalization for unmodified shell executions. By tracking data dependencies and process effects at the operating system level, Incr captures intermediate pipeline artifacts and automatically determines which steps can be skipped on subsequent runs.\n\nCrucially, the system incorporates effect analysis to handle non-idempotent commands safely without altering script semantics. Across thousands of real-world test cases, this transparent memoization accelerated shell script re-execution by an average of thirty-four times, reaching over three hundred times on compute-heavy steps.\n\nTransparent dependency tracking proves that engineers do not need to rewrite legacy pipelines just to achieve incremental execution performance.",
+      "why_read": "Learn how dependency tracking and effect analysis enable automatic incremental execution for polyglot shell pipelines without code changes.",
+      "image": null
+    },
+    {
+      "id": "ea0386bc2201e4d2",
+      "url": "https://dial9-rs.github.io/blog/principles-for-fast-tokio-applications/",
+      "source": "hn",
+      "hn_id": "49686951",
+      "title": "Balancing latency throughput and contention in Tokio applications",
+      "authors": [
+        "Russell"
+      ],
+      "event_type": "deep_dive",
+      "social_post": "Async Rust code often degrades in production because developers treat the Tokio runtime as an invisible thread pool rather than a cooperative work-stealing scheduler. When task poll intervals exceed tens of microseconds, throughput drops precipitously due to head-of-line blocking on executor worker threads.\n\nA common failure mode involves holding standard mutexes across yield points or executing short compute-heavy loops without manual cooperation. The solution is not always offloading work to a blocking pool. For high-throughput services, batching writes to amortize synchronization overhead while aggressively yielding inside hot loops preserves low tail latency.\n\nFurthermore, isolating workloads into dedicated runtime instances prevents background housekeeping or low-priority background jobs from stealing worker cycles from critical paths.\n\nPredictable latency in async runtimes demands intentional task scheduling rather than naive concurrency.",
+      "why_read": "Read this to understand the trade-offs required to optimize async Rust applications. You will learn practical strategies for managing runtime fairness, batching, and workload isolation.",
+      "image": "/infographics/01-hn-49698607.jpg"
+    },
+    {
+      "id": "ecce72e059c808d5",
+      "url": "https://lucascarlson.net/2026/09/09/a-lease-with-a-timeout-is-not-a-lock/",
+      "source": "hn",
+      "hn_id": "49683962",
+      "title": "A lease with a timeout is not a true distributed lock",
+      "authors": [
+        "Lucas Carlson"
+      ],
+      "event_type": "deep_dive",
+      "social_post": "Setting a key in Redis with an expiration timeout does not give you a distributed lock. Most backend teams rely on atomic SET NX operations with a time-to-live under the assumption that mutual exclusion is guaranteed, but a lease with a timeout is only a best-effort guard.\n\nThe failure mode is predictable and dangerous. An application worker acquires the lease, experiences an unpredicted delay such as a garbage collection pause, a slow downstream HTTP call, or a process restart during deployment, and exceeds the timeout. The lease expires, a second worker acquires the lock, and both workers execute the critical section simultaneously.\n\nNo amount of tuning timeouts will fix this inherent race condition. True distributed locking requires fencing tokens or atomic writes enforced directly at the storage layer. If your database write does not validate version numbers or ownership tokens at commit time, your lock is merely an illusion.\n\nSafety belongs inside the storage engine write, never in an external cache timer.",
+      "why_read": "Learn why Redis keys with expiration timeouts fail to guarantee mutual exclusion in distributed systems. You will understand how network pauses and deploy delays produce silent race conditions unless locks integrate directly with write transactions.",
+      "image": "/infographics/42-hn-49683962.jpg"
+    },
+    {
+      "id": "1d9879386fc69493",
+      "url": "https://clickhouse.com/blog/postgresql-19-wait-for-read-your-writes",
+      "source": "hn",
+      "hn_id": "49683954",
+      "title": "PostgreSQL 19 WAIT FOR enables read-your-writes consistency",
+      "authors": [
+        "Gülçin Yıldırım Jelínek"
+      ],
+      "event_type": "deep_dive",
+      "social_post": "Scaling read traffic across asynchronous PostgreSQL replicas almost always introduces the risk of stale reads. When an application commits a transaction on the primary and immediately queries a replica, users frequently see missing or outdated records due to replication lag.\n\nHistorically, solving this consistency problem required painful trade-offs. Enabling synchronous replication guarantees zero lag on standbys, but every write transaction pays a severe latency penalty across network round trips.\n\nPostgreSQL 19 solves this architectural dilemma with the new WAIT FOR command. A client session can commit a transaction on the primary, capture the resulting Write-Ahead Log position, and instruct the replica session to block until it replays that exact position.\n\nThis mechanism provides read-your-writes consistency across asynchronous read pools without slowing down primary writes. Applications can configure custom timeouts and choose fallback behaviors if a replica falls too far behind.\n\nYou no longer have to sacrifice write latency to guarantee consistent reads across database replicas.",
+      "why_read": "Learn how the WAIT FOR LSN command in PostgreSQL 19 enables read-your-writes consistency across asynchronous replicas without penalizing write latency.",
+      "image": null
+    },
+    {
+      "id": "781756bbcf7cccbb",
+      "url": "https://planetscale.com/blog/the-lifecycle-of-a-sharded-postgres-query",
+      "source": "hn",
+      "hn_id": "49683635",
+      "title": "Tracing the lifecycle of a sharded Postgres query",
+      "authors": [
+        "sarokhan"
+      ],
+      "event_type": "deep_dive",
+      "social_post": "Making a cluster of thousands of PostgreSQL nodes behave like a single database instance requires solving the query planning puzzle from scratch.\n\nA standard Postgres instance relies on its local cost-based optimizer to inspect table statistics and devise sequential scans or index lookups. When your tables shard across dozens of instances, that local engine is blind to network boundaries. The sharding proxy must parse the raw wire protocol, reconstruct the abstract syntax tree, and figure out whether a cross-shard join can run in parallel or must materialize intermediate datasets.\n\nConnection management introduces another massive hurdle. Because PostgreSQL operates on a process-per-connection architecture, broadcasting scatter-gather queries across thousands of backend shards easily overwhelms operating system process limits without an intelligent, shard-aware connection pooler embedded in the proxy layer.\n\nScaling relational databases horizontally is rarely about the storage engine; it is about building a distributed proxy that handles parsing, distributed coordination, and connection overhead without breaking SQL semantics.",
+      "why_read": "Read this to understand how sharded Postgres systems execute distributed queries across multiple nodes. You will learn the mechanics behind distributed query planning and connection coordination.",
+      "image": null
+    },
+    {
+      "id": "ffc080f8554350f0",
+      "url": "https://github.com/earthwalker17/MiniDSH",
+      "source": "github",
+      "hn_id": "49685555",
+      "title": "Building a minimal local coding agent harness using core invariants",
+      "authors": [
+        "earthwalker17"
+      ],
+      "event_type": "release",
+      "social_post": "Most AI agent frameworks drown under layers of abstractions, plugins, and third-party wrappers that obscure how the harness actually operates. Building a reliable coding agent does not require thousands of lines of boilerplate; it requires getting three fundamental primitives right: tool dispatch, session management, and granular permission boundaries.\n\nMiniDSH strips away the excess by re-deriving the architectural invariants of DeepSeek Harness down to their absolute bare essentials. Rather than treating runtime state as an afterthought, it treats the harness as a small, auditable state machine that cleanly interfaces between local developer environments and model tool calls.\n\nStudying an agent architecture that is small enough to read in a single sitting offers clarity on how to control model execution loops safely. It proves that production-ready agentic control planes do not need to be over-engineered behemoths to remain robust.",
+      "why_read": "Read this to understand how to design a complete, local-first coding agent runtime with minimal conceptual overhead. It provides a compact reference architecture demonstrating how to manage model tools, sessions, and permissions effectively.",
+      "image": null
+    },
+    {
+      "id": "fd1fc359780d611c",
+      "url": "https://github.com/aramesh10/OpenGEMM/tree/main",
+      "source": "github",
+      "hn_id": "49686236",
+      "title": "Generating standalone CUDA GEMM kernels for NVIDIA B200",
+      "authors": [
+        "aramesh10"
+      ],
+      "event_type": "release",
+      "social_post": "Blackwell introduces entirely new hardware paths for low-precision GEMMs, but getting bare-metal performance out of sm_100a usually requires waiting on proprietary runtime releases or wrestling with opaque templates.\n\nOpenGEMM directly generates standalone CUDA GEMM kernels tailored for NVIDIA B200 accelerators. Rather than bundling massive opaque binaries, it exposes an emission API that generates concrete `.cu` and `.cuh` files for exact matrix dimensions. This allows engineers to inspect, modify, and compile lean kernels without runtime bloat.\n\nCrucially, it provides native generation for block-scaled representations, including nvfp4, mxfp8, and mxfp4. Scaling factors are handled explicitly during compilation, bridging the gap between cutting-edge quantization theory and actual hardware execution on modern tensor cores.\n\nFor teams profiling next-generation LLM inference engines, having transparent code emission beats closed-box operator libraries every time.",
+      "why_read": "Learn how to generate and execute standalone CUDA GEMM kernels optimized for the NVIDIA B200 architecture. This guide provides practical methods for running mixed-precision and block-scaled matrix multiplications without requiring a GPU during code emission.",
+      "image": null
+    },
+    {
+      "id": "07738f6ffbb95fa8",
+      "url": "https://www.prestonfu.com/notes/ppm/",
+      "source": "hn",
+      "hn_id": "49687714",
+      "title": "Progressive Point Matching assigns unbiased partial credit for LLM tasks",
+      "authors": [
+        "Preston Fu"
+      ],
+      "event_type": "research",
+      "social_post": "Training reinforcement learning models on long-horizon tasks using only sparse terminal rewards hits an exponential wall. As task horizons stretch across thousands of tokens, the policy gradient signal-to-noise ratio decays exponentially, demanding intractable amounts of compute to discover successful trajectories.\n\nMost teams attempt to bypass this bottleneck by adding dense process reward models or learned value estimators. However, these surrogate rewards introduce asymptotic bias. A process reward model frequently encourages the agent to generate superficially correct reasoning steps that drift away from the actual terminal goal, optimizing for locally coherent distractions rather than task completion.\n\nProgressive Point Matching resolves this trade-off by constructing an asymptotically unbiased framework for intermediate credit assignment. Instead of relying on heuristic step rewards, it aligns intermediate states against milestone checkpoints without altering the optimal policy landscape.\n\nLong-horizon agent reasoning requires dense training signals that preserve true objective alignment.",
+      "why_read": "Learn why sparse rewards decay exponentially on long-horizon agent tasks and how unbiased partial credit stabilizes training.",
+      "image": null
+    },
+    {
+      "id": "1f235096c8c9212b",
+      "url": "https://interviewruntime.com/blog/what-interviewers-write-in-the-debrief",
+      "source": "hn",
+      "hn_id": "49684745",
+      "title": "Concrete observations, not vague impressions, decide interview outcomes",
+      "authors": [
+        "salari_dev"
+      ],
+      "event_type": "opinion",
+      "social_post": "Technical interview outcomes are rarely decided in the room during the interview itself. The actual hiring decision and level determination happen days later when interviewers dissect written calibration notes inside the debrief.\n\nVague impressions like sounding senior or demonstrating good instincts get discarded immediately by debrief committees. What survives is verifiable evidence: exact quotes, unprompted design choices, and documented handling of architectural constraints. A candidate can deliver an otherwise fluent system design round, but failing to state an explicit trade-off or missing a key operational metric will routinely down-level them from staff to senior.\n\nTo protect your leveling, structure your communication around evidence an interviewer can quote verbatim. State the explicit architectural trade-off upfront, specify the exact metric you would measure to validate the decision, and clarify what specific data would cause you to change your mind.\n\nDebriefs reward documented engineering rigor over conversational charm.",
+      "why_read": "Learn how interview debrief committees parse written evidence and how structuring explicit trade-offs protects your leveling.",
+      "image": "/infographics/55-hn-49684745.jpg"
+    },
+    {
+      "id": "34ef6cccdf78b2f4",
+      "url": "https://timdettmers.com/2026/01/27/building-open-coding-agent-sera/",
+      "source": "hn",
+      "hn_id": "49681819",
+      "title": "Building state-of-the-art coding agents with limited resources",
+      "authors": [
+        "Tim Dettmers"
+      ],
+      "event_type": "case_study",
+      "social_post": "Building high-performing coding agents does not require hundreds of GPUs or massive reinforcement learning pipelines. A small research team trained competitive 32B coding agents on private codebases using only modest compute resources, demonstrating that data recipe design matters far more than raw compute scale.\n\nThe breakthrough comes from soft-verified generation. Rather than forcing agents through rigid end-to-end task demonstrations or brittle rule-based subtasks, the method embraces ambiguity during trajectory collection. By inspecting execution traces and filtering out toxic copying behaviors, the synthetic data pipeline creates dense learning signals from proxy tasks.\n\nThis approach allows teams to finetune open models on their own internal codebases in just a few GPU days. The resulting weights rival much larger teacher models on proprietary repositories while plugging cleanly into standard harnesses such as Claude Code.\n\nYou do not need an industrial compute cluster when your training trajectories prioritize quality over volume.",
+      "why_read": "Learn how to finetune a 32B model on private codebases using soft verification and efficient data generation recipes.",
+      "image": null
+    },
+    {
+      "id": "79016ea6b16be529",
+      "url": "https://pianykh.com/blog/posts/2026-08-24-ocaml-workshop-json-parsing.html",
+      "source": "hn",
+      "hn_id": "49686397",
+      "title": "OxCaml accelerates JSON parsing but lags behind native C",
+      "authors": [
+        "matt_d"
+      ],
+      "event_type": "deep_dive",
+      "social_post": "Implementing SIMD-accelerated parsers in garbage-collected languages exposes the exact boundary where zero-allocation dreams clash with developer ergonomics.\n\nIn a recent deep dive porting simdjson to OxCaml, the compiler extensions provided by Jane Street delivered five times the throughput of standard OCaml parsers, reaching 730 megabytes per second for owned parse trees and 1.25 gigabytes per second on borrowed tapes. The implementation made direct use of 128-bit SIMD intrinsics and unboxed types to bypass traditional object boxing.\n\nHowever, the borrowed tape remains nearly three times slower than raw C++. The bottleneck is not the vector math, but the memory layouts and pattern matching guarantees expected by idiomatic code. Materializing an owned abstract syntax tree forces allocations that garbage collectors must continuously track.\n\nOptimizing parsers down to hardware speed requires designing data representations around memory layouts rather than language idioms.",
+      "why_read": "Learn how OxCaml's unboxed types and SIMD primitives can boost parser throughput fivefold over standard OCaml. It offers a practical look at the trade-offs between ergonomic garbage-collected data structures and bare-metal C++ performance.",
+      "image": null
+    },
+    {
+      "id": "dc3a328fcadb4a75",
+      "url": "https://arxiv.org/abs/2609.11757",
+      "source": "hn",
+      "hn_id": "49680527",
+      "title": "Agent payment protocols require cryptographic binding of purchase decisions",
+      "authors": [
+        "Yedidel Louck",
+        "Amit Dvir",
+        "Ariel Stulman"
+      ],
+      "event_type": "research",
+      "social_post": "Cryptographic signatures on agent transactions only verify authorization, not the autonomous reasoning that led to the purchase. When software agents execute payments through protocols like AP2, the cryptographic envelope confirms that a payment occurred, but it fails to inspect whether the resulting cart matches the genuine intent of the user.\n\nResearchers demonstrated that ordinary product listings can mount whisper attacks, steering shopping agents into purchasing completely different or substantially more expensive items. In benchmarks across seventeen Google models and three agent frameworks, these attacks succeeded at rates between 56 percent and 90 percent, all while outputting transactions that passed every existing cryptographic validation check.\n\nThe core vulnerability stems from decoupling the decision trace from the capability grant. The proposed defense, AP2 Verified-Intent Protection, binds signed user intent directly to the execution pipeline as an explicit constraint.\n\nEngineers building agentic commerce workflows cannot treat downstream API signing as a sufficient security perimeter. You must cryptographically enforce intent constraints within the reasoning harness itself before authorizing financial actions.",
+      "why_read": "This paper demonstrates how adversarial product descriptions manipulate shopping agents despite valid cryptographic signatures and introduces a binding defense to constrain agent decision paths.",
       "image": null
     }
   ]
