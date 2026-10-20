@@ -2,6 +2,20 @@
   "date": "2026-07-01",
   "stories": [
     {
+      "id": "139a04c65cc183b2",
+      "url": "https://github.com/Kanchisaw03/axiom",
+      "source": "github",
+      "hn_id": "48751251",
+      "title": "Bare metal kernels optimize transformer inference through custom primitives",
+      "authors": [
+        "Kanchisaw03"
+      ],
+      "event_type": "release",
+      "social_post": "Standard operating systems are fundamentally mismatched with LLM inference workloads. Linux preempts inference mid-layer and relies on general-purpose 4 KB page allocation, introducing severe cache pollution and unpredictable memory overhead when streaming weights on constrained hardware.\n\nAXIOM approaches this problem by stripping away standard OS layers entirely. Written in bare-metal no_std Rust, it turns inference primitives into first-class kernel concepts: tensor-native memory allocations, layer-boundary scheduling, and double-buffered weight streaming directly from NVMe storage.\n\nBy matching the hardware execution model directly to the predictable layer-by-layer structure of transformer graphs, weight streaming overhead plummeted from 1.4 seconds per layer down to roughly 42 microseconds per layer.\n\nCo-designing the operating system substrate around neural network execution graphs reveals massive performance headroom hidden beneath general-purpose kernel abstractions.",
+      "why_read": "Read this to understand how replacing general-purpose operating system paging with inference-specific primitives drastically reduces weight streaming overhead. You will learn how bare-metal substrates can optimize large language model execution on memory-constrained hardware.",
+      "image": "/infographics/01-github-48751251.jpg"
+    },
+    {
       "id": "0893765cbdef3017",
       "url": "https://www.databricks.com/blog/lakebase-ltap-rethinking-database-storage",
       "source": "hn",
@@ -27,7 +41,7 @@
       "event_type": "deep_dive",
       "social_post": "Partitioning by date columns like created_at frequently breaks query performance instead of helping it. Because PostgreSQL and MySQL require partition keys to reside within unique constraints, compound keys force every simple primary key lookup to scan every partition unless engineers manually inject arbitrary date boundaries.\n\nA cleaner architectural pattern is to partition directly on the primary key and delegate partition boundaries to an autonomous background coordinator. By tracking observed ID growth, the background worker creates new boundary tables ahead of demand and updates partition catalogs without altering query contracts.\n\nThis approach keeps application code decoupled from storage mechanics. Standard primary key queries hit exactly one partition through automatic pruning, and developers never have to contaminate audit, admin, or dashboard filters with artificial date ranges.\n\nStorage partitioning should remain an operational concern rather than an application-level contract.",
       "why_read": "Read this to understand why partitioning tables by creation date pollutes application queries. You will learn how partitioning by primary key preserves index lookups and automated pruning without leaky abstractions.",
-      "image": null
+      "image": "/infographics/03-hn-48746090.jpg"
     },
     {
       "id": "d4b9ba1c48e5fcee",
@@ -41,7 +55,7 @@
       "event_type": "case_study",
       "social_post": "Routing high-volume internal microservice traffic through an ingress load balancer creates hidden latency amplifiers and obscures failure domains. A single batch request fanning out to one hundred downstream calls turns a minor edge router hiccup into severe service degradation.\n\nZalando addressed this architectural bottleneck on their core read API, which serves millions of requests per second with single-digit millisecond latency across twenty-five markets. While their ingress controller excelled at external edge routing, funneling internal service-to-service calls through it introduced an unnecessary intermediate hop and made incident attribution nearly impossible.\n\nBy moving to client-side load balancing, the calling service now computes consistent hash routing locally. Requests bypass the intermediate proxy entirely and travel straight to target pods, maintaining high pod-local cache hit rates while producing clear client-side telemetry.\n\nRemoving the shared proxy hop eliminates blast radius confusion and turns mystery latency spikes into actionable metrics.",
       "why_read": "Read this to understand why reusing shared edge routers for high-throughput internal microservice traffic creates severe latency attribution problems. You will learn how client-side load balancing decouples routing and provides direct observability into downstream performance.",
-      "image": null
+      "image": "/infographics/04-hn-48745118.jpg"
     },
     {
       "id": "c00533e0861478cc",
@@ -55,6 +69,398 @@
       "event_type": "deep_dive",
       "social_post": "Cold start latency for large model inference often forces teams to over-provision expensive GPU capacity. When a container requires multiple minutes to import dependencies, load model weights, and compile CUDA kernels, auto-scaling cannot react quickly enough to absorb unpredictable traffic spikes.\n\nCerebrium tackles this bottleneck by taking memory snapshots of warmed containers running under gVisor. Rather than re-executing initialization routines on every scale event, the system snapshots both host RAM and GPU VRAM alongside CUDA execution states, restoring warm workloads in seconds and cutting cold starts by more than 80 percent.\n\nThis technique transforms GPU infrastructure economics. Platforms can safely scale GPU replicas down to zero during idle periods, knowing that subsequent requests can restore complete memory states without triggering repetitive weight transfers over the PCIe bus or re-compiling custom kernels.\n\nInstant state restoration turns unpredictable inference scaling into a solved engineering problem.",
       "why_read": "Learn how snapshotting fully initialized CPU and GPU states bypasses redundant runtime setup to drastically reduce AI cold starts.",
+      "image": "/infographics/05-hn-48749313.jpg"
+    },
+    {
+      "id": "08fb3cf14906a1ad",
+      "url": "https://mainmatter.com/c-to-rust-migration-book/",
+      "source": "hn",
+      "hn_id": "48746940",
+      "title": "Migrate from C to Rust without breaking the world",
+      "authors": [
+        "Mainmatter"
+      ],
+      "event_type": "tutorial",
+      "social_post": "Complete rewrites of large C codebases into Rust almost always fail because production systems cannot pause feature work for years. The only viable path forward is an incremental migration that maintains a stable, mixed C and Rust binary throughout the transition.\n\nThe fundamental engineering challenge lies in the foreign function interface layer. Calling Rust from C requires matching the C application binary interface exactly, managing symbol visibility, and aligning struct memory layouts across the compiler boundary. Subtle mismatches in pointer lifetimes or data alignment quickly cause undefined behavior without compile-time warnings.\n\nThis free book walks through designing safe wrapper boundaries, passing structured data across foreign function interfaces, and gradually swapping critical subsystems. Rather than theoretical advice, each chapter couples architectural guidance with concrete compiler configurations and integration test suites.\n\nSuccessful migrations prioritize continuous delivery across the foreign function boundary over dogmatic total rewrites.",
+      "why_read": "Learn how to safely and incrementally integrate Rust into existing C codebases through foreign function interfaces without undertaking risky full rewrites.",
+      "image": "/infographics/06-hn-48746940.jpg"
+    },
+    {
+      "id": "b6751349536eec88",
+      "url": "https://clickhouse.com/blog/pgbouncer-clickhouse-managed-postgres",
+      "source": "hn",
+      "hn_id": "48748776",
+      "title": "Scaling PgBouncer across CPU cores using socket reuse and peering",
+      "authors": [
+        "Kaushik Iska"
+      ],
+      "event_type": "case_study",
+      "social_post": "PgBouncer is fundamentally single-threaded, meaning a single process leaves all but one CPU core idle on multi-core servers. On a 16-core machine, connection pooling saturates throughput on one core while the remaining fifteen cores sit completely unused.\n\nThe standard workaround is binding multiple PgBouncer processes to the same port using the SO_REUSEPORT socket option. This allows the Linux kernel to distribute incoming connections across the worker fleet. However, scaling out this way creates a subtle and dangerous failure mode: query cancellation stops working reliably.\n\nIn Postgres, a query cancellation request arrives over a completely separate connection carrying a cancellation key. When using SO_REUSEPORT, the operating system kernel can route that new cancel connection to an entirely different process than the one holding the client session. That target process has no memory of the running query, causing the cancellation attempt to silently do nothing.\n\nClickHouse solved this failure mode by implementing an inter-process peering layer across the PgBouncer fleet. When a cancellation packet lands on an arbitrary process, it immediately checks the fleet, locates the process that owns the actual session, and forwards the command directly.\n\nThis architecture scales pooling throughput cleanly by four times without breaking client protocol expectations.",
+      "why_read": "Read this to understand how to overcome PgBouncer's single-threaded limitation across multi-core systems using SO_REUSEPORT. You will learn the mechanics of handling query cancellations across independent pooling processes.",
+      "image": "/infographics/01-hn-48872874.jpg"
+    },
+    {
+      "id": "e1d3ae827a87819e",
+      "url": "https://github.com/samchon/ttsc/tree/master/packages/graph",
+      "source": "github",
+      "hn_id": "48750084",
+      "title": "Code graph server lowers AI agent token costs",
+      "authors": [
+        "autobe"
+      ],
+      "event_type": "release",
+      "social_post": "Feeding entire source files into an LLM context window is the fastest way to waste tokens and degrade reasoning accuracy. Most coding agents drown in syntax noise when they only need symbol definitions and interface boundaries.\n\n@ttsc/graph solves this by serving context directly from the TypeScript compiler through an MCP endpoint. Instead of parsing text files on demand, the server maintains an in-memory resident graph and atomically updates compiler-owned shards as files change on disk.\n\nWhen an agent queries a codebase, the tool returns exact names, signatures, relationships, and source spans without emitting file bodies. Token consumption stays flat regardless of how large the underlying repository becomes.\n\nTreating the compiler as the primary retrieval index eliminates context bloat at the root level.",
+      "why_read": "Learn how to slash coding agent context bloat by streaming precise symbols and type relationships directly from memory.",
+      "image": "/infographics/01-hn-49045581.jpg"
+    },
+    {
+      "id": "240d157e030b27c0",
+      "url": "https://github.com/mkdev-me/terraform-aws-github-runner-lambda-microvms/tree/main",
+      "source": "github",
+      "hn_id": "48749727",
+      "title": "Running ephemeral GitHub Actions runners inside Lambda microVMs",
+      "authors": [
+        "mkdev-me"
+      ],
+      "event_type": "release",
+      "social_post": "Managing self-hosted CI runners usually means choosing between slow cold starts or paying for idle compute instances. This Terraform project demonstrates a cleaner pattern by running ephemeral GitHub Actions runners directly inside AWS Lambda MicroVMs on Graviton hardware.\n\nA lightweight webhook dispatcher triggers one Lambda instance per queued CI job. The runner boots from a Firecracker snapshot in mere seconds, registers as a just-in-time GitHub runner, finishes the job, and destroys itself immediately. Because billing is strictly per second with snapshot resume, you completely eliminate idle runner costs while preserving strict microVM hardware isolation.\n\nTreating ephemeral CI environments as snapshot-resumable microVMs offers an optimal middle ground between cost efficiency and total workload isolation.",
+      "why_read": "Learn how to deploy cost-effective, per-second billed GitHub Actions runners using AWS Lambda microVMs and snapshot resumption. This guide shows how to eliminate idle compute expenses while running isolated CI jobs with Terraform.",
+      "image": null
+    },
+    {
+      "id": "8622e4dbd4bdfdad",
+      "url": "https://github.com/AALXX/QueryDrift",
+      "source": "github",
+      "hn_id": "48747790",
+      "title": "Failing continuous integration builds on silent database query regressions",
+      "authors": [
+        "AALXX"
+      ],
+      "event_type": "release",
+      "social_post": "N+1 query regressions are notorious for slipping past unit tests and PR reviews because small test datasets mask the performance penalty. A change that executes once per row feels unnoticeable against 20 records in a local database, but it quickly overwhelms production PostgreSQL instances.\n\nQueryDrift addresses this vulnerability by asserting on query counts during CI test runs. It captures a baseline snapshot of database query fingerprints generated by test suites, tracking both raw pg and Prisma executions. When a pull request causes a query pattern to multiply relative to the baseline, the CI pipeline fails immediately.\n\nCrucially, it captures async call stacks to highlight the exact line of application code inside the loop that triggered the query explosion, rather than simply dumping raw SQL logs.\n\nEnforcing query budgets automatically within continuous integration stops ORM performance degradation before code ever reaches staging environments.",
+      "why_read": "Learn how QueryDrift prevents silent database performance regressions by diffing test query patterns against baselines in continuous integration. It explains how to trace repeating queries directly back to the offending lines of application code.",
+      "image": null
+    },
+    {
+      "id": "489c4cb42262886b",
+      "url": "https://sqlite.org/assert.html#assert_and_similar_macros_in_sqlite",
+      "source": "hn",
+      "hn_id": "48751030",
+      "title": "Assertions in SQLite establish formal invariants and verify coverage",
+      "authors": [
+        "chmaynard"
+      ],
+      "event_type": "deep_dive",
+      "social_post": "Standard assertions work well for debug builds, but SQLite takes invariant verification much further to achieve one hundred percent branch coverage. In addition to standard asserts, the SQLite codebase relies on three specialized macros: ALWAYS, NEVER, and testcase.\n\nThe ALWAYS and NEVER macros evaluate conditions that developers expect to be true, but without a formal mathematical proof. Unlike regular assertions that vanish in release builds, these macros remain active conditionals in production. If an unexpected edge case triggers in production, the engine will handle the branch gracefully rather than crashing, while debug builds flag the broken invariant immediately.\n\nThe testcase macro solves the inverse problem. It flags branches that are deliberately non-invariant, proving to the test harness that both true and false paths are reachable and executed during MC/DC coverage passes. SQLite contains thousands of these annotations across its B-tree and pager engines.\n\nTreating assertions as active architectural primitives turns static verification into resilient production safeguards.",
+      "why_read": "Learn how SQLite leverages standard assertions alongside specialized macros like ALWAYS, NEVER, and testcase to rigorously verify program invariants and test coverage. It offers a practical look at building rock-solid C software through systematic internal verification.",
+      "image": null
+    },
+    {
+      "id": "c2c3010199f1a194",
+      "url": "https://www.inkandswitch.com/livelymerge/notebook/lm-01/",
+      "source": "hn",
+      "hn_id": "48746229",
+      "title": "Representing a live object system as an Automerge document",
+      "authors": [
+        "Ink & Switch"
+      ],
+      "event_type": "research",
+      "social_post": "What happens when you treat an entire live object runtime as an Automerge document? Ink and Switch set out to test this by combining the Smalltalk and Lively Kernel paradigm with distributed conflict-free replicated data types, sharing everything from classes to runtime heap memory simultaneously across multiple users.\n\nIn standard collaborative environments, networking is layered strictly on top of domain data structures. In Livelymerge, the runtime memory itself is backed by Automerge. While CRDTs theoretically offer conflict resolution for free, live systems present a much thornier reality: guaranteeing object invariants across concurrent updates without a central coordinator is an open, fragile challenge.\n\nYet the experiment showed that many consistency issues can be pragmatically isolated or sidestepped during real collaborative sessions. Merging live execution states reveals fascinating design patterns for state synchronization and distributed systems architecture.\n\nTreating execution state as synchronized data forces a fundamental rethink of what distributed application runtimes can look like.",
+      "why_read": "Learn what happens when an entire live, self-sustaining object-oriented environment is synchronized across users using automatic state merging. It provides concrete insight into the practical limits and surprises of collaborative runtime systems.",
+      "image": null
+    },
+    {
+      "id": "2a35e340053be932",
+      "url": "https://martinfowler.com/articles/201701-event-driven.html",
+      "source": "hn",
+      "hn_id": "48750154",
+      "title": "Event notification decouples systems but obscures larger logical flows",
+      "authors": [
+        "Martin Fowler"
+      ],
+      "event_type": "deep_dive",
+      "social_post": "Calling an architecture event-driven usually obscures more than it clarifies, because teams routinely conflate fundamentally different distributed patterns.\n\nMartin Fowler outlines four distinct concepts under this umbrella: Event Notification, Event-Carried State Transfer, Event Sourcing, and CQRS. The failure mode begins when engineers adopt simple event notifications to decouple publishers, only to realize they have hidden the system execution graph. When no single component owns the workflow, debugging cascading events across microservices requires distributed tracing just to reconstruct basic control flow.\n\nSimilarly, Event-Carried State Transfer reduces downstream query load by duplicating data inside events, but it trades away consistency and complicates schema evolution. You eliminate remote calls at the cost of managing eventual consistency across fragmented local data stores.\n\nDecoupling on the write path always extracts a payment on the operational and observability paths.",
+      "why_read": "Read this to understand how event notification provides simple decoupling while creating subtle risks by obscuring overarching system workflows.",
+      "image": null
+    },
+    {
+      "id": "5dee352a0dcc1a51",
+      "url": "https://developer.nvidia.com/blog/designing-gpu-accelerated-query-engines-with-nvidia-gqe/",
+      "source": "hn",
+      "hn_id": "48751896",
+      "title": "How pipeline parallelism and decompression accelerate GPU query engines",
+      "authors": [
+        "Clemens Lutz",
+        "Tyler Allen",
+        "Miloni Atal",
+        "Viktor Rosenfeld",
+        "Eric Schmidt"
+      ],
+      "event_type": "deep_dive",
+      "social_post": "GPU accelerated query engines usually bottleneck on memory and input-output bandwidth long before they saturate compute cores. NVIDIA GQE tackles this classic data transfer ceiling by orchestrating decompression, memory movement, and execution into an overlapping pipeline across row groups.\n\nThe system accepts standardized Substrait query plans and streams columnar data from host memory straight into the GPU. Dedicated hardware decompression engines unpack LZ77-based formats at up to 400 gigabytes per second, allowing decompression to run without consuming any streaming multiprocessor cycles. Coupled with zone-map filter pruning that skips unneeded partitions prior to transfer, host-to-device data movement drops by 31 percent.\n\nOn the standard TPC-H one-terabyte benchmark, a single GB200 GPU running GQE finished all 22 queries in 9.0 seconds. That represents a 7.5x aggregate speedup compared to DuckDB running on dual-socket AMD Turin server central processing units.\n\nThe takeaway for database architects is clear: moving query execution to GPUs only pays off when decompression and transfers are pushed down to dedicated silicon.",
+      "why_read": "Read this to understand how modern GPU query engines overcome memory and transfer bottlenecks through pipeline parallelism, filter pruning, and hardware decompression. You will learn the core architectural patterns required to achieve significant speedups over CPU-based analytical engines.",
+      "image": null
+    },
+    {
+      "id": "b1327bdaf1fdb10d",
+      "url": "https://arxiv.org/abs/2604.01527",
+      "source": "hn",
+      "hn_id": "48753891",
+      "title": "Automated pipelines extract reliable coding benchmarks from production interactions",
+      "authors": [
+        "Smriti Jha",
+        "Matteo Paltenghi",
+        "Chandra Maddila",
+        "Vijayaraghavan Murali",
+        "Shubham Ugare",
+        "Satish Chandra"
+      ],
+      "event_type": "research",
+      "social_post": "Evaluating coding agents against synthetic benchmarks rarely reveals how they perform on actual production monorepos. Public benchmarks suffer from distribution shifts, while manual curation cannot keep pace with continuously shifting build systems and ephemeral environments.\n\nThe REAP pipeline solves this evaluation bottleneck by extracting real developer-agent interactions into reproducible test suites without human intervention. Instead of relying on brittle manual audits, the system uses automated task classification to filter out untestable requests and detects test flakiness across multiple execution runs.\n\nThe automated verification layer checks test relevance directly against modified codebases. This continuous validation ensures that internal benchmarks reflect real developer workflows while filtering out misleading test assertions that produce false regression alarms.\n\nEngineering teams running internal coding agents can finally replace risky production canary tests with deterministic, locally reproducible evaluation harnesses.\n\nContinuous benchmark synthesis provides the safety net agent infrastructure desperately needs.",
+      "why_read": "Read this to understand how to automatically construct reproducible, in-distribution benchmarks for AI coding agents directly from real developer sessions. You will learn how automated verification overcomes challenges like untestable prompts and flaky tests in rapidly shifting monorepos.",
+      "image": null
+    },
+    {
+      "id": "32a91f0d29328f52",
+      "url": "https://devin.ai/blog/security-swarm-eval/",
+      "source": "hn",
+      "hn_id": "48750244",
+      "title": "Agentic MapReduce orchestrates autonomous agents for vulnerability discovery",
+      "authors": [
+        "Devin"
+      ],
+      "event_type": "release",
+      "social_post": "Large codebases break typical agent architectures because dumping an entire repository into a context window destroys retrieval signal and exhausts token budgets. Devin team addressed this bottleneck with an architecture they call Agentic MapReduce, splitting security analysis into distinct deterministic and probabilistic phases.\n\nFirst, a planner model inspects repository conventions to synthesize deterministic regex and syntax selectors for attack surfaces like authentication wrappers and deserialization sinks. These selectors scan every file without model inference, stripping irrelevant files before any expensive reasoning occurs.\n\nNext, matched code fragments are sharded to worker agents that investigate potential vulnerabilities concurrently within bounded contexts. A reducer agent aggregates the partial findings across shards, connecting chained vulnerabilities that no single worker could observe, such as pairing an open identifier leak with a privileged remote code execution flaw.\n\nFinally, an automated execution sandbox spins up a local build to execute dynamic exploits and verify each finding before reporting it. Running deterministic filters upstream cut audit costs significantly while yielding 72 percent recall on real vulnerabilities.\n\nDeterministic pre-filtering and distributed context sharding beat raw context window expansion every time.",
+      "why_read": "Understand the architecture of Agentic MapReduce, which divides codebase vulnerability auditing into deterministic selection, sharded parallel reasoning, and cross-shard reduction. You will learn how orchestrating LLM agents with runtime verification yields high recall on real-world security vulnerabilities.",
+      "image": null
+    },
+    {
+      "id": "d8088c1c5664e17e",
+      "url": "https://verdagon.dev/blog/higher-raii-7drl",
+      "source": "hn",
+      "hn_id": "48745522",
+      "title": "How Vale's higher RAII pattern saved critical development time",
+      "authors": [
+        "Evan Ovadia"
+      ],
+      "event_type": "deep_dive",
+      "social_post": "Standard RAII ties resource cleanup strictly to lexical scope, but real-world state machines frequently need deferred guarantees across non-nested call boundaries. Vale solves this through Higher RAII, using linear type semantics to enforce explicit resource handling.\n\nUnlike traditional borrow checking or simple scope drops, linear types require values to be consumed exactly once. If an operation yields a guard structure, the compiler forces the developer to hand that token into a specific completion function later in the execution path.\n\nThis pattern eliminates entire classes of silent omissions, such as failing to commit a distributed transaction token, skipping an audit step, or leaking an unfinalized state transition. You catch lifecycle protocol errors at compile time rather than relying on runtime assertions.\n\nEnforcing structural correctness at the language level frees backend developers from maintaining defensive runtime checks across complex state machines.",
+      "why_read": "Read this to understand how Higher RAII uses linear types to guarantee cleanup and eliminate bugs under tight engineering deadlines. You will learn practical resource management concepts pioneered by the Vale programming language.",
+      "image": null
+    },
+    {
+      "id": "32ca46c5f4e4678d",
+      "url": "https://centrifugal.dev/blog/2026/06/29/scaling-redis-pub-sub",
+      "source": "hn",
+      "hn_id": "48746582",
+      "title": "Scaling Redis pub/sub across millions of channels and nodes",
+      "authors": [
+        "FZambia"
+      ],
+      "event_type": "deep_dive",
+      "social_post": "Redis Pub/Sub is easy to start with, but it hits a hard ceiling when scaled to millions of channels across hundreds of subscriber nodes. Because a single Redis instance runs its event loop on one CPU core, high churn in channel subscriptions quickly saturates the processor.\n\nMoving naively to a standard Redis Cluster often makes performance worse instead of better. Traditional Redis Pub/Sub broadcasts every publish command across all cluster nodes, turning cluster scaling into an accidental network amplifier. Each node receives the message whether it has local subscribers for that channel or not.\n\nTo hit millions of messages per second, architecture must decouple channel routing from global broadcast. Running partitioned Redis shards with targeted hash slots or adopting sharded Pub/Sub prevents cluster wide fanout. Subscribers only connect to the shard that owns their specific channel, preserving node CPU for actual packet delivery.\n\nScaling real-time messaging requires treating broker topology as a sharding problem rather than throwing more cluster nodes at the network.",
+      "why_read": "Read this to understand the performance bottlenecks of Redis Pub/Sub at scale and learn how to distribute millions of channels across cluster nodes.",
+      "image": null
+    },
+    {
+      "id": "05b07ad558994e3e",
+      "url": "https://twitter.com/chdb_io/status/2072230596227797361",
+      "source": "hn",
+      "hn_id": "48746890",
+      "title": "ClickHouse OLAP engine runs completely in WebAssembly",
+      "authors": [
+        "chDB"
+      ],
+      "event_type": "release",
+      "social_post": "Running analytical queries on client machines typically requires spinning up external database infrastructure or settling for crippled, toy SQL engines. The release of chDB-Wasm shifts that equation by compiling the full ClickHouse OLAP core directly into WebAssembly.\n\nInstead of shipping a partial query dialect, this build embeds the complete ClickHouse engine into the browser tab. It executes vectorized queries directly over Parquet, CSV, and JSON data fetched from object storage or local files, without sending queries through an intermediary server. The environment includes the standard ClickHouse client interface, complete with syntax highlighting and interactive execution controls.\n\nFor distributed architectures, executing analytical aggregations entirely inside the client sandbox opens up compelling design patterns. Engineers can offload heavy slice-and-dice workloads from central data warehouses while delivering sub-second interactive dashboards directly on raw data files.\n\nClient-side compute has finally matured enough to run warehouse-grade analytical engines in a single browser process.",
+      "why_read": "Learn how chDB-Wasm brings the full ClickHouse engine to the browser via WebAssembly, enabling serverless client-side analytical queries.",
+      "image": null
+    },
+    {
+      "id": "ef5ffb7f2a4580fe",
+      "url": "https://twitter.com/ramplabs/status/2072381992285647280",
+      "source": "hn",
+      "hn_id": "48752677",
+      "title": "Portable task adapters transfer learned adaptations across different base models",
+      "authors": [
+        "Ben Geist"
+      ],
+      "event_type": "research",
+      "social_post": "Fine-tuning language models with Low-Rank Adaptation locks your learned weights to a single base architecture. When a faster or more capable foundation model arrives, engineering teams are usually forced to rerun the entire adaptation pipeline from scratch.\n\nPorTAL changes this dynamic by separating the task representation from the underlying transformer weights. Instead of training fixed matrix weights directly on the model, it learns a base-agnostic task latent vector paired with a hypernetwork decoder. That decoder splits into a universal shared core and a thin, model-specific converter that maps representations onto the target architecture.\n\nThe empirical results show remarkable parameter portability across distinct model families. When transferring a task latent trained on smaller models to an unseen architecture, refitting only the tiny converter recovers 98 percent of full fine-tuning performance on Qwen and 94 percent on Gemma. Crucially, the transfer process requires roughly half the calibration data of standard adaptation while producing lower held-out log loss.\n\nDecoupling task knowledge from foundation model architectures dramatically reduces the continuous compute burden of keeping internal models up to date.",
+      "why_read": "Learn how PorTAL decouples task adaptation from specific base LLMs using hypernetwork decoders, drastically reducing the compute and data needed to transfer fine-tuning gains across model families.",
+      "image": null
+    },
+    {
+      "id": "438f4f7500f6a07d",
+      "url": "https://github.com/alavicka/pollux",
+      "source": "github",
+      "hn_id": "48746067",
+      "title": "Native Leech lattice quantization enables stable sub-bit transformer training",
+      "authors": [
+        "Alexander Lavicka"
+      ],
+      "event_type": "research",
+      "social_post": "Most post-training quantization routines degrade rapidly once you push model precision below two bits per parameter. Pollux takes the opposite approach by enforcing extreme vector quantization directly from initialization through the mathematical geometry of the 24-dimensional Leech lattice.\n\nRather than quantizing continuous weights after training, the transformer projections and feed-forward layers are constrained to an 18-bit index into a codebook containing 196,561 lattice points. Each weight block maps onto the 24-dimensional kissing spheres of the lattice alongside a null attractor and an 16-bit floating point root mean square scale factor. This constraint fixes the backbone representation to an effective rate of just 0.76 bits per parameter.\n\nThe primary achievement here is stability. Previous attempts at sub-bit representations struggled with severe gradient degradation during the backward pass. By projecting weight tensors onto dense geometric sphere packings at every gradient step, the model achieves stable convergence across the entire pre-training run without relying on continuous baseline initialization.\n\nExtreme vector quantization proves that transformer representations can operate natively on discrete geometric structures without sacrificing numerical training stability.",
+      "why_read": "Read this to discover how projecting weights onto the 24-dimensional Leech lattice allows decoder-only transformers to train stably from initialization at just 0.76 bits per parameter.",
+      "image": null
+    },
+    {
+      "id": "146fbd2a6d8effba",
+      "url": "https://arxiv.org/abs/2605.21997",
+      "source": "hn",
+      "hn_id": "48752135",
+      "title": "Event-sourced reactive graphs enable auditable and forkable agent systems",
+      "authors": [
+        "Yohei Nakajima"
+      ],
+      "event_type": "research",
+      "social_post": "Traditional agent frameworks suffer from a foundational flaw: they prioritize conversational loops and treat execution history as an afterthought.\n\nActiveGraph flips this architecture by implementing event sourcing. Instead of building memory around transient context windows or vector search summaries, the runtime treats an append-only event log as the absolute source of truth. The active state graph is merely a deterministic projection derived from that log, while tools and language model tasks react to graph state transitions.\n\nThis separation of state mutations from execution delivers massive operational advantages for distributed systems. First, you obtain deterministic replay across complex multi-step workflows. Second, you can fork an execution branch at any arbitrary event without having to rerun the expensive shared prefix. Third, the system preserves complete causal lineage from high-level objectives down to the individual model calls.\n\nTreating logs as the primary substrate brings distributed systems rigor to agent engineering.\n\nReliable agent architectures require event sourcing rather than unstructured conversational memory.",
+      "why_read": "Read this to understand how structuring agent runtimes around append-only event logs enables deterministic replay, cheap branching, and full causal lineage. It provides a robust architecture for designing auditable and reproducible agentic workflows.",
+      "image": "/infographics/01-hn-48790912.jpg"
+    },
+    {
+      "id": "0bc9a3270d2aeb0b",
+      "url": "https://arxiv.org/abs/2605.17613",
+      "source": "hn",
+      "hn_id": "48753225",
+      "title": "VeriCache turns lossy KV cache into lossless LLM inference",
+      "authors": [
+        "Jiayi Yao",
+        "Samuel Shen",
+        "Kuntai Du",
+        "Shaoting Feng",
+        "Dongjoo Seo",
+        "Rui Zhang",
+        "Yuyang Huang",
+        "Yuhan Liu",
+        "Shan Lu",
+        "Junchen Jiang"
+      ],
+      "event_type": "research",
+      "social_post": "Compressing key-value caches with token dropping or aggressive quantization speeds up large language model decoding, but cumulative divergence often breaks deterministic tasks like code generation and structured tool calling.\n\nVeriCache addresses this degradation by turning lossy key-value compression into a lossless inference system using speculative verification. A heavily compressed cache kept in high bandwidth memory generates draft tokens rapidly, while the complete, lossless cache stays offloaded outside fast GPU memory.\n\nThe core performance trick relies on overlapping hardware bottlenecks. Decoding with the compressed cache is bound by memory bandwidth, while swapping full cache chunks for verification is bound by PCIe or network transfer. Because lossy drafts match full outputs across long sequences, systems can pipeline verification over an extended drafting window and amortize transfer latency completely.\n\nSpeculative decoding applied to memory hierarchies proves that engineers do not need to choose between output correctness and high serving throughput.",
+      "why_read": "Read this to understand how speculative verification allows lossy KV cache compression to preserve full-model accuracy. You will learn how overlapping compressed drafting with memory swapping avoids throughput bottlenecks during long-context LLM serving.",
+      "image": null
+    },
+    {
+      "id": "93c3f07befca6514",
+      "url": "https://huggingface.co/gagan1985/qwen3-0.6b-indian-address-parser",
+      "source": "hn",
+      "hn_id": "48751189",
+      "title": "Parsing unstructured Indian address strings into structured JSON fields",
+      "authors": [
+        "gagan1985"
+      ],
+      "event_type": "release",
+      "social_post": "Parsing chaotic, unstructured addresses in regions without standardized postal formats has long been an expensive, fragile engineering challenge. Many teams reflexively throw 70-billion-parameter hosted models or brittle regex pipelines at the problem.\n\nThis project demonstrates how a compact Qwen3-0.6B model fine-tuned via LoRA can accurately extract 13 distinct structured JSON attributes from raw address strings. Training was executed locally on Apple Silicon using MLX, then converted to standard PEFT artifacts for execution across CUDA, MPS, and CPU backends.\n\nRunning lightweight, task-specific adapters yields deterministic extraction with negligible latency and tiny memory footprints. When solving specialized semantic parsing, fine-tuning an edge-friendly small model consistently outperforms piping sensitive enterprise payload data to expensive third-party APIs.\n\nSpecialized small models remain one of the most cost-effective and latency-conscious patterns in modern applied machine learning.",
+      "why_read": "Learn how to parse complex and unstructured Indian postal addresses into structured key-value fields using lightweight fine-tuned language models.",
+      "image": null
+    },
+    {
+      "id": "a4f90792102bc57b",
+      "url": "https://github.com/asp67/llm-colosseum/tree/main",
+      "source": "github",
+      "hn_id": "48752981",
+      "title": "Language models govern rival civilizations in real-time strategy benchmark",
+      "authors": [
+        "asp67"
+      ],
+      "event_type": "release",
+      "social_post": "Most LLM benchmarks rely on static, single-turn evaluations that fail to show how models manage dynamic state over extended horizons. Evaluating agents in real-time environments offers a far better window into their actual reasoning and tool-calling reliability.\n\nWhen Agents Rule creates a zero-dependency browser arena where competing language models run an entire economy, manage military units, and navigate strategic diplomacy in real time. Instead of isolated question answering, each model agent continuously inspects game state schemas and issues actions while adapting to active opponents.\n\nWatching how different frontier models balance long-term objectives against immediate tactical threats highlights clear architectural failure modes in current agent loops. Long-horizon game loops provide an uncompromising test harness for context management and decision consistency.\n\nBenchmarking agents inside stateful simulations will expose weaknesses in tool invocation far faster than standard conversational evals ever could.",
+      "why_read": "Explore how autonomous language models manage economic planning and military strategy in a zero-build browser arena. It offers a clear framework for evaluating long-horizon agent coordination and adversarial decision-making.",
+      "image": null
+    },
+    {
+      "id": "43a2fdedfaefbf0f",
+      "url": "https://gaultier.github.io/blog/optimization-tales-cockroachdb-part2-slow-logout.html",
+      "source": "hn",
+      "hn_id": "48748528",
+      "title": "Fixing excessive transaction retries for logout in CockroachDB",
+      "authors": [
+        "Philippe Gaultier"
+      ],
+      "event_type": "case_study",
+      "social_post": "A simple SQL query like updating an active session flag can unexpectedly bring a distributed database to its knees under heavy traffic. When debugging an endpoint with 150,000 transaction retries and 500 millisecond execution times in CockroachDB, the root bottleneck was not slow CPU or missing indexes, but ReadWithinUncertaintyIntervalError exceptions.\n\nCockroachDB relies on hybrid logical clocks to coordinate distributed transactions. When a transaction encounters a record whose write timestamp falls within the local clock uncertainty window, the engine cannot safely establish serializability order. The database responds by forcing a transaction restart to resolve timestamp ambiguity.\n\nBlindly executing unconditional writes creates self-inflicted serialization conflicts across concurrent requests for the same session. Changing the update to a conditional write, verifying row state changes, and tuning the transaction isolation level drops retry counts down to near zero.\n\nDistributed SQL abstractions often hide distributed consensus complexity until high-concurrency contention exposes clock skew constraints. Understanding engine retry semantics is critical when writing reliable high-throughput database workloads.",
+      "why_read": "Read this to understand what causes high-volume transaction retry errors during simple updates in CockroachDB. You will learn practical database tuning techniques such as conditional writes to eliminate contention.",
+      "image": null
+    },
+    {
+      "id": "7a74d2ac5b1e4670",
+      "url": "https://github.com/pdumicz/secret-shuttle",
+      "source": "github",
+      "hn_id": "48749272",
+      "title": "Letting AI agents move secrets without seeing them",
+      "authors": [
+        "pdumicz"
+      ],
+      "event_type": "release",
+      "social_post": "Autonomous coding agents like Claude Code or Cursor need to provision infrastructure and wire services together, but handing raw production credentials to an LLM context window is an unacceptable security hazard.\n\nSecret Shuttle addresses this failure mode by operating as a local proxy between the agent and target environments. The harness provides agents with an operational skill definition to orchestrate secret provisioning workflows without ever seeing the plaintext credentials in prompt context.\n\nInstead of reading plain environment variables, the agent handles opaque identifiers and signed tokens. When deploying a third-party webhook secret to hosting platforms, the local daemon captures the generated value directly, stores it in an isolated local store, and injects it downstream using platform APIs behind explicit developer confirmation gates.\n\nThis architecture keeps sensitive credentials out of training caches, system logs, and model context while still giving coding agents the autonomy required to bootstrap full environments. Controlling agent capabilities through isolated execution bridges is quickly becoming a mandatory pattern for production-grade developer tooling.",
+      "why_read": "Read this to understand how Secret Shuttle enables coding agents to capture and inject credentials without exposing plaintext values. It details low-level mechanics for safely bridging automated agents with production deployment environments.",
+      "image": null
+    },
+    {
+      "id": "27fbaeab8c07a7da",
+      "url": "https://arxiv.org/abs/2605.26302",
+      "source": "hn",
+      "hn_id": "48754689",
+      "title": "Deployed AI agents degrade over time through memory aging",
+      "authors": [
+        "Jianing Zhu",
+        "Yeonju Ro",
+        "John Robertson",
+        "Kevin Wang",
+        "Junbo Li",
+        "Haris Vikalo",
+        "Aditya Akella",
+        "Zhangyang Wang"
+      ],
+      "event_type": "research",
+      "social_post": "Frozen model weights do not guarantee stable agent behavior once an autonomous system is running in production. As an agent accumulates history, compresses context, and updates state across hundreds of sessions, its operational reliability degrades in predictable ways.\n\nA comprehensive benchmark across fourteen models and four hundred runs uncovered four specific degradation mechanisms: compression aging, interference aging, revision aging, and maintenance aging. Memory write and retrieval pipelines slowly contaminate the context window, causing agents to execute contradictory actions or ignore updated business rules.\n\nMost teams evaluate agents with static day-one benchmarks, entirely missing the longitudinal drift that occurs inside stateful harnesses. Measuring write and retrieval fidelity using paired counterfactual probes reveals whether failures stem from bad retrieval or faulty memory utilization.\n\nBuilding long-lived autonomous agents requires treating the memory harness like a stateful distributed database that demands garbage collection, index compaction, and periodic state validation.\n\nLongevity in agentic systems is an infrastructure engineering problem, not a modeling problem.",
+      "why_read": "Read this to understand the concrete failure modes that cause persistent AI agents to degrade across long operational lifespans. You will learn how state accumulation and memory policies affect reliability and how to diagnose degradation systematically.",
+      "image": null
+    },
+    {
+      "id": "59e3931d5ce8feeb",
+      "url": "https://www.emergence.ai/blog/emergence-world-a-laboratory-for-evaluating-long-horizon-agent-autonomy",
+      "source": "hn",
+      "hn_id": "48745040",
+      "title": "Continuous multi-week simulations reveal compounding long-horizon agent behaviors",
+      "authors": [
+        "Deepak Akkil",
+        "Ravi Kokku",
+        "Aditya Vempaty",
+        "Satya Nitta"
+      ],
+      "event_type": "research",
+      "social_post": "Most agent evaluations are structured like short unit tests. You provide a prompt, run a clean sandbox for ten minutes, and measure the pass rate. That approach misses the entire failure surface of continuous autonomy.\n\nEmergence World demonstrates what happens when heterogeneous agents run continuously inside a shared environment over several weeks. When the operating window expands beyond hours, standard benchmarks stop predicting actual behavior. Real-world continuous loops introduce multi-agent coalition formation, governance degradation, and unintended cross-model contamination.\n\nRunning multi-agent systems in production requires shifting focus from immediate prompt success to compounding behavioral drift over extended execution windows.",
+      "why_read": "Read this to understand why evaluating autonomous agents requires continuous multi-week simulations rather than discrete benchmarks. You will learn how long time horizons uncover emergent dynamics such as behavioral drift and model cross-contamination.",
+      "image": null
+    },
+    {
+      "id": "aa429bc202bf760e",
+      "url": "https://clipper.dev/blog/buildkit-profile",
+      "source": "hn",
+      "hn_id": "48749567",
+      "title": "Lazy layer pulling drastically accelerates ephemeral container builds",
+      "authors": [
+        "a_t48"
+      ],
+      "event_type": "deep_dive",
+      "social_post": "Ephemeral CI runners quietly destroy one of the best performance optimizations in Docker BuildKit: cache mounts. When running inside environments like GitHub Actions, BuildKit provides no native mechanism to persist cache mounts across distinct jobs. As a result, compilation and package caches are discarded after every run, forcing teams to pay full re-download and re-compilation penalties.\n\nAnother major bottleneck is layer transfer overhead. Monolithic OCI image layers bundle build-time dependencies together with runtime assets into compressed tarballs. CI builders pull gigabytes of runtime binaries that the compiler never inspects during the actual build phase.\n\nClipper tackles both bottlenecks with a custom BuildKit driver and registry protocol. Instead of shipping monolithic tar files, it separates metadata into an index while storing file blobs independently. This allows build workers to pull only the exact bytes accessed during compilation. Combined with remote cache mount exports, this pattern dropped llamacpp build times on GitHub Actions from 427 seconds to just 56 seconds.\n\nTreating container layers as queryable file indexes rather than opaque tarballs changes CI economics completely.",
+      "why_read": "Learn how decoupling layer metadata from file content enables lazy pulling and solves cache persistence issues on ephemeral CI runners.",
+      "image": null
+    },
+    {
+      "id": "d0eff6bd28cef21c",
+      "url": "https://twitter.com/GustavHartz/status/2072294954404135275",
+      "source": "hn",
+      "hn_id": "48745599",
+      "title": "Context engineering beats fine-tuning for autonomous pen-testing agents",
+      "authors": [
+        "Gustav Hartz"
+      ],
+      "event_type": "case_study",
+      "social_post": "Ensemble breadth beats fine-tuning when building autonomous agents for complex technical tasks.\n\nEmpirical data from over ten thousand agent transcripts reveals that frontier models already possess the domain knowledge required for vulnerability detection and offensive tasks. Fine-tuning is not necessary to prevent safety refusals, which are almost entirely driven by external classifiers rather than the underlying model weights.\n\nInstead, the true performance bottleneck is context management. Even when working with a one million token context window, agents perform significantly better when kept under two hundred thousand tokens. Stuffing massive codebases into the prompt degrades reasoning and causes agents to talk themselves out of valid findings, discarding up to twenty-five percent of discovered bugs.\n\nHigh recall comes from deploying multiple parallel agents running distinct strategies rather than relying on a single large model. In testing against security benchmarks, no single strategy uncovered more than eighty-two percent of known issues, and the median bug required six independent analysis passes. Scaling cheap inference across parallel runs consistently outperforms expensive multi-pass runs with top tier models.\n\nSystem success is determined by context pruning and horizontal agent coordination rather than raw model capacity.",
+      "why_read": "Learn why context engineering and agent breadth outperform model fine-tuning when finding vulnerabilities. You will gain practical architectural insights on managing token context and preventing agent self-censorship.",
       "image": null
     }
   ]
