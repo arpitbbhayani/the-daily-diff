@@ -1,0 +1,61 @@
+---
+import { getCollection } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+import ThemeToggleButton from '../../components/ThemeToggleButton.astro';
+import Footer from '../../components/Footer.astro';
+import { SITE_METADATA } from '../../config';
+
+const editions = (await getCollection('editions')).sort((a, b) => b.data.date.localeCompare(a.data.date));
+const count = editions.reduce((total, edition) => total + edition.data.stories.length, 0);
+---
+<Layout title={`Search all editions — ${SITE_METADATA.name}`} description={`Search every ${SITE_METADATA.name} edition for software engineering stories, authors, and technical insights.`}>
+  <main class="page-container search-page">
+    <section class="newspaper-sheet" aria-labelledby="search-heading">
+      <header class="search-header">
+        <div>
+          <p class="search-eyebrow">The complete collection</p>
+          <h1 id="search-heading">Search the editions</h1>
+        </div>
+        <nav aria-label="Search page navigation">
+          <a href="/">Latest</a>
+          <a href="/archive/">Archive</a>
+          <ThemeToggleButton />
+        </nav>
+      </header>
+      <p class="search-intro">Find a story among {count} stories in {editions.length} editions of <a href="/">{SITE_METADATA.name}</a>. Search headlines, authors, full editorial text, and why-read notes.</p>
+      <form id="story-search" role="search" action="/search/" method="get">
+        <label for="search-query">Search all editions</label>
+        <div class="search-input-row">
+          <input id="search-query" name="q" type="search" maxlength="160" placeholder="Postgres, distributed systems, observability…" autocomplete="off" aria-describedby="search-help" />
+          <button class="button" type="submit">Search</button>
+        </div>
+        <p id="search-help" class="search-help">Results open at the matching passage. Story links remain usable when text highlighting is unavailable.</p>
+        <div class="search-filters">
+          <label for="search-source">Source
+            <select id="search-source" name="source">
+              <option value="all">All sources</option><option value="hn">HN</option><option value="news">NEWS</option><option value="github">GITHUB</option>
+            </select>
+          </label>
+          <label for="search-signal">Signal
+            <select id="search-signal" name="signal">
+              <option value="all">All stories</option><option value="8">Recommended</option><option value="9">Must-Read</option>
+            </select>
+          </label>
+          <label for="search-edition">Edition
+            <select id="search-edition" name="edition">
+              <option value="all">All editions</option>
+              {editions.map(({ data }) => <option value={data.date}>{data.date}</option>)}
+            </select>
+          </label>
+        </div>
+      </form>
+      <p id="search-status" class="search-status" role="status" aria-live="polite">Enter at least two characters to search.</p>
+      <button id="search-retry" class="button" type="button" hidden>Retry loading search</button>
+      <noscript><p>Search needs JavaScript. You can also <a href="/archive/">browse editions in the archive</a>.</p></noscript>
+      <ol id="search-results" class="search-results" aria-label="Matching stories"></ol>
+      <button id="search-more" class="button" type="button" hidden>Show more stories</button>
+      <Footer />
+    </section>
+  </main>
+</Layout>
+<script src="../../scripts/story-search.ts"></script>
