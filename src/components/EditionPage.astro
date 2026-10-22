@@ -3,6 +3,7 @@ import Layout from '../layouts/Layout.astro';
 import ThemeToggleButton from './ThemeToggleButton.astro';
 import Footer from './Footer.astro';
 import { SITE_METADATA } from '../config';
+import { storyAnchor } from '../lib/storyAnchors.js';
 
 const SOURCE_LABEL: Record<string, string> = {
 	arxiv: 'arXiv',
@@ -171,6 +172,10 @@ const breadcrumbSchema = {
 							<span>Archive</span>
 						</a>
 						<span class="masthead-eyebrow-sep">&middot;</span>
+						<a class="masthead-eyebrow-link masthead-search-link" href="/search/" aria-label="Search all editions" aria-keyshortcuts="Control+k Meta+k" title="Search all editions (Ctrl+K / Cmd+K)">
+							<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="10.5" cy="10.5" r="7.5" /><path d="m16 16 5 5" /></svg>
+						</a>
+						<span class="masthead-eyebrow-sep">&middot;</span>
 						<a class="masthead-eyebrow-link" href="/" rel="noopener noreferrer">tdd.cat</a>
 					</span>
 					<div class="masthead-eyebrow-center-group">
@@ -292,6 +297,7 @@ const breadcrumbSchema = {
 
 						return (
 						<article
+							id={storyAnchor({ id: story.slug })}
 							class={classes}
 							data-section={story.section}
 							data-source={story.source}
@@ -318,6 +324,8 @@ const breadcrumbSchema = {
 								)}
 								{bylineFor(story) && <>{bylineFor(story)}<span class="story-source-sep">&middot;</span></>}
 								<a class="story-source-link" href={story.url} target="_blank" rel="noopener noreferrer">{sourceLabelFor(story)} &rsaquo;</a>
+								<span class="story-source-sep">&middot;</span>
+								<a class="story-source-link story-permalink" href={`/${day}/#${storyAnchor({ id: story.slug })}`} aria-label={`Permanent link to ${story.title}`}>Permalink</a>
 								{story.comments && (
 									<>
 										<span class="story-source-sep">&middot;</span>
@@ -377,6 +385,7 @@ const breadcrumbSchema = {
 </Layout>
 
 <script>
+	import { getStorySource } from '../lib/storyClassification';
 	const day = document.getElementById('newspaper-sheet')!.getAttribute('data-day') as string;
 
 	const prevBtn = document.getElementById('prev-day-btn') as HTMLButtonElement;
@@ -568,8 +577,29 @@ const breadcrumbSchema = {
 		});
 	});
 
-	// Run initial filter application on load
+	function revealLinkedStory() {
+		let id: string;
+		try { id = decodeURIComponent(window.location.hash.slice(1).split(':~:')[0]); }
+		catch { return; }
+		const target = document.getElementById(id);
+		if (!target?.matches('article.story')) return;
+		const source = getStorySource({ source: target.getAttribute('data-source') || undefined });
+		sourceButtons.forEach((button) => button.classList.toggle('active', button.getAttribute('data-filter') === source));
+		interestButtons.forEach((button) => button.classList.toggle('active', button.getAttribute('data-filter') === 'all'));
+	}
+
+	// A search result may point into a source hidden by the default HN tab.
+	revealLinkedStory();
 	updateActiveFilters();
+	window.addEventListener('hashchange', () => {
+		revealLinkedStory();
+		updateActiveFilters();
+	});
+	window.addEventListener('load', () => {
+		// Native text matches target their text element. Only reposition an anchor
+		// fallback after filtering has changed the newspaper's column layout.
+		document.querySelector('article.story:target')?.scrollIntoView({ block: 'start' });
+	});
 
 </script>
 
